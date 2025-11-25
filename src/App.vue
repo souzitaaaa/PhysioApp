@@ -14,6 +14,7 @@
 <script>
 import { RouterView } from 'vue-router';
 import Sidebar from './components/Sidebar.vue'
+import { supabase } from '../utils/supabase'
 
 export default {
   components: {
@@ -22,12 +23,21 @@ export default {
   },
   data() {
     return {
-        sidebarOpen: true
+        sidebarOpen: true,
+        athletes: []
     }
   },
   watch: {},
-  mounted() {},
-  methods: {},
+  mounted() {
+    this.getAthleteData();
+  },
+  methods: {
+    async getAthleteData() {
+            const { data } = await supabase.from('t_athlete').select('*');
+            this.athletes = data;
+            console.log(data);
+        },
+  },
 }
 </script>
 

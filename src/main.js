@@ -15,6 +15,12 @@ import "./assets/var.css";
 import Button from 'primevue/button';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Divider from 'primevue/divider';
+import Skeleton from 'primevue/skeleton';
+
+
+/*Icons Font Awesome*/ 
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
 
 
 const app = createApp(App);
@@ -32,5 +38,6 @@ app.use(PrimeVue, {
 app.component('Button', Button);
 app.component('ToggleSwitch', ToggleSwitch);
 app.component('Divider', Divider);
+app.component('Skeleton', Skeleton);
 
 app.mount('#app');
