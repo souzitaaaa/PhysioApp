@@ -13,9 +13,10 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@primeuix/themes": "^1.2.5",
     "@primevue/themes": "^4.4.1",
-    "@supabase/supabase-js": "^2.76.1",
+    "@supabase/supabase-js": "^2.81.1",
     "@tailwindcss/vite": "^4.1.15",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",

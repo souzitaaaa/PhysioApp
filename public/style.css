@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+
+
+.color-grey-details {
+    color: var(--color-grey-details);
+    cursor: pointer;
+}
+
+
+.color-grey-details:hover {
+    color: var(--color-primary);
+}
+
+.button-sidebar{
+    background-color: transparent;
+    width: 200px;
+    padding: 20px;
+    border-radius: 16px 0px 0px 16px;
+}
+
+.button-sidebar:hover{
+    background-color: var(--color-background);
+}
