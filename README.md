@@ -1,7 +1,19 @@
 
 # PhysioApp
 
-Projeto bla bla bla
+Projeto Physio
+
+## Tarefas Track
+
+#### Atletas
+- [x] Listar na Tabela
+- [ ] Criar Atleta
+- [ ] Editar Atleta
+- [ ] Filtro de procurar
+- [ ] Exportar bugado
+- [ ] Ver mais detalhes
+- [ ] Calcular idade (talvez venha da base de dados automaticamente)
+
 
 ## Comandos do git
 

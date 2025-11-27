@@ -5,7 +5,7 @@
         <Sidebar/>
     </div>
     <!-- Content -->
-    <div class="w-full rounded-l-2xl content-container">
+    <div class="w-full rounded-l-2xl content-container p-12">
         <RouterView />
     </div>
   </div>
@@ -14,7 +14,6 @@
 <script>
 import { RouterView } from 'vue-router';
 import Sidebar from './components/Sidebar.vue'
-import { supabase } from '../utils/supabase'
 
 export default {
   components: {
@@ -24,19 +23,13 @@ export default {
   data() {
     return {
         sidebarOpen: true,
-        athletes: []
     }
   },
   watch: {},
   mounted() {
-    this.getAthleteData();
   },
   methods: {
-    async getAthleteData() {
-            const { data } = await supabase.from('t_athlete').select('*');
-            this.athletes = data;
-            console.log(data);
-        },
+    
   },
 }
 </script>

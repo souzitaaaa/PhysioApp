@@ -19,6 +19,17 @@
     border-radius: 16px 0px 0px 16px;
 }
 
+.button-sidebar.router-link-active,
+.button-sidebar.router-link-exact-active {
+    background-color: var(--color-background) !important;
+    color: var(--color-primary) !important;
+}
+
+
 .button-sidebar:hover{
-    background-color: var(--color-background);
+    color: #ffffff;
+}
+
+.p-datatable-header {
+  border-bottom: none !important;
 }
