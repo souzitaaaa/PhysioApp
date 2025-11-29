@@ -1,0 +1,67 @@
+name: "Epic"
+description: "High-level initiative broken down into multiple tasks"
+title: "[EPIC] <Epic Name>"
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📘 Epic Overview
+        Provide a clear summary of the epic and its purpose.
+
+  - type: input
+    id: objective
+    attributes:
+      label: 🎯 Objective
+      description: What is the main goal of this epic?
+      placeholder: "Improve authentication system"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Description
+      description: Detailed explanation of what this epic is about.
+      placeholder: "This epic aims to refactor the auth system..."
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: 📦 Deliverables
+      description: What will be completed when this epic is done?
+      placeholder: "- New login UI\n- OAuth support\n- MFA workflow"
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 🧩 Related Tasks / Issues
+      description: Link child issues using `- [ ] #ISSUE_NUMBER`
+      placeholder: "- [ ] #123\n- [ ] #124"
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      placeholder: |
+        - System supports MFA.
+        - Login refactor increases performance by at least 20%.
+        - All related issues resolved.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⏳ Priority
+      options:
+        - High
+        - Medium
+        - Low
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: ⚠️ Risks / Dependencies
+      placeholder: "Depends on backend refactor (#98)"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 🗒 Additional Notes

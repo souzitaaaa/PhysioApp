@@ -1,0 +1,57 @@
+name: "Task"
+description: "A single actionable task or feature request"
+title: "[TASK] <Short Summary>"
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: "## 🛠 Task Details"
+
+  - type: input
+    id: summary
+    attributes:
+      label: 🔍 Summary
+      placeholder: "Add user login endpoint"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Description
+      placeholder: "This task involves creating an endpoint..."
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 📌 Steps / To-Do
+      placeholder: |
+        - [ ] Step 1
+        - [ ] Step 2
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      placeholder: |
+        - Returns 200 OK when login succeeds
+        - Follows security guidelines
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⏳ Priority
+      options:
+        - High
+        - Medium
+        - Low
+
+  - type: textarea
+    id: linked_issues
+    attributes:
+      label: 🔗 Linked Issues
+      description: Link an epic or related tasks
+      placeholder: "#101"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 🗒 Additional Notes
