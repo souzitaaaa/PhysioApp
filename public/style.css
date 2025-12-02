@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+
+
+.color-grey-details {
+    color: var(--color-grey-details);
+    cursor: pointer;
+}
+
+
+.color-grey-details:hover {
+    color: var(--color-primary);
+}
+
+.button-sidebar{
+    background-color: transparent;
+    width: 200px;
+    padding: 20px;
+    border-radius: 16px 0px 0px 16px;
+}
+
+.button-sidebar.router-link-active,
+.button-sidebar.router-link-exact-active {
+    background-color: var(--color-background) !important;
+    color: var(--color-primary) !important;
+}
+
+
+.button-sidebar:hover{
+    color: #ffffff;
+}
+
+.p-datatable-header {
+  border-bottom: none !important;
+}
+
+
+.text-small-grey {
+    color: #8c8c8c;       
+  font-size: 0.875rem;  
+  line-height: 1.25rem;
+}
+
+/*Geral*/
+.style-table {
+  border-radius: 16px;         
+  overflow: hidden;            
+  border: 1px solid #cccccc;   
+}
+
+/*Email*/
+
+.table-email{
+  border: 1px solid #cccccc;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.email-table {
+  border-radius: 16px;         
+  overflow: hidden;            
+  border: 1px solid #cccccc;   
+}
+
+.email-table table,
+.email-table table td,
+.email-table table th,
+.email-table .p-datatable-tbody > tr,
+.email-table .p-datatable-wrapper {
+  border: none !important;
+}
+
+/* Remove o header */
+.email-table .p-datatable-thead > tr > th,
+.email-table .p-datatable-header-cell {
+  display: none !important;
+}
+
