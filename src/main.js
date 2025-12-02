@@ -28,6 +28,8 @@ import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Tooltip from 'primevue/tooltip';
 import Avatar from 'primevue/avatar';
+import Drawer from 'primevue/drawer';
+import Menu from 'primevue/menu';
 
 
 const app = createApp(App);
@@ -54,6 +56,8 @@ app.component('IconField', IconField);
 app.component('InputIcon', InputIcon);
 app.component('Tooltip', Tooltip);
 app.component('Avatar', Avatar);
+app.component('Drawer', Drawer);
+app.component('Menu', Menu);
 
 app.directive('tooltip', Tooltip);
 

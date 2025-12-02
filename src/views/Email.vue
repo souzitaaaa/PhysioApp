@@ -4,18 +4,18 @@
       <template #start>
         <IconField>
           <InputIcon>
-            <i class="pi pi-search" />
+            <i class="fa-solid fa-magnifying-glass" />
           </InputIcon>
           <InputText placeholder="Procurar" size="small" />
         </IconField>
       </template>
       <template #end>
-        <Button icon="pi pi-cog" class="mr-2" severity="secondary" size="small" />
+        <Button icon="fa-solid fa-gear" class="mr-2" severity="secondary" size="small" />
       </template>
     </Toolbar>
 
     <DataTable ref="dt" :value="emails" dataKey="emailID" class="email-table">
-      <Column>
+      <Column class="subject-column">
         <template #body="{ data }">
           <div class="flex flex-col p-5 table-email">
             <div class="flex justify-between items-center">
@@ -23,7 +23,7 @@
               <span>{{ data.dateSended }}</span>
             </div>
 
-            <div class="text-small-grey">
+            <div class="text-small-grey subject mt-2">
               {{ data.subject }}
             </div>
           </div>

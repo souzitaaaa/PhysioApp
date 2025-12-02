@@ -4,29 +4,17 @@
       <template #start>
         <IconField>
           <InputIcon>
-            <i class="pi pi-search" />
+            <i class="fa-solid fa-magnifying-glass" />
           </InputIcon>
           <InputText placeholder="Procurar" size="small" />
         </IconField>
       </template>
       <template #center>
-        <Button
-          icon="pi pi-upload"
-          severity="secondary"
-          text
-          @click="exportCSV($event)"
-          size="small"
-          v-tooltip.bottom="{ value: 'Exportar Informação', showDelay: 500, hideDelay: 250 }"
-        />
+        <Button icon="fa-solid fa-download" severity="secondary" text @click="exportCSV($event)" size="small"
+          v-tooltip.bottom="{ value: 'Exportar Informação', showDelay: 500, hideDelay: 250 }" />
       </template>
       <template #end>
-        <Button
-          icon="pi pi-plus"
-          class="mr-2"
-          severity="success"
-          label="Criar Atleta"
-          size="small"
-        />
+        <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Atleta" size="small" />
       </template>
     </Toolbar>
 
@@ -34,13 +22,9 @@
       <Column header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <Avatar
-              icon="pi pi-user"
-              class="mr-2"
-              style="background-color: #ece9fc; color: #2a1261"
-              shape="circle"
-            />
+            <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
             <span>{{ data.name }}</span>
+            <i v-if="data.injuredBit" class="fa-solid fa-truck-medical text-red-600 font-medium" style="font-size: 0.8rem"></i>
           </div>
         </template>
       </Column>
@@ -64,27 +48,28 @@
       </Column>
       <Column :exportable="false" style="min-width: 3rem">
         <template #body="slotProps">
-          <Button
-          icon="pi pi-eye"
-          severity="secondary"
-          variant="outlined"
-          size="small"
-          @click="editProduct(slotProps.data)"
-          />
+          <Button icon="fa-solid fa-eye" severity="secondary" variant="outlined" size="small"
+            @click="editAthlete(slotProps.data)" />
         </template>
       </Column>
     </DataTable>
   </div>
+  <AthletesDrawer :visible="athleteDrawerVisible" :athlete="selectedAthlete" @close="athleteDrawerVisible = false"></AthletesDrawer>
 </template>
 
 <script>
 import { supabase } from '../../utils/supabase'
+import  AthletesDrawer  from '../components/AthletesDrawer.vue'
 
 export default {
-  components: {},
+  components: {
+    AthletesDrawer
+  },
   data() {
     return {
       athletes: [],
+      selectedAthlete: null,
+      athleteDrawerVisible: false
     }
   },
   watch: {},
@@ -100,6 +85,10 @@ export default {
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
+    editAthlete(athleteData) {
+      this.selectedAthlete = athleteData
+      this.athleteDrawerVisible = true
+    }
   },
 }
 </script>

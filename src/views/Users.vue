@@ -4,14 +4,14 @@
       <template #start>
         <IconField>
           <InputIcon>
-            <i class="pi pi-search" />
+            <i class="fa-solid fa-magnifying-glass" />
           </InputIcon>
           <InputText placeholder="Procurar" size="small" />
         </IconField>
       </template>
       <template #end>
         <Button
-          icon="pi pi-plus"
+          icon="fa-solid fa-plus"
           class="mr-2"
           severity="success"
           label="Criar Utilizador"
@@ -24,12 +24,7 @@
       <Column header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <Avatar
-              icon="pi pi-user"
-              class="mr-2"
-              style="background-color: #ece9fc; color: #2a1261"
-              shape="circle"
-            />
+            <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
             <span>{{ data.name }}</span>
           </div>
         </template>
@@ -66,26 +61,33 @@
       <Column :exportable="false" style="min-width: 3rem">
         <template #body="slotProps">
           <Button
-          icon="pi pi-eye"
-          severity="secondary"
-          variant="outlined"
-          size="small"
-          @click="editProduct(slotProps.data)"
-          />
+            icon="fa-solid fa-eye"
+            severity="secondary"
+            variant="outlined"
+            size="small"
+            @click="editUser(slotProps.data)" />
+        
+
         </template>
       </Column>
     </DataTable>
   </div>
+  <UsersDrawer :visible="userDrawerVisible" :user="selectedUser" @close="userDrawerVisible = false"></UsersDrawer>
 </template>
 
 <script>
 import { supabase } from '../../utils/supabase'
+import UsersDrawer from '../components/UsersDrawer.vue'
 
 export default {
-  components: {},
+  components: {
+    UsersDrawer
+  },
   data() {
     return {
       users: [],
+      selectedUser: null,
+      userDrawerVisible: false
     }
   },
   watch: {},
@@ -94,12 +96,17 @@ export default {
   },
   methods: {
     async getUserData() {
-      const { data } = await supabase.from('t_user').select(`*`)
+      const { data } = await supabase.from('t_user').select(`*,
+                                      taux_user_type ( user_type )`)
       this.users = data
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
+    editUser(userData) {
+      this.selectedUser = userData
+      this.userDrawerVisible = true
+    }
   },
 }
 </script>

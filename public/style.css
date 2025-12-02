@@ -3,7 +3,7 @@
 
 
 .color-grey-details {
-    color: var(--color-grey-details);
+    color: var(--color-grey);
     cursor: pointer;
 }
 
@@ -45,13 +45,13 @@
 .style-table {
   border-radius: 16px;         
   overflow: hidden;            
-  border: 1px solid #cccccc;   
+  border: 1px solid var(--color-grey-details); 
 }
 
 /*Email*/
 
 .table-email{
-  border: 1px solid #cccccc;
+  border: 1px solid var(--color-grey-details); 
   border-radius: 16px;
   background: #ffffff;
 }
@@ -59,7 +59,7 @@
 .email-table {
   border-radius: 16px;         
   overflow: hidden;            
-  border: 1px solid #cccccc;   
+  border: 1px solid var(--color-grey-details);  
 }
 
 .email-table table,
@@ -74,5 +74,33 @@
 .email-table .p-datatable-thead > tr > th,
 .email-table .p-datatable-header-cell {
   display: none !important;
+}
+
+.line-hr {
+  color: var(--color-grey-details);   
+}
+
+.text-form-title{
+  color: var(--color-grey-forms); 
+}
+
+.text-form-value {
+  color: var(--color-text-black);
+}
+
+
+.subject-column .p-cell {
+  white-space: normal !important;    
+  word-break: break-word !important;
+}
+
+.subject {
+  display: -webkit-box;        
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;       
+  overflow: hidden;          
+  text-overflow: ellipsis;   
+  word-break: break-word;    
+  white-space: normal;         
 }
 

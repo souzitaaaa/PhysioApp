@@ -1,7 +1,10 @@
 :root {
     --color-background: #F0F0F0 ;    
     --color-primary: #22333B;
-    --color-grey-details: #d4d4d4;
+    --color-grey: #d4d4d4;
+    --color-grey-details: #cccccc;
+    --color-grey-forms: rgba(0, 0, 0, 0.6);
+    --color-text-black: #000000
     /*? Main Components */
     /*? Secondary Components */
     /*? Sidebar Components */

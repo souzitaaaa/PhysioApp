@@ -64,3 +64,5 @@ Depois podemos fazer oque quiseremos nessa branch, ao acabarmos fazemos:
 Depois isso fica guardado na nossa branch que criamos separada da main
 
 Só quando tivermos a certeza que está tudo a correr como queremos, vamos ao github e abrimos um pull request da nossa branch para a main
+
+
