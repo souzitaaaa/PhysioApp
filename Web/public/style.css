@@ -94,6 +94,15 @@
   word-break: break-word !important;
 }
 
+.table-email {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.table-email:hover {
+  background-color: rgba(140, 140, 140, 0.2);
+}
+
 .subject {
   display: -webkit-box;        
   -webkit-box-orient: vertical;
@@ -102,5 +111,10 @@
   text-overflow: ellipsis;   
   word-break: break-word;    
   white-space: normal;         
+  transition: all 0.2s;
 }
 
+.table-email.expanded .subject {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}

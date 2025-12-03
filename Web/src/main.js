@@ -30,7 +30,11 @@ import Tooltip from 'primevue/tooltip';
 import Avatar from 'primevue/avatar';
 import Drawer from 'primevue/drawer';
 import Menu from 'primevue/menu';
-
+import Select from 'primevue/select';
+import InputMask from 'primevue/inputmask';
+import InputNumber from 'primevue/inputnumber';
+import DatePicker from 'primevue/datepicker';
+import FileUpload from 'primevue/fileupload';
 
 const app = createApp(App);
 
@@ -58,6 +62,11 @@ app.component('Tooltip', Tooltip);
 app.component('Avatar', Avatar);
 app.component('Drawer', Drawer);
 app.component('Menu', Menu);
+app.component('Select', Select);
+app.component('InputMask', InputMask);
+app.component('InputNumber', InputNumber);
+app.component('DatePicker', DatePicker);
+app.component('FileUpload', FileUpload);
 
 app.directive('tooltip', Tooltip);
 

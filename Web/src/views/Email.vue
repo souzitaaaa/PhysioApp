@@ -16,8 +16,12 @@
 
     <DataTable ref="dt" :value="emails" dataKey="emailID" class="email-table">
       <Column class="subject-column">
-        <template #body="{ data }">
-          <div class="flex flex-col p-5 table-email">
+        <template #body="{ data, index }">
+          <div
+            class="flex flex-col p-5 table-email"
+            :class="{ 'expanded': expandedIndex === index }"
+            @click="toggleExpand(index)"
+          >
             <div class="flex justify-between items-center">
               <span>{{ data.sender }}</span>
               <span>{{ data.dateSended }}</span>
@@ -37,13 +41,12 @@
 import { supabase } from '../../utils/supabase'
 
 export default {
-  components: {},
   data() {
     return {
       emails: [],
+      expandedIndex: null, 
     }
   },
-  watch: {},
   mounted() {
     this.getEmailData()
   },
@@ -51,6 +54,9 @@ export default {
     async getEmailData() {
       const { data } = await supabase.from('t_email').select(`*`)
       this.emails = data
+    },
+    toggleExpand(index) {
+      this.expandedIndex = this.expandedIndex === index ? null : index
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
