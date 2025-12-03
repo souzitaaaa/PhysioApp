@@ -36,12 +36,15 @@ import InputNumber from 'primevue/inputnumber';
 import DatePicker from 'primevue/datepicker';
 import FileUpload from 'primevue/fileupload';
 
+import { myPreset } from './theme'
+
 const app = createApp(App);
 
 app.use(router);
+
 app.use(PrimeVue, {
   theme: {
-    preset: Aura,
+    preset: myPreset,
     options: {
       darkModeSelector: '.my-app-dark'
     }

@@ -18,7 +18,7 @@ export function validateAthleteForm(formData) {
 
   if (!formData.nationality?.trim()) errors.nationality = 'A nacionalidade é obrigatória.'
 
-  if (!formData.divisionID || !formData.divisionID.divisionID)
+  if (!formData.divisionID)
     errors.divisionID = 'A divisão é obrigatória.'
 
   return errors
@@ -33,7 +33,6 @@ export function getEmptyAthlete() {
     pfp: '',
     nationality: '',
     divisionID: '',
-    taux_division: { division: '' },
   }
 }
 

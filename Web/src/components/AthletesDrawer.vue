@@ -2,9 +2,10 @@
   <Drawer :visible="visible" position="right" class="w-1/2!" @update:visible="$emit('close')">
     <template #container="{ closeCallback }">
       <div class="flex flex-col h-full">
+        
         <!-- Header -->
         <div class="flex justify-end items-center gap-2 px-2 pt-2">
-          {{ formData }}
+          {{ JSON.stringify(formData, null, 2) }}
           <Button
             v-if="mode === 'view'"
             icon="fa-solid fa-ellipsis-vertical"
@@ -17,13 +18,14 @@
           />
           <Menu ref="menu" id="actions_menu" :model="actions" :popup="true">
             <template #item="{ item, props }">
-              <a v-ripple class="flex items-center justify-between w-full" v-bind="props.action">
+              <a v-ripple class="flex items-center justify-between w-full px-2 py-1" v-bind="props.item" @click="item.command">
                 <span class="">{{ item.label }}</span>
                 <span :class="item.icon" />
               </a>
             </template>
           </Menu>
           <Button
+            v-if="mode === 'view'"
             icon="fa-solid fa-xmark"
             severity="contrast"
             text
@@ -108,7 +110,7 @@
                 <div v-else>
                   <DatePicker
                     v-model="formData.birthdate"
-                    dateFormat="yy/mm/dd"
+                    dateFormat="yy-mm-dd"
                     size="small"
                     :invalid="!!errors.birthdate"
                     fluid
@@ -135,13 +137,12 @@
               <span class="text-form-title text-sm col-span-3">Divisão:</span>
               <div class="col-span-5">
                 <span v-if="mode === 'view'" class="text-form-value">
-                  {{ formData.taux_division.division }}
+                  {{ formData.division }}
                 </span>
 
                 <div v-else>
-                  <Select v-model="formData.divisionID" :options="divisions" optionLabel="division" size="small"
-                    :invalid="!!errors.divisionID"
-                    class="w-full"/>
+                  <Select v-model="formData.divisionID" :options="divisions" optionLabel="division" optionValue="divisionID" size="small"
+                    :invalid="!!errors.divisionID" fluid/>
                   <small v-if="errors.divisionID" class="text-red-600 text-xs">{{ errors.divisionID }}</small>
                 </div>
               </div>
@@ -188,7 +189,7 @@
             class="px-5"
             size="small"
             severity="secondary"
-            @click="$emit('update:mode', 'view')"
+            @click="cancelAction"
           />
 
           <!-- Guardar -->
@@ -198,7 +199,6 @@
             label="Guardar"
             class="px-5"
             size="small"
-            severity="success"
             @click="save"
           />
 
@@ -209,7 +209,6 @@
             label="Histórico Clínico"
             class="px-5"
             size="small"
-            severity="success"
             @click="save"
           />
         </div>
@@ -237,8 +236,8 @@ export default {
     return {
       // Data Helpers
       actions: [
-        { label: 'Editar', icon: 'fa-solid fa-pen-to-square' },
-        { label: 'Apagar', icon: 'fa-solid fa-trash-can' },
+        { label: 'Editar', icon: 'fa-solid fa-pen-to-square', command: () => this.startEditMode() },
+        { label: 'Apagar', icon: 'fa-solid fa-trash-can', command: () => this.showDeleteConfirmation() },
       ],
       divisions: [],
       // Main
@@ -248,9 +247,14 @@ export default {
     }
   },
   watch: {
+    visible(val) {
+      if (val)
+        this.resetDrawer()
+    },
     athlete: {
       handler(val) {
         this.formData = val ? { ...val } : getEmptyAthlete()
+        if (this.formData.birthdate) this.formData.birthdate = new Date(this.formData.birthdate)
       },
       immediate: true,
     },
@@ -265,14 +269,34 @@ export default {
     toggle(event) {
       this.$refs.menu.toggle(event)
     },
+    startEditMode() {
+      this.$emit('update:mode', 'edit')
+    },
+    showDeleteConfirmation() {
+      console.log("showDeleteConfirmation")
+    },
+    cancelAction() {
+      if (this.mode === 'add') this.$emit('close')
+      else if (this.mode === 'edit') this.$emit('update:mode', 'view')
+    },
+    resetDrawer() {
+      this.formData = this.athlete ? { ...this.athlete } : getEmptyAthlete()
+      this.errors = {}
+    },
     onFileSelect(event) {
       this.formData.pfp = event.files[0] || null
     },
     save() {
       this.errors = validateAthleteForm(this.formData)
       if (Object.keys(this.errors).length > 0) return
-      if (this.mode === 'add') this.$emit('add-athlete', { ...this.formData })
-      else if (this.mode === 'edit') this.$emit('update-athlete', { ...this.formData })
+
+      const payload = {
+        ...this.formData,
+        birthdate: this.formData.birthdate?.toISOString().split('T')[0]
+      }
+
+      if (this.mode === 'add') this.$emit('add-athlete', payload)
+      else if (this.mode === 'edit') this.$emit('update-athlete', payload)
 
       this.$emit('update:mode', 'view')
     }
