@@ -1,6 +1,7 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Button, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../scripts/supabase';
+import { useFocusEffect } from '@react-navigation/native';
 
 type Email = {
   emailID: number;
@@ -11,6 +12,7 @@ type Email = {
 
 export default function NotificationScreen() {
   const [emails, setEmails] = useState<Email[]>([]);
+  const [expandedID, setExpandedID] = useState<number | null>(null);
 
   useEffect(() => {
     fetchEmails();
@@ -29,24 +31,62 @@ export default function NotificationScreen() {
     setEmails(data || []);
   }
 
+  function toggleExpand(id: number) {
+    setExpandedID(expandedID === id ? null : id);
+  }
+
+  useFocusEffect(
+  React.useCallback(() => {
+    return () => {
+      setExpandedID(null); // Fecha os cards ao sair
+    };
+  }, [])
+);
+
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Notificações</Text>
 
-      {emails.map((item) => (
-        <View key={item.emailID} style={styles.card}>
+      {emails.map((item) => {
+        const expanded = expandedID === item.emailID;
 
-          <View style={styles.row}>
-            <Text style={styles.sender}>{item.sender}</Text>
-            <Text style={styles.date}>{item.dateSended}</Text>
-          </View>
+        return (
+          <TouchableOpacity
+            key={item.emailID}
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => toggleExpand(item.emailID)}
+          >
+            <View style={styles.row}>
+              <Text style={styles.sender}>{item.sender}</Text>
+              <Text style={styles.date}>{item.dateSended}</Text>
+            </View>
 
-          <Text style={styles.subject} numberOfLines={3} ellipsizeMode="tail">
-            {item.subject}
-          </Text>
-        </View>
-      ))}
-    </View>
+            {/* Texto completo ou resumido */}
+            <Text
+              style={styles.subject}
+              numberOfLines={expanded ? undefined : 3}
+              ellipsizeMode={expanded ? 'clip' : 'tail'}
+            >
+              {item.subject}
+            </Text>
+
+            {/* Botões lado a lado */}
+            {expanded && (
+              <View style={styles.buttonsRow}>
+                <View style={styles.button}>
+                  <Button title="Notas" color="#22333B" onPress={() => console.log("Notas")} />
+                </View>
+                <View style={styles.button}>
+                  <Button title="936 812 349" color="#22333B" onPress={() => console.log("936 812 349")} />
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
   );
 }
 
@@ -60,6 +100,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     paddingTop: 40,
     paddingLeft: 16,
+    marginBottom: 12,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -68,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginHorizontal: 16,
-    marginTop: 12,
+    marginBottom: 12,
   },
   row: {
     flexDirection: 'row',
@@ -86,5 +127,14 @@ const styles = StyleSheet.create({
   subject: {
     fontSize: 15,
     color: '#333',
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 4,
   },
 });
