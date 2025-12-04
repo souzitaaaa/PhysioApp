@@ -1,7 +1,14 @@
-import { StyleSheet, View, Text, TouchableOpacity, Button, ScrollView } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../../scripts/supabase';
-import { useFocusEffect } from '@react-navigation/native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Button,
+  ScrollView,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../scripts/supabase";
+import { useRouter } from "expo-router";
 
 type Email = {
   emailID: number;
@@ -14,17 +21,17 @@ export default function NotificationScreen() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [expandedID, setExpandedID] = useState<number | null>(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     fetchEmails();
   }, []);
 
   async function fetchEmails() {
-    const { data, error } = await supabase
-      .from<Email>('t_email')
-      .select('*');
+    const { data, error } = await supabase.from<Email>("t_email").select("*");
 
     if (error) {
-      console.log('Erro ao carregar emails:', error);
+      console.log("Erro ao carregar emails:", error);
       return;
     }
 
@@ -34,15 +41,6 @@ export default function NotificationScreen() {
   function toggleExpand(id: number) {
     setExpandedID(expandedID === id ? null : id);
   }
-
-  useFocusEffect(
-  React.useCallback(() => {
-    return () => {
-      setExpandedID(null); // Fecha os cards ao sair
-    };
-  }, [])
-);
-
 
   return (
     <ScrollView style={styles.container}>
@@ -63,23 +61,35 @@ export default function NotificationScreen() {
               <Text style={styles.date}>{item.dateSended}</Text>
             </View>
 
-            {/* Texto completo ou resumido */}
             <Text
               style={styles.subject}
               numberOfLines={expanded ? undefined : 3}
-              ellipsizeMode={expanded ? 'clip' : 'tail'}
+              ellipsizeMode={expanded ? "clip" : "tail"}
             >
               {item.subject}
             </Text>
 
-            {/* Botões lado a lado */}
             {expanded && (
               <View style={styles.buttonsRow}>
                 <View style={styles.button}>
-                  <Button title="Notas" color="#22333B" onPress={() => console.log("Notas")} />
+                  <Button
+                    title="Notas"
+                    color="#22333B"
+                    onPress={() => {
+                      router.push({
+                        pathname: "/notes",
+                        params: { sender: item.sender },
+                      });
+                    }}
+                  />
                 </View>
+
                 <View style={styles.button}>
-                  <Button title="936 812 349" color="#22333B" onPress={() => console.log("936 812 349")} />
+                  <Button
+                    title="936 812 349"
+                    color="#22333B"
+                    onPress={() => console.log("936 812 349")}
+                  />
                 </View>
               </View>
             )}
@@ -93,44 +103,44 @@ export default function NotificationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     paddingTop: 40,
     paddingLeft: 16,
     marginBottom: 12,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: '#CCCCCC',
+    borderColor: "#CCCCCC",
     borderRadius: 16,
     padding: 12,
     marginHorizontal: 16,
     marginBottom: 12,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 6,
   },
   sender: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   date: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   subject: {
     fontSize: 15,
-    color: '#333',
+    color: "#333",
   },
   buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 12,
   },
   button: {
