@@ -62,9 +62,8 @@
 
 <script>
 import { supabase } from '../../utils/supabase'
-import AthletesDrawer from '../components/AthletesDrawer.vue'
-import { uploadImageToSupabase } from '../../utils/athleteUtils';
-
+import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
+import { uploadImageToSupabase } from '../../utils/athleteUtils'
 
 export default {
   components: {
@@ -84,11 +83,11 @@ export default {
   },
   methods: {
     async getAthleteData(athleteID) {
-      let q = supabase.from('v_athlete').select('*');
+      let q = supabase.from('v_athlete').select('*')
 
       if (athleteID) q = q.eq('athleteID', athleteID).single()
 
-      const { data, error } = await q;
+      const { data, error } = await q
 
       if (error) {
         console.log(error)
@@ -119,22 +118,25 @@ export default {
       this.athleteDrawerVisible = true
     },
     async addAthlete(formData) {
+      const pfpUrl =
+        formData.pfp instanceof File
+          ? await uploadImageToSupabase(formData.pfp)
+          : formData.pfp || null
 
-      const pfpUrl = formData.pfp instanceof File
-        ? await uploadImageToSupabase(formData.pfp)
-        : formData.pfp || null;
-
-      const { data, error } = await supabase.from('t_athlete').insert([
-        {
-          name: formData.name,
-          birthdate: formData.birthdate,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          pfp: pfpUrl,
-          nationality: formData.nationality,
-          divisionID: formData.divisionID,
-        },
-      ]).select(`athleteID`)
+      const { data, error } = await supabase
+        .from('t_athlete')
+        .insert([
+          {
+            name: formData.name,
+            birthdate: formData.birthdate,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            pfp: pfpUrl,
+            nationality: formData.nationality,
+            divisionID: formData.divisionID,
+          },
+        ])
+        .select(`athleteID`)
 
       if (error) {
         console.log(error)
@@ -144,11 +146,46 @@ export default {
 
       const newAthlete = await this.getAthleteData(data[0].athleteID)
 
-      await this.getAthleteData();
+      await this.getAthleteData()
 
       this.selectedAthlete = newAthlete
       this.drawerMode = 'view'
       this.athleteDrawerVisible = true
+    },
+    async updateAthlete(formData) {
+      let pfpUrl = formData.pfp;
+
+      if (formData.pfp instanceof File)
+        pfpUrl = await uploadImageToSupabase(formData.pfp);
+
+      const { data, error } = await supabase.from('t_athlete').update([
+        {
+          name: formData.name,
+          birthdate: formData.birthdate,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          pfp: pfpUrl,
+          nationality: formData.nationality,
+          divisionID: formData.divisionID,
+        },
+      ])
+        .eq('athleteID', formData.athleteID)
+        .select()
+
+      if (error) {
+        console.log(error)
+        //! NAO ESQUECER TOASTER
+        return
+      }
+
+      const newAthlete = await this.getAthleteData(data[0].athleteID)
+
+      await this.getAthleteData()
+
+      this.selectedAthlete = newAthlete
+      this.drawerMode = 'view'
+      this.athleteDrawerVisible = true
+
     },
   },
 }
