@@ -1,15 +1,28 @@
 import { StyleSheet, View, Text } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.rectangleWrapper}>
         <View style={styles.rectangle}>
-      <Text style={styles.title}>Calendário</Text>
-      </View>
+          <Text style={styles.title}>Calendário</Text>
 
+          <Calendar
+            style={styles.calendar}
+            hideExtraDays={true} 
+            theme={{
+              backgroundColor: '#22333b',
+              calendarBackground: '#22333b',
+              textSectionTitleColor: '#ffffff',
+              dayTextColor: '#ffffff',
+              monthTextColor: '#ffffff',
+              arrowColor: '#ffffff',
+              todayTextColor: '#ff6347',
+            }}
+          />
+        </View>
       </View>
-
     </View>
   );
 }
@@ -20,11 +33,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-
   },
   rectangleWrapper: {
     width: '100%',
-    height: '50%',
+    height: '60%',
     overflow: 'hidden',        
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -37,8 +49,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#ffffff',
     paddingTop: 40,
     paddingLeft: 16,
-    color: '#ffffff'
+  },
+  calendar: {
+    borderRadius: 16,
   },
 });
