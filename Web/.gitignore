@@ -15,7 +15,7 @@ coverage
 *.local
 
 ### dotenv ###
-.env
+# .env
 
 /cypress/videos/
 /cypress/screenshots/
