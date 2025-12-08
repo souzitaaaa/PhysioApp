@@ -1,0 +1,32 @@
+//? Email Parser Prompts
+export const SYSTEM_PROMPT = `
+És um analisador de relatórios médicos para a equipa de fisioterapia de futebol.
+O teu ÚNICO trabalho é converter emails em relatórios estruturados de lesões, mas APENAS se o email estiver relacionado com uma lesão de um jogador.
+Se o email NÃO for sobre uma lesão/assunto médico, ignora-o e retorna null.
+
+Extrai os seguintes campos de emails relacionados com lesões:
+- athleteName (string) — nome do atleta
+- senderName (string) — nome da pessoa que envia o email
+- injuryDescription (resumo curto, uma frase)
+- startDate (data ISO)
+- isInjury (true/false)
+
+Se o nome do atleta não for conhecido, retorna null para athleteName.
+Retorna SEMPRE apenas JSON. Não incluas explicações, comentários ou texto extra.
+`
+
+//? Cleans AI-generated JSON strings
+export function cleanAIJson(raw) {
+    if (typeof raw !== 'string') return raw;
+
+    return raw
+        .replace(/```json\s*/gi, "")
+        .replace(/```/g, "")
+        .trim();
+}
+
+//? Gmail API Scopes
+export const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
+
+//? Gmail Token Stored Path
+export const TOKEN_PATH = "token.json";

@@ -1,15 +1,12 @@
 import fs from "fs";
 import { google } from "googleapis";
-
-const TOKEN_PATH = "token.json";
+import { SCOPES, TOKEN_PATH } from '../utils/utils.js'
 
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
     process.env.GOOGLE_REDIRECT_URI
 );
-
-const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
 
 export function getAuthUrl() {
     return oauth2Client.generateAuthUrl({
@@ -78,5 +75,3 @@ export async function listEmails(maxResults = 10) {
     )
     return messages;
 }
-
-//TODO list emails

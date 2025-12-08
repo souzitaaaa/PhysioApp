@@ -14,6 +14,7 @@
   "type": "module",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
+    "@google/generative-ai": "^0.24.1",
     "@googleapis/gmail": "^16.1.0",
     "@supabase/supabase-js": "^2.86.2",
     "cors": "^2.8.5",
