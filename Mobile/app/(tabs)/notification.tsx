@@ -7,35 +7,36 @@ import {
   ScrollView,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { supabase } from "../../scripts/supabase";
 import { useRouter } from "expo-router";
 
-type Email = {
-  emailID: number;
-  sender: string;
-  dateSended: string;
-  subject: string;
-};
+import { fetchAllInjuryRecords, InjuryRecord } from "../../services/injuryRecordService";
+import { fetchAthleteByID } from "../../services/athleteService"; 
 
 export default function NotificationScreen() {
-  const [emails, setEmails] = useState<Email[]>([]);
+  const [records, setRecords] = useState<InjuryRecord[]>([]);
   const [expandedID, setExpandedID] = useState<number | null>(null);
-
+  const [athleteNames, setAthleteNames] = useState<{ [key: number]: string }>({});
   const router = useRouter();
 
   useEffect(() => {
-    fetchEmails();
+    loadRecords();
   }, []);
 
-  async function fetchEmails() {
-    const { data, error } = await supabase.from<Email>("t_email").select("*");
+  async function loadRecords() {
+    const result = await fetchAllInjuryRecords();
+    setRecords(result);
 
-    if (error) {
-      console.log("Erro ao carregar emails:", error);
-      return;
+    // buscar os nomes dos atletas
+    const names: { [key: number]: string } = {};
+    for (const record of result) {
+      const athlete = await fetchAthleteByID(record.athleteID);
+      if (athlete) {
+        names[record.injuryRecordID] = athlete.name;
+      } else {
+        names[record.injuryRecordID] = `Athlete ${record.athleteID}`;
+      }
     }
-
-    setEmails(data || []);
+    setAthleteNames(names);
   }
 
   function toggleExpand(id: number) {
@@ -46,19 +47,20 @@ export default function NotificationScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Notificações</Text>
 
-      {emails.map((item) => {
-        const expanded = expandedID === item.emailID;
+      {records.map((item) => {
+        const expanded = expandedID === item.injuryRecordID;
+        const athleteName = athleteNames[item.injuryRecordID] || `Athlete ${item.athleteID}`;
 
         return (
           <TouchableOpacity
-            key={item.emailID}
+            key={item.injuryRecordID}
             style={styles.card}
             activeOpacity={0.8}
-            onPress={() => toggleExpand(item.emailID)}
+            onPress={() => toggleExpand(item.injuryRecordID)}
           >
             <View style={styles.row}>
-              <Text style={styles.sender}>{item.sender}</Text>
-              <Text style={styles.date}>{item.dateSended}</Text>
+              <Text style={styles.sender}>{athleteName}</Text>
+              <Text style={styles.date}>{item.dateStart}</Text>
             </View>
 
             <Text
@@ -66,29 +68,24 @@ export default function NotificationScreen() {
               numberOfLines={expanded ? undefined : 3}
               ellipsizeMode={expanded ? "clip" : "tail"}
             >
-              {item.subject}
+              {item.resume ?? "Sem resumo"}
             </Text>
 
             {expanded && (
               <View style={styles.buttonsRow}>
                 <View style={styles.button}>
                   <Button
-                    title="Notas"
+                    title="Histórico"
                     color="#22333B"
                     onPress={() => {
                       router.push({
-                        pathname: "/notes",
-                        params: { sender: item.sender },
+                        pathname: "/historical",
+                        params: { 
+                          athleteID: item.athleteID.toString(),
+                          athleteName: athleteName,
+                        },
                       });
                     }}
-                  />
-                </View>
-
-                <View style={styles.button}>
-                  <Button
-                    title="936 812 349"
-                    color="#22333B"
-                    onPress={() => console.log("936 812 349")}
                   />
                 </View>
               </View>
