@@ -1,13 +1,13 @@
 <template>
-  <Drawer :visible="visible" :closeOnEscape="!athleteDeleteModalVisible" position="right" class="w-1/2!" @update:visible="$emit('close')">
+  <Drawer :visible="visible" :closeOnEscape="!athleteDeleteModalVisible" position="right" class="w-1/2!"
+    @update:visible="$emit('close')">
     <template #container="{ closeCallback }">
       <div class="flex flex-col h-full">
 
         <!-- Header -->
         <div class="flex justify-end items-center gap-2 px-2 pt-2">
-          {{ JSON.stringify(formData, null, 2) }}
-          <Button v-if="mode === 'view'" icon="fa-solid fa-ellipsis-vertical" severity="contrast" text size="large"
-            @click="toggle" aria-haspopup="true" aria-controls="actions_menu" />
+          <Button v-if="mode === 'view'" icon="fa-solid fa-ellipsis-vertical" severity="contrast" text @click="toggle"
+            aria-haspopup="true" aria-controls="actions_menu" />
           <Menu ref="menu" id="actions_menu" :model="actions" :popup="true">
             <template #item="{ item, props }">
               <a v-ripple class="flex items-center justify-between w-full px-2 py-1" v-bind="props.item"
@@ -18,8 +18,10 @@
             </template>
           </Menu>
           <Button v-if="mode === 'view'" icon="fa-solid fa-xmark" severity="contrast" text @click="closeCallback"
-            size="large" v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
+            v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
         </div>
+        {{ JSON.stringify(formData, null, 2) }}
+        {{ JSON.stringify(accountableFormData, null, 2) }}
 
         <div class="flex-1 overflow-y-auto px-8">
           <!-- Secção 1 -->
@@ -43,12 +45,12 @@
             </div>
           </div>
 
-          <hr class="h-px my-8 line-hr" />
+          <hr class="h-px my-4 line-hr" />
 
           <!-- Secção 2 -->
           <span class="text-form-value text-lg font-medium!">Detalhes Pessoais</span>
 
-          <div class="space-y-2 mt-4">
+          <div class="space-y-1 mt-2">
             <!-- Email -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Email:</span>
@@ -117,37 +119,60 @@
             </p>
           </div>
 
-          <hr class="h-px my-8 line-hr" />
+          <hr class="h-px my-4 line-hr" />
 
           <!-- Secção 3 -->
-          <!-- <span class="text-form-value text-lg font-medium!">Detalhes dos Responsáveis</span>
-          <div class="space-y-2 mt-4">
-            <p>
-              <span class="text-form-title">Nome:</span>
-              <span class="text-form-value">idk</span>
-            </p>
-            <p>
-              <span class="text-form-title">Email:</span>
-              <span class="text-form-value">idk</span>
-            </p>
-            <p>
-              <span class="text-form-title">Telefone:</span>
-              <span class="text-form-value">idk</span>
-            </p>
-            <p>
-              <span class="text-form-title">Nome 2:</span>
-              <span class="text-form-value">idk</span>
-            </p>
-            <p>
-              <span class="text-form-title">Email 2:</span>
-              <span class="text-form-value">idk</span>
-            </p>
-            <p>
-              <span class="text-form-title">Telefone 2:</span>
-              <span class="text-form-value">idk</span>
-            </p>
-          </div> -->
+          <span class="text-form-value text-lg font-medium!">Detalhes dos Responsáveis</span>
+          <div class="space-y-1 mt-2">
+            <template v-for="(item, index) in accountableFormData" :key="index">
+
+              <p class="grid grid-cols-12 items-center gap-2">
+                <span class="text-form-title text-sm col-span-3">Nome {{ Number(index) + 1 }}:</span>
+              <div class="col-span-5">
+                <span v-if="mode === 'view'" class="text-form-value">{{ item.name }} </span>
+                <span v-if="mode === 'view'" class="text-form-value text-sm text-slate-600!"> ({{ item.relation }})
+                </span>
+
+                <div v-else>
+                  <InputText v-model="item.name" size="small" type="email"
+                    :invalid="!!errorsAccountables?.[index]?.name" fluid />
+                  <small v-if="errorsAccountables?.[index]?.name" class="text-red-600 text-xs">{{
+                    errorsAccountables?.[index]?.name }}</small>
+                </div>
+              </div>
+              </p>
+              <p class="grid grid-cols-12 items-center gap-2">
+                <span class="text-form-title text-sm col-span-3">Email {{ Number(index) + 1 }}:</span>
+              <div class="col-span-5">
+                <span v-if="mode === 'view'" class="text-form-value">{{ item.email }} </span>
+
+                <div v-else>
+                  <InputText v-model="item.email" size="small" type="email"
+                    :invalid="!!errorsAccountables?.[index]?.email" fluid />
+                  <small v-if="errorsAccountables?.[index]?.email" class="text-red-600 text-xs">{{
+                    errorsAccountables?.[index]?.email }}</small>
+                </div>
+              </div>
+              </p>
+              <p class="grid grid-cols-12 items-center gap-2">
+                <span class="text-form-title text-sm col-span-3">Telefone {{ Number(index) + 1 }}:</span>
+              <div class="col-span-5">
+                <span v-if="mode === 'view'" class="text-form-value">{{ item.phoneNumber }} </span>
+
+                <div v-else>
+                  <InputText v-model="item.phoneNumber" size="small" type="email"
+                    :invalid="!!errorsAccountables?.[index]?.phoneNumber" fluid />
+                  <small v-if="errorsAccountables?.[index]?.phoneNumber" class="text-red-600 text-xs">{{
+                    errorsAccountables?.[index]?.phoneNumber }}</small>
+                </div>
+              </div>
+              </p>
+
+            </template>
+          </div>
         </div>
+
+        <!-- Footer -->
         <div class="flex justify-end gap-3 px-4 pb-4 sticky">
           <!-- Cancelar -->
           <Button v-if="mode !== 'view'" icon="fa-solid fa-xmark" label="Cancelar" class="px-5" size="small"
@@ -165,12 +190,14 @@
     </template>
   </Drawer>
 
-  <AthletesModal :visible="athleteDeleteModalVisible" :athleteName="formData.name" @close="closeDeleteModal"></AthletesModal>
+  <AthletesModal :visible="athleteDeleteModalVisible" :athleteName="formData.name" @close="closeDeleteModal">
+  </AthletesModal>
 </template>
 
 <script>
-import { validateAthleteForm, getEmptyAthlete, getAuxDivisionData } from '../../../utils/athleteUtils';
+import { validateAthleteForm, validateAccountableForm, getEmptyAthlete, getAuxDivisionData, getEmptyAccountable } from '../../../utils/athleteUtils';
 import AthletesModal from './AthletesModal.vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -187,6 +214,7 @@ export default {
       default: 'view',
     },
   },
+  emits: ["close", "addAthlete", "updateAthlete"],
   data() {
     return {
       // Data Helpers
@@ -197,9 +225,12 @@ export default {
       divisions: [],
       // Main
       formData: null,
+      accountable: null,
+      accountableFormData: null,
       athleteDeleteModalVisible: false,
       // Helpers
       errors: {},
+      errorsAccountables: {}
     }
   },
   watch: {
@@ -210,6 +241,9 @@ export default {
     athlete: {
       handler(val) {
         this.formData = val ? { ...val } : getEmptyAthlete()
+        if (this.mode === 'view' && this.formData.athleteID)
+          this.loadAccountables(this.formData.athleteID);
+
       },
       immediate: true,
     },
@@ -220,6 +254,15 @@ export default {
   methods: {
     async loadDivions() {
       this.divisions = await getAuxDivisionData()
+    },
+    async loadAccountables(athleteID) {
+      let data = await axios.get(`http://localhost:3000/athletes/${athleteID}/accountables`)
+
+      //? Ver logica de erros
+      console.log("data: ", data)
+
+      this.accountable = data.data
+      this.accountableFormData = this.accountable ? { ...this.accountable } : getEmptyAccountable(athleteID)
     },
     toggle(event) {
       this.$refs.menu.toggle(event)
@@ -237,20 +280,31 @@ export default {
       if (this.mode === 'add') this.$emit('close')
       else if (this.mode === 'edit') {
         this.formData = this.athlete ? { ...this.athlete } : getEmptyAthlete()
+        this.accountableFormData = this.accountable ? { ...this.accountable } : getEmptyAccountable(this.athlete.athleteID)
         this.errors = {}
         this.$emit('update:mode', 'view')
       }
     },
     resetDrawer() {
       this.formData = this.athlete ? { ...this.athlete } : getEmptyAthlete()
+      console.log("this.athlete: ", this.athlete)
+      console.log("this.athlete: ", this.athlete)
+      this.accountableFormData = getEmptyAccountable()
       this.errors = {}
     },
     onFileSelect(event) {
       this.formData.pfp = event.files[0] || null
     },
+    async addAccountables(athleteID) {
+      let data = await axios.post(`http://localhost:3000/athletes/${athleteID}/accountables`, Object.values(this.accountableFormData))
+
+      this.accountable = data.data
+      this.accountableFormData = this.accountable ? { ...this.accountable } : getEmptyAccountable(athleteID)
+    },
     save() {
       this.errors = validateAthleteForm(this.formData)
-      if (Object.keys(this.errors).length > 0) return
+      this.errorsAccountables = validateAccountableForm(Object.values(this.accountableFormData))
+      if (Object.keys(this.errors).length > 0 || Object.keys(this.errorsAccountables).length > 0) return
 
       const birthdateObj = this.formData.birthdate instanceof Date
         ? this.formData.birthdate
@@ -261,7 +315,10 @@ export default {
         birthdate: birthdateObj.toISOString().split('T')[0]
       }
 
-      if (this.mode === 'add') this.$emit('add-athlete', payload)
+      if (this.mode === 'add') {
+        this.$emit('add-athlete', payload)
+        this.addAccountables(this.formData.athleteID)
+      }
       else if (this.mode === 'edit') this.$emit('update-athlete', payload)
 
       this.$emit('update:mode', 'view')

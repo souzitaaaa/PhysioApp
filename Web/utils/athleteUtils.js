@@ -24,6 +24,53 @@ export function validateAthleteForm(formData) {
   return errors
 }
 
+export function validateAccountableForm(accountableFormData = []) {
+  console.log(accountableFormData)
+  if (!Array.isArray(accountableFormData)) {
+    console.error('Expected an array for accountableFormData', accountableFormData)
+    return { 0: { name: 'Dados inválidos', email: 'Dados inválidos', phoneNumber: 'Dados inválidos' } }
+  }
+
+  const errors = {}
+
+  const hasAtLeastOneFilled = accountableFormData.some(element =>
+    element.name?.trim() ||
+    element.email?.trim() ||
+    String(element.phoneNumber || '').trim()
+  )
+
+  if (!hasAtLeastOneFilled) {
+    errors[0] = {
+      name: 'Pelo menos um responsável é obrigatório.',
+      email: 'Pelo menos um responsável é obrigatório.',
+      phoneNumber: 'Pelo menos um responsável é obrigatório.'
+    }
+    return errors
+  }
+
+  accountableFormData.forEach((element, index) => {
+    const itemErrors = {}
+    const name = element.name?.trim()
+    const email = element.email?.trim()
+    const phone = String(element.phoneNumber || '').trim()
+
+    const hasAnyField = name || email || phone
+
+    if (hasAnyField) {
+      if (!name) itemErrors.name = 'O nome é obrigatório.'
+      if (!email) itemErrors.email = 'O email é obrigatório.'
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) itemErrors.email = 'O email não é válido.'
+      if (!phone) itemErrors.phoneNumber = 'O número de telefone é obrigatório.'
+      else if (!/^\+?\d{9,15}$/.test(phone)) itemErrors.phoneNumber = 'Número de telefone inválido.'
+    }
+
+    if (Object.keys(itemErrors).length > 0) errors[index] = itemErrors
+  })
+
+  return errors
+}
+
+
 export function getEmptyAthlete() {
   return {
     name: '',
@@ -34,6 +81,25 @@ export function getEmptyAthlete() {
     nationality: '',
     divisionID: '',
   }
+}
+
+export function getEmptyAccountable(athleteID) {
+  return [
+    {
+      name: '',
+      email: '',
+      phoneNumber: '',
+      athleteID: athleteID ? athleteID : '',
+      relationID: '',
+    },
+    {
+      name: '',
+      email: '',
+      phoneNumber: '',
+      athleteID: athleteID ? athleteID : '',
+      relationID: '',
+    },
+  ]
 }
 
 export async function getAuxDivisionData() {

@@ -19,7 +19,7 @@
       </template>
     </Toolbar>
 
-    <DataTable ref="dt" :value="athletes" dataKey="athletesID" class="style-table">
+    <DataTable ref="dt" :value="athletes" stripedRows dataKey="athleteID" class="style-table" paginator :rows="7">
       <Column header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
@@ -64,6 +64,7 @@
 import { supabase } from '../../utils/supabase'
 import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
 import { uploadImageToSupabase } from '../../utils/athleteUtils'
+import axios from 'axios';
 
 export default {
   components: {
@@ -83,21 +84,17 @@ export default {
   },
   methods: {
     async getAthleteData(athleteID) {
-      let q = supabase.from('v_athlete').select('*')
+      let data;
+      if (athleteID)
+        data = await axios.get(`http://localhost:3000/athletes/${athleteID}`)
+      else
+        data = await axios.get(`http://localhost:3000/athletes`)
 
-      if (athleteID) q = q.eq('athleteID', athleteID).single()
+      //? Ver logica de erros
 
-      const { data, error } = await q
+      if (athleteID) return data.data
 
-      if (error) {
-        console.log(error)
-        //! NAO ESQUECER TOASTER
-        return
-      }
-
-      if (athleteID) return data
-
-      this.athletes = data
+      this.athletes = data.data
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
