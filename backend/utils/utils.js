@@ -30,3 +30,23 @@ export const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
 
 //? Gmail Token Stored Path
 export const TOKEN_PATH = "token.json";
+
+//? Update Accountable Payload
+const STRIP_FIELDS = ['_isNew', 'created_at', 'relation'];
+
+export function stripIsNew(data) {
+    const sanitize = obj =>
+        Object.fromEntries(
+            Object.entries(obj).filter(
+                ([key]) => !STRIP_FIELDS.includes(key)
+            )
+        );
+
+    if (Array.isArray(data)) {
+        return data.map(sanitize);
+    }
+
+    return sanitize(data);
+}
+
+

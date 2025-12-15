@@ -1,4 +1,6 @@
 import { supabase } from './supabase'
+import axios from 'axios';
+import { safeGet } from './utils.js'
 
 export function validateAthleteForm(formData) {
   const errors = {}
@@ -25,7 +27,6 @@ export function validateAthleteForm(formData) {
 }
 
 export function validateAccountableForm(accountableFormData = []) {
-  console.log(accountableFormData)
   if (!Array.isArray(accountableFormData)) {
     console.error('Expected an array for accountableFormData', accountableFormData)
     return { 0: { name: 'Dados inválidos', email: 'Dados inválidos', phoneNumber: 'Dados inválidos' } }
@@ -36,14 +37,16 @@ export function validateAccountableForm(accountableFormData = []) {
   const hasAtLeastOneFilled = accountableFormData.some(element =>
     element.name?.trim() ||
     element.email?.trim() ||
-    String(element.phoneNumber || '').trim()
+    String(element.phoneNumber || '').trim() ||
+    element.relationID
   )
 
   if (!hasAtLeastOneFilled) {
     errors[0] = {
       name: 'Pelo menos um responsável é obrigatório.',
       email: 'Pelo menos um responsável é obrigatório.',
-      phoneNumber: 'Pelo menos um responsável é obrigatório.'
+      phoneNumber: 'Pelo menos um responsável é obrigatório.',
+      relation: 'Obrigatório.'
     }
     return errors
   }
@@ -53,8 +56,9 @@ export function validateAccountableForm(accountableFormData = []) {
     const name = element.name?.trim()
     const email = element.email?.trim()
     const phone = String(element.phoneNumber || '').trim()
+    const relation = element.relationID
 
-    const hasAnyField = name || email || phone
+    const hasAnyField = name || email || phone || relation
 
     if (hasAnyField) {
       if (!name) itemErrors.name = 'O nome é obrigatório.'
@@ -62,6 +66,7 @@ export function validateAccountableForm(accountableFormData = []) {
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) itemErrors.email = 'O email não é válido.'
       if (!phone) itemErrors.phoneNumber = 'O número de telefone é obrigatório.'
       else if (!/^\+?\d{9,15}$/.test(phone)) itemErrors.phoneNumber = 'Número de telefone inválido.'
+      if (!relation) itemErrors.relation = 'Obrigatório.'
     }
 
     if (Object.keys(itemErrors).length > 0) errors[index] = itemErrors
@@ -69,7 +74,6 @@ export function validateAccountableForm(accountableFormData = []) {
 
   return errors
 }
-
 
 export function getEmptyAthlete() {
   return {
@@ -100,13 +104,6 @@ export function getEmptyAccountable(athleteID) {
       relationID: '',
     },
   ]
-}
-
-export async function getAuxDivisionData() {
-  const { data, error } = await supabase.from('taux_division').select()
-
-  if (error) return []
-  return data
 }
 
 export async function uploadImageToSupabase(file, folder = 'athlete-images') {

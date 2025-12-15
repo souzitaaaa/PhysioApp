@@ -57,7 +57,7 @@
     </DataTable>
   </div>
   <AthletesDrawer :visible="athleteDrawerVisible" :athlete="selectedAthlete" :mode="drawerMode" @close="closeDrawer"
-    @add-athlete="addAthlete" @update-athlete="updateAthlete" @update:mode="drawerMode = $event"></AthletesDrawer>
+    @add-athlete="handleAddAthlete" @update-athlete="updateAthlete" @update:mode="drawerMode = $event"></AthletesDrawer>
 </template>
 
 <script>
@@ -65,6 +65,7 @@ import { supabase } from '../../utils/supabase'
 import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
 import { uploadImageToSupabase } from '../../utils/athleteUtils'
 import axios from 'axios';
+import { safeGet } from '../../utils/utils.js'
 
 export default {
   components: {
@@ -84,25 +85,24 @@ export default {
   },
   methods: {
     async getAthleteData(athleteID) {
-      let data;
-      if (athleteID)
-        data = await axios.get(`http://localhost:3000/athletes/${athleteID}`)
-      else
-        data = await axios.get(`http://localhost:3000/athletes`)
+      const endpoint = athleteID
+        ? `http://localhost:3000/athletes/${athleteID}`
+        : `http://localhost:3000/athletes`;
 
-      //? Ver logica de erros
+      const data = await safeGet(axios.get(endpoint), athleteID ? null : []);
 
-      if (athleteID) return data.data
+      if (athleteID) return data;
 
-      this.athletes = data.data
+      this.athletes = data;
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
-    closeDrawer() {
+    async closeDrawer() {
       this.selectedAthlete = null
       this.drawerMode = 'view'
       this.athleteDrawerVisible = false
+      await this.getAthleteData();
     },
     createAthleteDrawer() {
       this.selectedAthlete = null
@@ -113,6 +113,10 @@ export default {
       this.selectedAthlete = athleteData
       this.drawerMode = 'view'
       this.athleteDrawerVisible = true
+    },
+    async handleAddAthlete(payload, callback) {
+      const athleteID = await this.addAthlete(payload);
+      if (callback) callback(athleteID);
     },
     async addAthlete(formData) {
       const pfpUrl =
@@ -142,14 +146,15 @@ export default {
       }
 
       const newAthlete = await this.getAthleteData(data[0].athleteID)
-
       await this.getAthleteData()
 
       this.selectedAthlete = newAthlete
       this.drawerMode = 'view'
       this.athleteDrawerVisible = true
+
+      return data[0].athleteID
     },
-    async updateAthlete(formData) {
+    async updateAthlete(formData, callback) {
       let pfpUrl = formData.pfp;
 
       if (formData.pfp instanceof File)
@@ -171,9 +176,11 @@ export default {
 
       if (error) {
         console.log(error)
-        //! NAO ESQUECER TOASTER
         return
       }
+
+      if (callback)
+        await callback();
 
       const newAthlete = await this.getAthleteData(data[0].athleteID)
 

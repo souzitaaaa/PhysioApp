@@ -124,7 +124,7 @@
           <!-- Secção 3 -->
           <span class="text-form-value text-lg font-medium!">Detalhes dos Responsáveis</span>
           <div class="space-y-1 mt-2">
-            <template v-for="(item, index) in accountableFormData" :key="index">
+            <template v-for="(item, index) in viewAccountables" :key="index">
 
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">Nome {{ Number(index) + 1 }}:</span>
@@ -140,12 +140,18 @@
                     errorsAccountables?.[index]?.name }}</small>
                 </div>
               </div>
+              <div v-if="mode === 'edit' || mode === 'add'" class="col-span-3">
+                <Select v-model="item.relationID" :options="relations" optionLabel="relation" placeholder="Parentesco"
+                  optionValue="relationID" size="small" :invalid="!!errorsAccountables?.[index]?.relation" fluid />
+                <small v-if="errorsAccountables?.[index]?.relation" class="text-red-600 text-xs">{{
+                  errorsAccountables?.[index]?.relation }}</small>
+              </div>
               </p>
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">Email {{ Number(index) + 1 }}:</span>
+
               <div class="col-span-5">
                 <span v-if="mode === 'view'" class="text-form-value">{{ item.email }} </span>
-
                 <div v-else>
                   <InputText v-model="item.email" size="small" type="email"
                     :invalid="!!errorsAccountables?.[index]?.email" fluid />
@@ -190,14 +196,16 @@
     </template>
   </Drawer>
 
-  <AthletesModal :visible="athleteDeleteModalVisible" :athleteName="formData.name" @close="closeDeleteModal">
+  <AthletesModal :visible="athleteDeleteModalVisible" :athlete="formData" @deleted="handleAthleteDeleted"
+    @close="closeDeleteModal">
   </AthletesModal>
 </template>
 
 <script>
-import { validateAthleteForm, validateAccountableForm, getEmptyAthlete, getAuxDivisionData, getEmptyAccountable } from '../../../utils/athleteUtils';
+import { validateAthleteForm, validateAccountableForm, getEmptyAthlete, getEmptyAccountable } from '../../../utils/athleteUtils';
 import AthletesModal from './AthletesModal.vue';
 import axios from 'axios';
+import { safeGet, getAuxTable } from '../../../utils/utils.js'
 
 export default {
   components: {
@@ -223,6 +231,7 @@ export default {
         { label: 'Apagar', icon: 'fa-solid fa-trash-can', command: () => this.showDeleteConfirmation() },
       ],
       divisions: [],
+      relations: [],
       // Main
       formData: null,
       accountable: null,
@@ -248,21 +257,50 @@ export default {
       immediate: true,
     },
   },
+  computed: {
+    viewAccountables() {
+      if (this.mode === 'view') {
+        return this.accountableFormData.filter(item => !item._isNew && (item.name || item.relation));
+      }
+      return this.accountableFormData;
+    }
+  },
   mounted() {
     this.loadDivions()
+    this.loadRelations()
   },
   methods: {
     async loadDivions() {
-      this.divisions = await getAuxDivisionData()
+      this.divisions = await getAuxTable('divisions')
+    },
+    async loadRelations() {
+      this.relations = await getAuxTable('relations')
     },
     async loadAccountables(athleteID) {
-      let data = await axios.get(`http://localhost:3000/athletes/${athleteID}/accountables`)
+      const data = await safeGet(
+        axios.get(`http://localhost:3000/athletes/${athleteID}/accountables`),
+        []
+      );
 
-      //? Ver logica de erros
-      console.log("data: ", data)
+      this.accountable = data;
 
-      this.accountable = data.data
-      this.accountableFormData = this.accountable ? { ...this.accountable } : getEmptyAccountable(athleteID)
+      const maxAccountables = 2;
+      this.accountableFormData = [];
+
+      for (let i = 0; i < maxAccountables; i++) {
+        if (data[i]) {
+          this.accountableFormData.push({ ...data[i], _isNew: false });
+        } else {
+          this.accountableFormData.push({
+            name: '',
+            email: '',
+            phoneNumber: '',
+            relationID: null,
+            athleteID,
+            _isNew: true
+          });
+        }
+      }
     },
     toggle(event) {
       this.$refs.menu.toggle(event)
@@ -276,32 +314,72 @@ export default {
     closeDeleteModal() {
       this.athleteDeleteModalVisible = false;
     },
+    handleAthleteDeleted() {
+      this.athleteDeleteModalVisible = false;
+      this.$emit('close');
+    },
     cancelAction() {
       if (this.mode === 'add') this.$emit('close')
       else if (this.mode === 'edit') {
         this.formData = this.athlete ? { ...this.athlete } : getEmptyAthlete()
         this.accountableFormData = this.accountable ? { ...this.accountable } : getEmptyAccountable(this.athlete.athleteID)
         this.errors = {}
+        this.errorsAccountables = {}
         this.$emit('update:mode', 'view')
       }
     },
     resetDrawer() {
       this.formData = this.athlete ? { ...this.athlete } : getEmptyAthlete()
-      console.log("this.athlete: ", this.athlete)
-      console.log("this.athlete: ", this.athlete)
       this.accountableFormData = getEmptyAccountable()
       this.errors = {}
+      this.errorsAccountables = {}
     },
     onFileSelect(event) {
       this.formData.pfp = event.files[0] || null
     },
     async addAccountables(athleteID) {
-      let data = await axios.post(`http://localhost:3000/athletes/${athleteID}/accountables`, Object.values(this.accountableFormData))
+      const payload = Object.values(this.accountableFormData).filter(
+        item => item.name || item.email || item.phoneNumber || item.relationID
+      );
 
-      this.accountable = data.data
-      this.accountableFormData = this.accountable ? { ...this.accountable } : getEmptyAccountable(athleteID)
+      if (payload.length === 0) return;
+
+      await axios.post(
+        `http://localhost:3000/athletes/${athleteID}/accountables`,
+        payload
+      );
+
+      await this.loadAccountables(athleteID);
     },
-    save() {
+    async saveAccountables() {
+      const updates = [];
+      const additions = [];
+
+      this.accountableFormData.forEach(item => {
+        if (item._isNew) {
+          if (item.name || item.email || item.phoneNumber || item.relationID)
+            additions.push(item);
+        } else
+          updates.push(item);
+      });
+
+      for (const acc of updates) {
+        await axios.put(
+          `http://localhost:3000/athletes/${this.formData.athleteID}/accountables/${acc.accountableID}`,
+          acc
+        );
+      }
+
+      if (additions.length > 0) {
+        await axios.post(
+          `http://localhost:3000/athletes/${this.formData.athleteID}/accountables`,
+          additions
+        );
+      }
+
+      await this.loadAccountables(this.formData.athleteID);
+    },
+    async save() {
       this.errors = validateAthleteForm(this.formData)
       this.errorsAccountables = validateAccountableForm(Object.values(this.accountableFormData))
       if (Object.keys(this.errors).length > 0 || Object.keys(this.errorsAccountables).length > 0) return
@@ -316,12 +394,20 @@ export default {
       }
 
       if (this.mode === 'add') {
-        this.$emit('add-athlete', payload)
-        this.addAccountables(this.formData.athleteID)
+        this.$emit('addAthlete', payload, async (athleteID) => {
+          console.log("athleteID: ", athleteID);
+          await this.addAccountables(athleteID);
+          this.$emit('update:mode', 'view')
+        });
       }
-      else if (this.mode === 'edit') this.$emit('update-athlete', payload)
+      else if (this.mode === 'edit') {
+        this.$emit('updateAthlete', payload, async () => {
+          console.log("entrou");
+          await this.saveAccountables();
+          this.$emit('update:mode', 'view')
+        });
+      }
 
-      this.$emit('update:mode', 'view')
     }
   },
 }
