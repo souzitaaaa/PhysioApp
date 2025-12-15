@@ -8,14 +8,25 @@ export type InjuryRecord = {
   statusID: number;
   errorSpecID: number;
   dateStart: string;
-  dateEnd: string;
+  dateEnd: string | null;
   title: string;
+  taux_status?: {
+    status: string;
+  };
 };
 
-export async function fetchInjuryRecordsByAthlete(athleteID: number): Promise<InjuryRecord[]> {
+
+export async function fetchInjuryRecordsByAthlete(
+  athleteID: number
+): Promise<InjuryRecord[]> {
   const { data, error } = await supabase
     .from("t_injury_record")
-    .select("*")
+    .select(`
+      *,
+      taux_status (
+        status
+      )
+    `)
     .eq("athleteID", athleteID)
     .order("dateStart", { ascending: false });
 
@@ -26,6 +37,7 @@ export async function fetchInjuryRecordsByAthlete(athleteID: number): Promise<In
 
   return data || [];
 }
+
 
 
 export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
@@ -41,3 +53,39 @@ export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
 
   return data || [];
 }
+
+
+export async function fetchInjuryRecordById(injuryRecordID: number): Promise<InjuryRecord | null> {
+  const { data, error } = await supabase
+    .from("t_injury_record")
+    .select("*")
+    .eq("injuryRecordID", injuryRecordID)
+    .single();
+
+  if (error) {
+    console.log("Erro ao carregar registo da lesão:", error);
+    return null;
+  }
+
+  return data;
+}
+
+
+export async function closeInjuryRecord(
+  injuryRecordID: number,
+  dateEnd: string
+) {
+  const { error } = await supabase
+    .from("t_injury_record")
+    .update({
+      dateEnd,
+      statusID: 2, // fechado
+    })
+    .eq("injuryRecordID", injuryRecordID);
+
+  if (error) {
+    console.log("Erro ao fechar registo:", error);
+    throw error;
+  }
+}
+

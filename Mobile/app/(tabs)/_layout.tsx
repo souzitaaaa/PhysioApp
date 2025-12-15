@@ -1,7 +1,10 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+
+import { styles } from "../../css/_layout"
+
 
 export default function TabLayout() {
   return (
@@ -88,35 +91,19 @@ export default function TabLayout() {
               href: null, 
         }}
       />
+      <Tabs.Screen
+        name="add-note"
+        options={{
+              href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="end-note"
+        options={{
+              href: null, 
+        }}
+      />
     </Tabs>
   );
 }
 
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: "#f0f0f0",
-    height: 80,
-    borderTopWidth: 0,
-    elevation: 0,
-  },
-
-  tabItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-
-    width: 120,     
-    height: 45,    
-    borderRadius: 16,
-    marginTop: 32,
-  },
-
-  tabItemActive: {
-    backgroundColor: "#22333b", 
-  },
-
-  tabText: {
-    fontSize: 12,
-    marginLeft: 6,
-  },
-});

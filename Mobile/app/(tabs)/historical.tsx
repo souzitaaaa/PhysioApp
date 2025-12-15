@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  StyleSheet,
   View,
   Text,
   TouchableOpacity,
@@ -15,6 +14,10 @@ import {
   InjuryRecord,
 } from "../../services/injuryRecordService";
 
+import { fetchNotesByRecord } from "../../services/noteService";
+
+import { styles } from "../../css/historical";
+
 export default function HistoricalScreen() {
   const { athleteID, athleteName } = useLocalSearchParams<{
     athleteID: string;
@@ -26,6 +29,7 @@ export default function HistoricalScreen() {
   const [records, setRecords] = useState<InjuryRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [notes, setNotes] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
     if (athleteID) loadHistory();
@@ -38,8 +42,14 @@ export default function HistoricalScreen() {
     setLoading(false);
   }
 
-  function toggleExpand(id: number) {
-    setExpanded(expanded === id ? null : id);
+  async function toggleExpand(id: number) {
+    const newValue = expanded === id ? null : id;
+    setExpanded(newValue);
+
+    if (newValue) {
+      const n = await fetchNotesByRecord(id);
+      setNotes((prev) => ({ ...prev, [id]: n }));
+    }
   }
 
   return (
@@ -69,6 +79,7 @@ export default function HistoricalScreen() {
         {!loading &&
           records.map((item) => {
             const isOpen = expanded === item.injuryRecordID;
+            const isClosed = item.statusID === 2;
 
             return (
               <TouchableOpacity
@@ -81,7 +92,7 @@ export default function HistoricalScreen() {
                 <View style={styles.rowBetween}>
                   <Text style={styles.noteTitle}>{item.title}</Text>
                   <Text style={styles.noteDates}>
-                    {item.dateStart} — {item.dateEnd}
+                    {item.dateStart} — {item.taux_status?.status}
                   </Text>
                 </View>
 
@@ -91,17 +102,66 @@ export default function HistoricalScreen() {
                     <Text style={{ fontWeight: "600" }}>Resumo:</Text>
                     <Text>{item.resume}</Text>
 
-                    <View style={styles.buttonsRow}>
-                      <TouchableOpacity style={styles.btn}>
-                        <Text style={styles.btnText}>Adicionar Nota</Text>
-                      </TouchableOpacity>
+                    {/* Notas */}
+                    {notes[item.injuryRecordID] && (
+                      <View style={{ marginTop: 12 }}>
+                        <Text style={{ fontWeight: "600", marginBottom: 6 }}>
+                          Notas:
+                        </Text>
 
-                      <TouchableOpacity
-                        style={[styles.btn, { backgroundColor: "#d9534f" }]}
-                      >
-                        <Text style={styles.btnText}>Acabar</Text>
-                      </TouchableOpacity>
-                    </View>
+                        {notes[item.injuryRecordID].map((note) => (
+                          <View
+                            key={note.noteID}
+                            style={{
+                              padding: 10,
+                              borderWidth: 1,
+                              borderColor: "#DDD",
+                              borderRadius: 8,
+                              marginBottom: 6,
+                            }}
+                          >
+                            <Text style={{ fontWeight: "500" }}>
+                              {note.date}
+                            </Text>
+                            <Text>{note.text}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                    {!isClosed && (
+                      <View style={styles.buttonsRow}>
+                        <TouchableOpacity
+                          style={styles.btn}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/add-note",
+                              params: { injuryRecordID: item.injuryRecordID },
+                            })
+                          }
+                        >
+                          <Text style={styles.btnText}>Adicionar Nota</Text>
+                          <Ionicons name="add" size={20} color="#000" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.btn}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/end-note",
+                              params: { injuryRecordID: item.injuryRecordID },
+                            })
+                          }
+                        >
+                          <Text style={styles.btnText}>Acabar</Text>
+                          <Ionicons
+                            name="log-out-outline"
+                            size={20}
+                            color="#000"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
                 )}
               </TouchableOpacity>
@@ -111,87 +171,3 @@ export default function HistoricalScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f0f0f0",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    paddingTop: 40,
-    paddingLeft: 16,
-    marginBottom: 12,
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 16,
-    padding: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    minHeight: 640,
-  },
-  card_note: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 16,
-    padding: 12,
-    marginTop: 12,
-  },
-  noteTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  noteDates: {
-    fontSize: 14,
-    color: "#555",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    padding: 8,
-    borderRadius: 16,
-    backgroundColor: "#CDCDCD",
-  },
-  backText: {
-    fontSize: 16,
-    color: "#000000",
-    fontWeight: "500",
-  },
-  Text: {
-    fontSize: 16,
-    color: "#000000",
-    fontWeight: "600",
-  },
-  buttonsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 12,
-  },
-  btn: {
-    backgroundColor: "#0275d8",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-  },
-  btnText: {
-    color: "#FFF",
-    fontWeight: "600",
-  },
-  rowBetween: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-});

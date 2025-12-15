@@ -1,59 +1,105 @@
-import { StyleSheet, View, Text } from 'react-native';
-import { Calendar } from 'react-native-calendars';
+import { View, Text, ScrollView } from "react-native";
+import { Calendar } from "react-native-calendars";
+import { useEffect, useState } from "react";
+import { fetchAllReminders, Reminder } from "../../services/reminderService";
+
+
+import { styles } from "../../css/calendar"
+
+
 
 export default function HomeScreen() {
+  const today = new Date().toISOString().split("T")[0]; 
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
+  const [selectedDate, setSelectedDate] = useState<string>(today); 
+
+  useEffect(() => {
+    loadReminders();
+  }, []);
+
+  const loadReminders = async () => {
+    const allReminders = await fetchAllReminders();
+    setReminders(allReminders);
+
+    const marks = allReminders.reduce((acc, reminder) => {
+      acc[reminder.date] = {
+        marked: true,
+        dotColor: "#ff6347",
+      };
+      return acc;
+    }, {} as Record<string, any>);
+
+    setMarkedDates(marks);
+  };
+
+  const remindersOfSelectedDate = reminders.filter(
+    (r) => r.date === selectedDate
+  );
+
   return (
     <View style={styles.container}>
+      {/* CALENDAR */}
       <View style={styles.rectangleWrapper}>
         <View style={styles.rectangle}>
           <Text style={styles.title}>Calendário</Text>
 
           <Calendar
             style={styles.calendar}
-            hideExtraDays={true} 
+            hideExtraDays={true}
+            markedDates={{
+              ...markedDates,
+              [selectedDate]: {
+                ...markedDates[selectedDate],
+                selected: true,
+                selectedColor: "#ff6347",
+              },
+            }}
+            onDayPress={(day) => setSelectedDate(day.dateString)}
             theme={{
-              backgroundColor: '#22333b',
-              calendarBackground: '#22333b',
-              textSectionTitleColor: '#ffffff',
-              dayTextColor: '#ffffff',
-              monthTextColor: '#ffffff',
-              arrowColor: '#ffffff',
-              todayTextColor: '#ff6347',
+              backgroundColor: "#22333b",
+              calendarBackground: "#22333b",
+              textSectionTitleColor: "#ffffff",
+              dayTextColor: "#ffffff",
+              monthTextColor: "#ffffff",
+              arrowColor: "#ffffff",
+              todayTextColor: "#ff6347",
             }}
           />
         </View>
+      </View>
+
+      {/* REMINDERS FOR SELECTED DAY */}
+      <View style={styles.remindersContainer}>
+        <Text style={styles.remindersTitle}>
+          {selectedDate ? `Lembrete de ${selectedDate}` : "Selecione um dia"}
+        </Text>
+
+        <ScrollView style={styles.reminderList}>
+          {selectedDate && remindersOfSelectedDate.length === 0 && (
+            <Text style={styles.noRemindersText}>
+              Nenhum lembrete neste dia
+            </Text>
+          )}
+
+          {remindersOfSelectedDate.map((r) => (
+            <View key={r.reminderID} style={styles.reminderRow}>
+              {/* Lado esquerdo: hora */}
+              <View style={styles.timeBox}>
+                <Text style={styles.timeText}>{r.timeStart?.slice(0,5) ?? "--:--"}</Text>
+                <Text style={styles.timeText}>{r.timeEnd?.slice(0,5) ?? "--:--"}</Text>
+              </View>
+
+              {/* Lado direito: title */}
+              <View style={styles.titleBox}>
+                <Text style={styles.titleText}>{r.title}</Text>
+              </View>
+            </View>
+          ))}
+
+        </ScrollView>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-  },
-  rectangleWrapper: {
-    width: '100%',
-    height: '60%',
-    overflow: 'hidden',        
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    marginBottom: 16,
-  },
-  rectangle: {
-    flex: 1,
-    backgroundColor: '#22333b',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    paddingTop: 40,
-    paddingLeft: 16,
-  },
-  calendar: {
-    borderRadius: 16,
-  },
-});
