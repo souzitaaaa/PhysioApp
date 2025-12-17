@@ -1,40 +1,66 @@
 <template>
   <div class="flex h-1/2 mb-6">
     <div class="w-full">
-      <DataTable ref="dt">
-        <template #header>
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="text-xl font-bold">Email</span>
-          </div>
-        </template>
-        <Column field="name" header="Nome">
-          <template #body="{ data }">
-            <div class="flex items-center gap-2">
-              <div class="flex flex-col">
-              </div>
-            </div>
-          </template>
-        </Column>
-        <Column header="Email">
-          <template #body="{ data }">
-            <div class="flex flex-col">
-            </div>
-          </template>
-        </Column>
-        <Column header="Estado">
-          <template #body="{ data }">
-            <div class="flex items-center gap-2">
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-    </div>
-  </div>
+  <DataTable ref="dt" :value="athletes" dataKey="athletesID" class="style-table h-full" paginator :rows="3">
+    <template #header>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xl font-bold">Atletas</span>
+      </div>
+    </template>
 
+    <!-- Coluna de Nome e Avatar -->
+    <Column field="name" header="Nome">
+      <template #body="{ data }">
+        <div class="flex items-center gap-2">
+          <Avatar
+            :image="data.pfp"
+            class="mr-2"
+            style="background-color: #ece9fc; color: #2a1261"
+            shape="circle"
+          />
+          <div class="flex flex-col">
+            <span class="truncate">{{ data.name }}</span>
+            <span class="truncate">{{ data.taux_division?.division }}</span>
+          </div>
+        </div>
+      </template>
+    </Column>
+
+    <!-- Coluna de Resumo de Lesão -->
+    <Column header="Email">
+      <template #body="{ data }">
+        <div class="flex flex-col overflow-hidden">
+          <span class="truncate">{{ data.t_injury_record?.[0]?.resume ?? "nadinha" }}</span>
+        </div>
+      </template>
+    </Column>
+
+    <!-- Coluna de Status -->
+    <Column header="Estado">
+      <template #body="{ data }">
+        <div class="flex items-center gap-2">
+          <span class="truncate">{{ data.t_injury_record?.[0]?.taux_status?.status ?? "nadinha" }}</span>
+        </div>
+      </template>
+    </Column>
+  </DataTable>
+</div>
+
+
+
+  </div>
   <div class="flex h-1/2">
     <div class="w-1/2 mr-3">
-      <DataTable ref="dt" :value="athletes" dataKey="athletesID" class="style-table h-full" paginator :rows="4"
-        scrollable scrollHeight="flex">
+      <DataTable
+        ref="dt"
+        :value="athletes"
+        dataKey="athletesID"
+        class="style-table h-full"
+        paginator
+        :rows="4"
+        scrollable
+        scrollHeight="flex"
+      >
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span class="text-xl font-bold">Atletas</span>
@@ -43,7 +69,12 @@
         <Column field="name" header="Nome">
           <template #body="{ data }">
             <div class="flex items-center gap-2">
-              <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
+              <Avatar
+                :image="data.pfp"
+                class="mr-2"
+                style="background-color: #ece9fc; color: #2a1261"
+                shape="circle"
+              />
               <span>{{ data.name }}</span>
             </div>
           </template>
@@ -76,7 +107,12 @@
         <Column field="name" header="Nome">
           <template #body="{ data }">
             <div class="flex items-center gap-2">
-              <Avatar icon="pi pi-user" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
+              <Avatar
+                icon="pi pi-user"
+                class="mr-2"
+                style="background-color: #ece9fc; color: #2a1261"
+                shape="circle"
+              />
               <span>{{ data.name }}</span>
             </div>
           </template>
@@ -104,27 +140,71 @@
 <script>
 import { supabase } from '../../utils/supabase'
 
-
 export default {
   components: {},
   data() {
     return {
       athletes: [],
+      injuryRecords: [],
     }
   },
   watch: {},
   mounted() {
     this.getAthleteData()
+    this.getInjuryRecords()
   },
   methods: {
-    async getAthleteData() {
-      const { data } = await supabase.from('t_athlete').select(`*,
-                                      taux_division ( division )`)
-      this.athletes = data
-    },
-    exportCSV() {
-      this.$refs.dt.exportCSV()
-    },
-  },
+  async getInjuryRecords() {
+  const { data, error } = await supabase
+    .from('t_injury_record')
+    .select(`
+      id,
+      resume,
+      statusID,
+      athleteID,
+      taux_status (
+        status
+      )
+    `)
+
+  if (error) {
+    console.error('Erro ao buscar lesões:', error)  
+    return
+  }
+
+  console.log('Lesões recebidas:', data) 
+
+  this.injuryRecords = data
+}
+,
+
+  async getAthleteData() {
+  const { data, error } = await supabase
+    .from('t_athlete')
+    .select(`
+      *,
+      taux_division (
+        division
+      ),
+      t_injury_record (
+        resume,
+        taux_status (
+          status
+        )
+      )
+    `)
+
+  if (error) {
+    console.error('Erro ao buscar atletas:', error)
+    return
+  }
+
+  console.log('Atletas recebidos:', data)
+
+  this.athletes = data
+}
+,
+}
+
 }
 </script>
