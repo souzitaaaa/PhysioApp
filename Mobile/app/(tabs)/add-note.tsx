@@ -1,4 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator} from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,8 +18,7 @@ import {
 } from "../../services/injuryRecordService";
 import { createReminder } from "../../services/reminderService";
 
-
-import { styles } from "../../css/add-note"
+import { styles } from "../../css/add-note";
 
 export default function AddNoteScreen() {
   const { injuryRecordID } = useLocalSearchParams<{ injuryRecordID: string }>();
@@ -86,6 +92,9 @@ export default function AddNoteScreen() {
       <Text style={styles.title}>Adicionar Nota</Text>
 
       <View style={styles.card}>
+        
+        <Text style={styles.titleHistorical}>Histórico</Text>
+
         <Text style={styles.label}>Tipo de Lesão:</Text>
         <Text style={styles.infoText}>{injury?.title}</Text>
 
@@ -103,6 +112,8 @@ export default function AddNoteScreen() {
           value={text}
           onChangeText={setText}
         />
+
+        <Text style={styles.titleReminder}>Lembrete</Text>
 
         <Text style={styles.label}>Título do Lembrete:</Text>
         <TextInput
@@ -131,20 +142,36 @@ export default function AddNoteScreen() {
           />
         )}
 
-        <Text style={styles.label}>Hora de Início:</Text>
-        <TouchableOpacity
-          style={styles.pickerButton}
-          onPress={() => setShowStartPicker(true)}
-        >
-          <Text>
-            {timeStart
-              ? timeStart.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "Selecionar hora"}
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.label}>Hora de Início e Fim:</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <TouchableOpacity
+            style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
+            onPress={() => setShowStartPicker(true)}
+          >
+            <Text>
+              {timeStart
+                ? timeStart.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Selecionar início"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
+            onPress={() => setShowEndPicker(true)}
+          >
+            <Text>
+              {timeEnd
+                ? timeEnd.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Selecionar fim"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {showStartPicker && (
           <DateTimePicker
@@ -156,21 +183,6 @@ export default function AddNoteScreen() {
             }}
           />
         )}
-
-        <Text style={styles.label}>Hora de Fim:</Text>
-        <TouchableOpacity
-          style={styles.pickerButton}
-          onPress={() => setShowEndPicker(true)}
-        >
-          <Text>
-            {timeEnd
-              ? timeEnd.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "Selecionar hora"}
-          </Text>
-        </TouchableOpacity>
 
         {showEndPicker && (
           <DateTimePicker

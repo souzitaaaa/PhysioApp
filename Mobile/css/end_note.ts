@@ -28,8 +28,18 @@ export const styles = StyleSheet.create({
     borderColor: "#CCC",
     borderRadius: 8,
     padding: 12,
-    minHeight: 120,
+    minHeight: 60,
     marginBottom: 16,
+  },
+   titleHistorical: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  titleReminder: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
   },
   infoText: {
     fontSize: 16,
@@ -64,5 +74,20 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 12,
+  },
+  inputReminder: {
+    borderWidth: 1,
+    borderColor: "#CCC",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  pickerButton: {
+    borderWidth: 1,
+    borderColor: "#CCC",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: "#FAFAFA",
   },
 });

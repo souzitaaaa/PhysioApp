@@ -20,6 +20,18 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
+  titleHistorical: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+
+  titleReminder: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+
   card: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,

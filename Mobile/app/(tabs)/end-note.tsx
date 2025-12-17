@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createNote } from "../../services/noteService";
 import { InjuryRecord, fetchInjuryRecordById } from "../../services/injuryRecordService";
 import { closeInjuryRecord } from "../../services/injuryRecordService";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -18,6 +19,16 @@ export default function AddNoteScreen() {
   const [text, setText] = useState("");
   const [injury, setInjury] = useState<InjuryRecord | null>(null);
   const [loading, setLoading] = useState(true);
+
+
+  const [reminderTitle, setReminderTitle] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
+  const [timeStart, setTimeStart] = useState<Date | null>(null);
+  const [timeEnd, setTimeEnd] = useState<Date | null>(null);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const nowISO = new Date().toISOString();
   const nowDate = nowISO.split("T")[0];
@@ -73,7 +84,8 @@ export default function AddNoteScreen() {
       <Text style={styles.title}>Adicionar Nota</Text>
 
       <View style={styles.card}>
-          
+        <Text style={styles.titleHistorical}>Histórico</Text>
+
         <Text style={styles.label}>Tipo de Lesão: </Text>
         <Text style={styles.infoText}>{injury?.title}</Text>
 
@@ -81,15 +93,20 @@ export default function AddNoteScreen() {
         <Text style={styles.label}>Nome do Fisio: </Text>
         <Text style={styles.infoText}>{injury?.physioID}</Text>
 
-        <Text style={styles.label}>Data de começo: </Text>
-        <Text style={styles.infoText}>{injury?.dateStart}</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Data de começo:</Text>
+            <Text style={styles.infoText}>{injury?.dateStart}</Text>
+          </View>
 
-        <Text style={styles.label}>Data de fim: </Text>
-        <Text style={styles.infoText}>
-          {injury?.dateEnd
-            ? injury.dateEnd.split("T")[0]
-            : nowDate}
-        </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Data de fim:</Text>
+            <Text style={styles.infoText}>
+              {injury?.dateEnd ? injury.dateEnd.split("T")[0] : nowDate}
+            </Text>
+          </View>
+        </View>
+
 
         
   
@@ -102,6 +119,88 @@ export default function AddNoteScreen() {
           value={text}
           onChangeText={setText}
         />
+
+        <Text style={styles.titleReminder}>Lembrete</Text>
+
+    <Text style={styles.label}>Título do Lembrete:</Text>
+        <TextInput
+          style={styles.inputReminder}
+          placeholder="Escreva o titulo do lembrete..."
+          value={reminderTitle}
+          onChangeText={setReminderTitle}
+        />
+
+        <Text style={styles.label}>Data:</Text>
+        <TouchableOpacity
+          style={styles.pickerButton}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text>{date ? date.toLocaleDateString() : "Selecionar data"}</Text>
+        </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={date || new Date()}
+            mode="date"
+            onChange={(_, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) setDate(selectedDate);
+            }}
+          />
+        )}
+
+        <Text style={styles.label}>Hora de Início e Fim:</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <TouchableOpacity
+            style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
+            onPress={() => setShowStartPicker(true)}
+          >
+            <Text>
+              {timeStart
+                ? timeStart.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Selecionar início"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
+            onPress={() => setShowEndPicker(true)}
+          >
+            <Text>
+              {timeEnd
+                ? timeEnd.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Selecionar fim"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {showStartPicker && (
+          <DateTimePicker
+            value={timeStart || new Date()}
+            mode="time"
+            onChange={(_, selectedDate) => {
+              setShowStartPicker(false);
+              if (selectedDate) setTimeStart(selectedDate);
+            }}
+          />
+        )}
+
+        {showEndPicker && (
+          <DateTimePicker
+            value={timeEnd || new Date()}
+            mode="time"
+            onChange={(_, selectedDate) => {
+              setShowEndPicker(false);
+              if (selectedDate) setTimeEnd(selectedDate);
+            }}
+          />
+        )}
 
         {/* Botão */}
         <View style={styles.buttonRow}>
