@@ -17,11 +17,8 @@
     <DataTable ref="dt" :value="emails" dataKey="emailID" class="email-table">
       <Column class="subject-column">
         <template #body="{ data, index }">
-          <div
-            class="flex flex-col p-5 table-email"
-            :class="{ 'expanded': expandedIndex === index }"
-            @click="toggleExpand(index)"
-          >
+          <div class="flex flex-col p-5 table-email" :class="{ 'expanded': expandedIndex === index }"
+            @click="toggleExpand(index)">
             <div class="flex justify-between items-center">
               <span>{{ data.sender }}</span>
               <span>{{ data.dateSended }}</span>
@@ -44,7 +41,7 @@ export default {
   data() {
     return {
       emails: [],
-      expandedIndex: null, 
+      expandedIndex: null,
     }
   },
   mounted() {

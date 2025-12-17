@@ -4,7 +4,7 @@ import { stripIsNew } from "../utils/utils.js"
 // GET | All Athletes
 export async function getAllAthletes(req, res) {
 	const { data, error } = await supabase.from("v_athlete").select("*")
-		.order("name", { ascending: true });;
+		.order("name", { ascending: true });
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);
@@ -32,6 +32,21 @@ export async function getAthleteAccountables(req, res) {
 		.from("v_accountable")
 		.select("*")
 		.eq("athleteID", athleteID);
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+// GET | Athlete History
+export async function getAthleteHistory(req, res) {
+	const athleteID = req.params.id;
+
+	const { data, error } = await supabase
+		.from("v_injury_record")
+		.select("*")
+		.eq("athleteID", athleteID)
+		.neq("statusID", 1)
+		.order("dateStart", { ascending: false });
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);

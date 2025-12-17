@@ -2,11 +2,11 @@
   <div class="h-full flex main-container">
     <!-- Sidebar -->
     <div v-show="sidebarOpen" class="w-64">
-        <Sidebar/>
+      <Sidebar />
     </div>
     <!-- Content -->
-    <div class="w-full rounded-l-2xl content-container p-12">
-        <RouterView />
+    <div class="w-full flex flex-col rounded-l-2xl content-container p-9 overflow-hidden">
+      <RouterView />
     </div>
   </div>
 </template>
@@ -22,14 +22,14 @@ export default {
   },
   data() {
     return {
-        sidebarOpen: true,
+      sidebarOpen: true,
     }
   },
   watch: {},
   mounted() {
   },
   methods: {
-    
+
   },
 }
 </script>

@@ -11,7 +11,7 @@ import 'primeicons/primeicons.css';
 import "./assets/style.css";
 import "./assets/var.css";
 
-/*Icons Font Awesome*/ 
+/*Icons Font Awesome*/
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'
 
@@ -36,6 +36,12 @@ import Dialog from 'primevue/dialog';
 import InputNumber from 'primevue/inputnumber';
 import DatePicker from 'primevue/datepicker';
 import FileUpload from 'primevue/fileupload';
+import Accordion from 'primevue/accordion';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
+import Timeline from 'primevue/timeline';
+
 
 import { myPreset } from './theme'
 
@@ -72,6 +78,11 @@ app.component('InputMask', InputMask);
 app.component('InputNumber', InputNumber);
 app.component('DatePicker', DatePicker);
 app.component('FileUpload', FileUpload);
+app.component('Accordion', Accordion);
+app.component('AccordionPanel', AccordionPanel);
+app.component('AccordionHeader', AccordionHeader);
+app.component('AccordionContent', AccordionContent);
+app.component('Timeline', Timeline);
 
 app.directive('tooltip', Tooltip);
 

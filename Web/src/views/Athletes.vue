@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex flex-col h-full overflow-hidden">
     <Toolbar class="mb-4">
       <template #start>
         <IconField>
@@ -19,7 +19,8 @@
       </template>
     </Toolbar>
 
-    <DataTable ref="dt" :value="athletes" stripedRows dataKey="athleteID" class="style-table" paginator :rows="7">
+    <DataTable ref="dt" :value="athletes" stripedRows dataKey="athleteID" class="style-table" paginator :rows="10"
+      scrollable scrollHeight="flex">
       <Column header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">

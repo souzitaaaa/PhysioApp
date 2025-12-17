@@ -1,5 +1,5 @@
 import express from 'express'
-import { getAllAthletes, getAthleteByID, getAthleteAccountables, createAthleteAccountables, updateAccountable, deleteAthlete } from "../controllers/athletesController.js"
+import { getAllAthletes, getAthleteByID, getAthleteAccountables, getAthleteHistory, createAthleteAccountables, updateAccountable, deleteAthlete } from "../controllers/athletesController.js"
 
 const router = express.Router()
 
@@ -7,6 +7,7 @@ const router = express.Router()
 router.get('/', getAllAthletes)
 router.get('/:id', getAthleteByID)
 router.get('/:id/accountables', getAthleteAccountables)
+router.get('/:id/history', getAthleteHistory)
 
 // POST
 //router.post('/', createAthlete)
