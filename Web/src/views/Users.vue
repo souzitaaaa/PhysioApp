@@ -10,13 +10,7 @@
         </IconField>
       </template>
       <template #end>
-        <Button
-          icon="fa-solid fa-plus"
-          class="mr-2"
-          severity="success"
-          label="Criar Utilizador"
-          size="small"
-        />
+        <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Utilizador" size="small" />
       </template>
     </Toolbar>
 
@@ -26,48 +20,35 @@
           <div class="flex items-center gap-2">
             <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
             <span>{{ data.name }}</span>
+            <i v-if="data.notification_status" class="fa-solid fa-bell text-slate-600 font-medium"
+              style="font-size: 0.8rem"></i>
+            <i v-else-if="!data.notification_status" class="fa-solid text-slate-600 fa-bell-slash font-medium"
+              style="font-size: 0.8rem"></i>
           </div>
         </template>
       </Column>
+      <Column field="user_type" header="Cargo"></Column>
       <Column header="Idade">
         <template #body="{ data }">
           <div class="flex flex-col">
-            <span class="">(calcular idade)</span>
+            <span class="">{{ data.age }}</span>
             <span class="text-xs">{{ data.birthdate }}</span>
           </div>
         </template>
       </Column>
-      <Column header="Telemóvel">
+      <Column field="nationality" header="Nacionalidade"></Column>
+      <Column header="Contactos">
         <template #body="{ data }">
           <div class="flex flex-col">
             <span class="text-base">{{ data.phoneNumber }}</span>
-          </div>
-        </template>
-      </Column>
-      <Column header="Email">
-        <template #body="{ data }">
-          <div class="flex flex-col">
-            <span class="text-base">{{ data.email }}</span>
-          </div>
-        </template>
-      </Column>
-      <Column header="Palavra-Passe">
-        <template #body="{ data }">
-          <div class="flex flex-col">
-            <span class="text-base">{{ data.password }}</span>
+            <span class="text-sm">{{ data.email }}</span>
           </div>
         </template>
       </Column>
       <Column :exportable="false" style="min-width: 3rem">
         <template #body="slotProps">
-          <Button
-            icon="fa-solid fa-eye"
-            severity="secondary"
-            variant="outlined"
-            size="small"
+          <Button icon="fa-solid fa-eye" severity="secondary" variant="outlined" size="small"
             @click="editUser(slotProps.data)" />
-        
-
         </template>
       </Column>
     </DataTable>
@@ -78,6 +59,8 @@
 <script>
 import { supabase } from '../../utils/supabase'
 import UsersDrawer from '../components/UsersDrawer.vue'
+import axios from 'axios';
+import { safeGet } from '../../utils/utils.js'
 
 export default {
   components: {
@@ -95,9 +78,13 @@ export default {
     this.getUserData()
   },
   methods: {
-    async getUserData() {
-      const { data } = await supabase.from('t_user').select(`*,
-                                      taux_user_type ( user_type )`)
+    async getUserData(userID) {
+      const endpoint = userID
+        ? `http://localhost:3000/users/${userID}`
+        : `http://localhost:3000/users`;
+
+      const data = await safeGet(axios.get(endpoint), userID ? null : []);
+
       this.users = data
     },
     exportCSV() {

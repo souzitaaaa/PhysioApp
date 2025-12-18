@@ -4,7 +4,7 @@
   <DataTable ref="dt" :value="athletes" dataKey="athletesID" class="style-table h-full" paginator :rows="3">
     <template #header>
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <span class="text-xl font-bold">Atletas</span>
+        <span class="text-xl font-bold">Emails</span>
       </div>
     </template>
 
