@@ -99,7 +99,7 @@ export default function AddNoteScreen() {
         <Text style={styles.infoText}>{injury?.title}</Text>
 
         <Text style={styles.label}>Nome do Fisio:</Text>
-        <Text style={styles.infoText}>{injury?.physioID}</Text>
+        <Text style={styles.infoText}>{injury?.userID}</Text>
 
         <Text style={styles.label}>Data de começo:</Text>
         <Text style={styles.infoText}>{injury?.dateStart}</Text>

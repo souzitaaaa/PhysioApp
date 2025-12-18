@@ -3,7 +3,7 @@ import { supabase } from "../scripts/supabase";
 export type InjuryRecord = {
   injuryRecordID: number;
   athleteID: number;
-  physioID: number;
+  userID: number;
   resume: string;
   statusID: number;
   errorSpecID: number;

@@ -91,7 +91,7 @@ export default function AddNoteScreen() {
 
         
         <Text style={styles.label}>Nome do Fisio: </Text>
-        <Text style={styles.infoText}>{injury?.physioID}</Text>
+        <Text style={styles.infoText}>{injury?.userID}</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
           <View style={{ flex: 1 }}>
