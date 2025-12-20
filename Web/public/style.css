@@ -67,6 +67,7 @@ body,
   border-radius: 16px;         
   overflow: hidden;            
   border: 1px solid var(--color-grey-details);  
+  background: #ffffff;
 }
 
 .email-table table,
@@ -126,3 +127,15 @@ body,
   overflow: visible;
 }
 
+
+
+/* Remove margem/padding das células */
+.style-table .p-datatable-tbody > tr > td,
+.style-table .p-datatable-thead > tr > th {
+  padding: 0.74rem 1.5rem; /* ajusta como quiser */
+}
+
+/* Se quiser ainda mais compacto */
+.style-table .p-datatable-tbody > tr > td {
+  line-height: 1.2;
+}

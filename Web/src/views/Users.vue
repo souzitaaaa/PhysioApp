@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex flex-col h-full overflow-hidden">
     <Toolbar class="mb-4">
       <template #start>
         <IconField>
@@ -20,7 +20,7 @@
       </template>
     </Toolbar>
 
-    <DataTable ref="dt" :value="users" dataKey="userID" class="style-table">
+    <DataTable ref="dt" :value="users" dataKey="userID" class="style-table" scrollable scrollHeight="flex">
       <Column header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">

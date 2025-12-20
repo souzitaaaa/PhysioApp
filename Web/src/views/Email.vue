@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex flex-col h-full overflow-hidden">
     <Toolbar class="mb-4">
       <template #start>
         <IconField>
@@ -14,18 +14,18 @@
       </template>
     </Toolbar>
 
-    <DataTable ref="dt" :value="emails" dataKey="emailID" class="email-table">
+    <DataTable ref="dt" :value="emails" dataKey="emailID" class="email-table" scrollable scrollHeight="flex">
       <Column class="subject-column">
         <template #body="{ data, index }">
           <div class="flex flex-col p-5 table-email" :class="{ 'expanded': expandedIndex === index }"
             @click="toggleExpand(index)">
             <div class="flex justify-between items-center">
-              <span>{{ data.sender }}</span>
-              <span>{{ data.dateSended }}</span>
+              <span>{{ data.from }}</span>
+              <span>{{ data.date }}</span>
             </div>
 
             <div class="text-small-grey subject mt-2">
-              {{ data.subject }}
+              {{ data.body }}
             </div>
           </div>
         </template>
