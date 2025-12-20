@@ -45,4 +45,56 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: "#444",
   },
+  dateColumn: {
+    width: "30%",
+  },
+
+  eventDate: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  eventTime: {
+    fontSize: 12,
+    color: "#666",
+  },
+  timeText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  timeBox: {
+    width: 100,
+    backgroundColor: "#22333b",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  titleBox: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    borderColor: "#cccccc",
+    borderWidth: 1,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingStart: 40,
+    marginLeft: -30,
+    justifyContent: "center",
+  },
+  titleText: {
+    color: "#22333b",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  reminderRow: {
+    flexDirection: "row",
+    marginBottom: 12,
+    alignItems: "stretch",
+  },
 });

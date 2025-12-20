@@ -25,6 +25,27 @@ export default function HomeScreen() {
     loadUpcomingEvents();
   }, []);
 
+  function formatDateShort(dateString: string) {
+    const [year, month, day] = dateString.split("-").map(Number);
+
+    const months = [
+      "jan",
+      "fev",
+      "mar",
+      "abr",
+      "mai",
+      "jun",
+      "jul",
+      "ago",
+      "set",
+      "out",
+      "nov",
+      "dez",
+    ];
+
+    return `${day} ${months[month - 1]}`;
+  }
+
   async function loadNotifications() {
     const records = await fetchAllInjuryRecords();
     const latest = records.slice(0, 4);
@@ -47,26 +68,28 @@ export default function HomeScreen() {
     const now = new Date();
 
     const futureEvents = allReminders.filter((event) => {
-      const [year, month, day ] = event.date.split("-").map(Number);
-      const [hour, minute ] = (event.timeStart ?? "00:00").split(":").map(Number);
+      const [year, month, day] = event.date.split("-").map(Number);
+      const [hour, minute] = (event.timeStart ?? "00:00")
+        .split(":")
+        .map(Number);
 
-      const eventDateTime = new Date (year, month -1, day, hour, minute);
+      const eventDateTime = new Date(year, month - 1, day, hour, minute);
 
       return eventDateTime >= now;
-    })
+    });
 
     // Ordenar por data e hora
     const sorted = futureEvents.sort((a, b) => {
-    const [y1, m1, d1] = a.date.split("-").map(Number);
-    const [h1, min1] = (a.timeStart ?? "00:00").split(":").map(Number);
-    const dateTimeA = new Date(y1, m1 - 1, d1, h1, min1);
+      const [y1, m1, d1] = a.date.split("-").map(Number);
+      const [h1, min1] = (a.timeStart ?? "00:00").split(":").map(Number);
+      const dateTimeA = new Date(y1, m1 - 1, d1, h1, min1);
 
-    const [y2, m2, d2] = b.date.split("-").map(Number);
-    const [h2, min2] = (b.timeStart ?? "00:00").split(":").map(Number);
-    const dateTimeB = new Date(y2, m2 - 1, d2, h2, min2);
+      const [y2, m2, d2] = b.date.split("-").map(Number);
+      const [h2, min2] = (b.timeStart ?? "00:00").split(":").map(Number);
+      const dateTimeB = new Date(y2, m2 - 1, d2, h2, min2);
 
-    return dateTimeA.getTime() - dateTimeB.getTime();
-  });
+      return dateTimeA.getTime() - dateTimeB.getTime();
+    });
 
     setUpcomingEvents(sorted.slice(0, 4)); // pegar os 4 próximos
   }
@@ -102,14 +125,26 @@ export default function HomeScreen() {
         <Text style={styles.notificationTitle}>Próximos Eventos</Text>
 
         {upcomingEvents.map((event) => (
-          <View key={event.reminderID} style={styles.notificationRow}>
-            <Text style={styles.athleteName}>
-              {event.date} {event.timeStart?.slice(0, 5) ?? "--:--"} 
-              {event.timeEnd?.slice(0, 5) ?? "--:--"}
-            </Text>
-            <Text style={styles.resume} numberOfLines={2} ellipsizeMode="tail">
-              {event.title}
-            </Text>
+          <View key={event.reminderID} style={styles.reminderRow}>
+            {/* Retângulo azul (data + horas) */}
+
+              <View style={styles.timeBox}>
+                <Text style={styles.timeText}>
+                  {formatDateShort(event.date)}
+                </Text>
+
+                <Text style={styles.timeText}>
+                  {event.timeStart?.slice(0, 5)}
+                  {event.timeEnd ? ` - ${event.timeEnd.slice(0, 5)}` : ""}
+                </Text>
+              </View>
+
+            {/* Retângulo branco (título) */}
+            <View style={styles.titleBox}>
+              <Text style={styles.titleText} numberOfLines={2}>
+                {event.title}
+              </Text>
+            </View>
           </View>
         ))}
       </TouchableOpacity>
