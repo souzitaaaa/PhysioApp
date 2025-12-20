@@ -6,10 +6,10 @@ Se o email NÃO for sobre uma lesão/assunto médico, ignora-o e retorna null.
 
 Extrai os seguintes campos de emails relacionados com lesões:
 - athleteName (string) — nome do atleta
-- senderName (string) — nome da pessoa que envia o email
-- injuryDescription (resumo curto, uma frase)
+- senderEmail (string) — email da pessoa que envia o email
+- title (generalisar um titulo para a lesão ex: (Lesão do Pé))
+- resume (resumo curto)
 - startDate (data ISO)
-- isInjury (true/false)
 
 Se o nome do atleta não for conhecido, retorna null para athleteName.
 Retorna SEMPRE apenas JSON. Não incluas explicações, comentários ou texto extra.
@@ -49,4 +49,14 @@ export function stripIsNew(data) {
     return sanitize(data);
 }
 
+export function isAthleteMatch(athleteNameInput, athleteNameDb) {
+    const inputParts = athleteNameInput.trim().toLowerCase().split(/\s+/);
+    const dbName = athleteNameDb.trim().toLowerCase();
+    return inputParts.every(part => dbName.includes(part));
+}
 
+export function getMatchingAthletes(senderExists, athleteNameInput) {
+    return senderExists.filter(record =>
+        isAthleteMatch(athleteNameInput, record.athlete_name)
+    );
+}

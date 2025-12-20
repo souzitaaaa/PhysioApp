@@ -10,8 +10,8 @@
         </IconField>
       </template>
       <template #center>
-        <Button icon="fa-solid fa-download" severity="secondary" text @click="exportCSV($event)" size="small"
-          v-tooltip.bottom="{ value: 'Exportar Informação', showDelay: 500, hideDelay: 250 }" />
+        <Button v-if="1 === true" icon="fa-solid fa-download" severity="secondary" text @click="exportCSV($event)"
+          size="small" v-tooltip.bottom="{ value: 'Exportar Informação', showDelay: 500, hideDelay: 250 }" />
       </template>
       <template #end>
         <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Atleta" size="small"
