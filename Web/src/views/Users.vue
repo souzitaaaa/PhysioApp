@@ -1,5 +1,6 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
+
     <Toolbar class="mb-4">
       <template #start>
         <IconField>
@@ -27,7 +28,11 @@
           </div>
         </template>
       </Column>
-      <Column field="user_type" header="Cargo"></Column>
+      <Column header="Cargo">
+        <template #body="{ data }">
+          <Tag :value="data.user_type" :severity="getSeverityFromUserType(data.usertypeID)"></Tag>
+        </template>
+      </Column>
       <Column header="Idade">
         <template #body="{ data }">
           <div class="flex flex-col">
@@ -53,14 +58,17 @@
       </Column>
     </DataTable>
   </div>
-  <UsersDrawer :visible="userDrawerVisible" :user="selectedUser" @close="userDrawerVisible = false"></UsersDrawer>
+
+  <UsersDrawer :visible="userDrawerVisible" :user="selectedUser" :mode="drawerMode" @close="closeDrawer"
+    @add-user="handleAddUser" @update-user="updateUser" @update:mode="drawerMode = $event"></UsersDrawer>
+
 </template>
 
 <script>
-import { supabase } from '../../utils/supabase'
-import UsersDrawer from '../components/UsersDrawer.vue'
+import UsersDrawer from './UserComponents/UsersDrawer.vue'
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
+import { Tag } from 'primevue';
 
 export default {
   components: {
@@ -70,7 +78,8 @@ export default {
     return {
       users: [],
       selectedUser: null,
-      userDrawerVisible: false
+      userDrawerVisible: false,
+      drawerMode: 'view',
     }
   },
   watch: {},
@@ -90,9 +99,27 @@ export default {
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
+    async closeDrawer() {
+      this.selectedUser = null
+      this.drawerMode = 'view'
+      this.userDrawerVisible = false
+      await this.getUserData();
+    },
+    getSeverityFromUserType(usertypeID) {
+      if (usertypeID === 1) return 'danger'
+      if (usertypeID === 2) return 'info'
+      return 'secondary'
+    },
     editUser(userData) {
       this.selectedUser = userData
+      this.drawerMode = 'view'
       this.userDrawerVisible = true
+    },
+    async handleAddUser(payload, callback) {
+      // const userID = await this.addAthlete(payload);
+      // if (callback) callback(userID);
+    },
+    async updateUser(formData, callback) {
     }
   },
 }

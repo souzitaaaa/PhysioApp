@@ -15,3 +15,11 @@ export async function getRelations(req, res) {
 	if (error) return res.status(500).json({ error });
 	return res.json(data);
 }
+
+// GET | User Type
+export async function getUserType(req, res) {
+	const { data, error } = await supabase.from("taux_user_type").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}

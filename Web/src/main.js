@@ -18,6 +18,7 @@ import '@fortawesome/fontawesome-free/js/all.js'
 /* PrimeVue Components */
 import Button from 'primevue/button';
 import ToggleSwitch from 'primevue/toggleswitch';
+import Tag from 'primevue/tag';
 import Divider from 'primevue/divider';
 import Skeleton from 'primevue/skeleton';
 import DataTable from 'primevue/datatable';
@@ -42,7 +43,6 @@ import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 import Timeline from 'primevue/timeline';
 
-
 import { myPreset } from './theme'
 
 const app = createApp(App);
@@ -59,6 +59,7 @@ app.use(PrimeVue, {
 });
 
 app.component('Button', Button);
+app.component('Tag', Tag);
 app.component('ToggleSwitch', ToggleSwitch);
 app.component('Divider', Divider);
 app.component('Skeleton', Skeleton);
