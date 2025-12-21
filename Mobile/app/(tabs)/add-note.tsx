@@ -6,8 +6,8 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -26,17 +26,44 @@ export default function AddNoteScreen() {
 
   const [loading, setLoading] = useState(true);
   const [injury, setInjury] = useState<InjuryRecord | null>(null);
+
+  // Nota
   const [text, setText] = useState("");
 
+  // Reminder
   const [reminderTitle, setReminderTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [timeStart, setTimeStart] = useState<Date | null>(null);
   const [timeEnd, setTimeEnd] = useState<Date | null>(null);
 
+  // Pickers
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
+  // 🔹 Reset de todos os campos
+  const resetForm = useCallback(() => {
+    setText("");
+    setReminderTitle("");
+    setDate(null);
+    setTimeStart(null);
+    setTimeEnd(null);
+
+    setShowDatePicker(false);
+    setShowStartPicker(false);
+    setShowEndPicker(false);
+  }, []);
+
+  // 🔹 Limpar tudo ao sair do ecrã
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        resetForm();
+      };
+    }, [resetForm])
+  );
+
+  // 🔹 Carregar lesão
   useEffect(() => {
     async function loadInjury() {
       if (!injuryRecordID) return;
@@ -45,7 +72,7 @@ export default function AddNoteScreen() {
       setLoading(false);
     }
     loadInjury();
-  }, []);
+  }, [injuryRecordID]);
 
   function formatDate(date: Date) {
     return date.toISOString().split("T")[0];
@@ -55,27 +82,55 @@ export default function AddNoteScreen() {
     return date.toTimeString().slice(0, 5);
   }
 
+  // 🔹 Função de salvar com validação obrigatória
   async function handleSave() {
     if (!injuryRecordID) return;
 
-    // Criar nota
+    // 🔴 Nota obrigatória
+    if (text.trim() === "") {
+      alert("A nota é obrigatória.");
+      return;
+    }
+
+    // 🔴 Ver se o lembrete foi iniciado
+    const reminderTouched =
+      reminderTitle.trim() !== "" || date || timeStart || timeEnd;
+
+    // 🔴 Se começou a preencher lembrete, todos os campos são obrigatórios
+    if (reminderTouched) {
+      if (
+        reminderTitle.trim() === "" ||
+        !date ||
+        !timeStart ||
+        !timeEnd
+      ) {
+        alert(
+          "Preencha todos os campos."
+        );
+        return;
+      }
+    }
+
+    // ✅ Criar nota
     await createNote(Number(injuryRecordID), text);
 
-    // Criar reminder se tudo estiver preenchido
-    if (reminderTitle && date && timeStart && timeEnd) {
+    // ✅ Criar lembrete apenas se estiver completo
+    if (reminderTouched) {
       await createReminder({
         title: reminderTitle,
-        date: formatDate(date),
-        timeStart: formatTime(timeStart),
-        timeEnd: formatTime(timeEnd),
+        date: formatDate(date!),
+        timeStart: formatTime(timeStart!),
+        timeEnd: formatTime(timeEnd!),
         injuryRecordID: Number(injuryRecordID),
       });
     }
 
+    resetForm();
     router.push("/historical");
   }
 
   function handleGoBack() {
+    resetForm();
     router.push("/historical");
   }
 
@@ -92,7 +147,6 @@ export default function AddNoteScreen() {
       <Text style={styles.title}>Adicionar Nota</Text>
 
       <View style={styles.card}>
-        
         <Text style={styles.titleHistorical}>Histórico</Text>
 
         <Text style={styles.label}>Tipo de Lesão:</Text>
@@ -118,7 +172,7 @@ export default function AddNoteScreen() {
         <Text style={styles.label}>Título do Lembrete:</Text>
         <TextInput
           style={styles.inputReminder}
-          placeholder="Escreva o titulo do lembrete..."
+          placeholder="Escreva o título do lembrete..."
           value={reminderTitle}
           onChangeText={setReminderTitle}
         />
@@ -142,8 +196,10 @@ export default function AddNoteScreen() {
           />
         )}
 
-        <Text style={styles.label}>Hora de Início e Fim:</Text>
+        
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View style={{ flex: 1, marginRight: 5 }}>
+            <Text style={styles.label}>Hora de Início:</Text>
           <TouchableOpacity
             style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
             onPress={() => setShowStartPicker(true)}
@@ -154,9 +210,13 @@ export default function AddNoteScreen() {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : "Selecionar início"}
+                : "Selecionar Início"}
             </Text>
           </TouchableOpacity>
+          </View>
+
+          <View style={{ flex: 1, marginRight: 5 }}>
+          <Text style={styles.label}>Hora de Fim:</Text>
 
           <TouchableOpacity
             style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
@@ -168,9 +228,10 @@ export default function AddNoteScreen() {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : "Selecionar fim"}
+                : "Selecionar Fim"}
             </Text>
           </TouchableOpacity>
+           </View>
         </View>
 
         {showStartPicker && (
@@ -202,7 +263,7 @@ export default function AddNoteScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.btn} onPress={handleSave}>
-            <Text style={styles.btnText}>Guardar</Text>
+            <Text style={styles.btnText}>Guardar Nota</Text>
             <Ionicons name="document-outline" size={20} />
           </TouchableOpacity>
         </View>

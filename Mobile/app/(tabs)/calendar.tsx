@@ -1,12 +1,12 @@
 import { View, Text, ScrollView } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native"; // <- importante
 import { fetchAllReminders, Reminder } from "../../services/reminderService";
 
+import "../../config/calendarLocale";
 
-import { styles } from "../../css/calendar"
-
-
+import { styles } from "../../css/calendar";
 
 export default function HomeScreen() {
   const today = new Date().toISOString().split("T")[0]; 
@@ -17,6 +17,13 @@ export default function HomeScreen() {
   useEffect(() => {
     loadReminders();
   }, []);
+
+  // Redefinir para hoje sempre que a tela ganhar foco
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedDate(today);
+    }, [today])
+  );
 
   const loadReminders = async () => {
     const allReminders = await fetchAllReminders();
@@ -96,10 +103,8 @@ export default function HomeScreen() {
               </View>
             </View>
           ))}
-
         </ScrollView>
       </View>
     </View>
   );
 }
-

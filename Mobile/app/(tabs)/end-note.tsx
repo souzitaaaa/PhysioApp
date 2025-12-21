@@ -1,31 +1,42 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { createNote } from "../../services/noteService";
-import { InjuryRecord, fetchInjuryRecordById } from "../../services/injuryRecordService";
-import { closeInjuryRecord } from "../../services/injuryRecordService";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
 import { Ionicons } from "@expo/vector-icons";
 
-import { styles } from "../../css/end_note"
+import { createNote } from "../../services/noteService";
+import {
+  InjuryRecord,
+  fetchInjuryRecordById,
+  closeInjuryRecord,
+} from "../../services/injuryRecordService";
 
+import { styles } from "../../css/end_note";
 
-
-export default function AddNoteScreen() {
+export default function EndNoteScreen() {
   const { injuryRecordID } = useLocalSearchParams<{ injuryRecordID: string }>();
   const router = useRouter();
 
-  const [text, setText] = useState("");
-  const [injury, setInjury] = useState<InjuryRecord | null>(null);
   const [loading, setLoading] = useState(true);
+  const [injury, setInjury] = useState<InjuryRecord | null>(null);
 
+  // Nota
+  const [text, setText] = useState("");
 
+  // Reminder
   const [reminderTitle, setReminderTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [timeStart, setTimeStart] = useState<Date | null>(null);
   const [timeEnd, setTimeEnd] = useState<Date | null>(null);
 
+  // Pickers
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
@@ -33,41 +44,99 @@ export default function AddNoteScreen() {
   const nowISO = new Date().toISOString();
   const nowDate = nowISO.split("T")[0];
 
+  // 🔹 Reset de todos os campos
+  const resetForm = useCallback(() => {
+    setText("");
+    setReminderTitle("");
+    setDate(null);
+    setTimeStart(null);
+    setTimeEnd(null);
 
-  // Buscar o registo da lesão
-  async function loadInjury() {
+    setShowDatePicker(false);
+    setShowStartPicker(false);
+    setShowEndPicker(false);
+  }, []);
+
+  // 🔹 Limpar tudo ao sair do ecrã
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        resetForm();
+      };
+    }, [resetForm])
+  );
+
+  // 🔹 Buscar lesão
+  useEffect(() => {
+    async function loadInjury() {
+      if (!injuryRecordID) return;
+
+      const result = await fetchInjuryRecordById(Number(injuryRecordID));
+      setInjury(result);
+      setLoading(false);
+    }
+
+    loadInjury();
+  }, [injuryRecordID]);
+
+  function formatDate(date: Date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  function formatTime(date: Date) {
+    return date.toTimeString().slice(0, 5);
+  }
+
+  // 🔹 Salvar nota final com validação
+  async function handleSave() {
     if (!injuryRecordID) return;
 
-    const result = await fetchInjuryRecordById(Number(injuryRecordID));
-    setInjury(result);
-    setLoading(false);
+    // 🔴 Nota obrigatória
+    if (text.trim() === "") {
+      alert("A nota final é obrigatória.");
+      return;
+    }
+
+    // 🔴 Ver se o lembrete foi iniciado
+    const reminderTouched =
+      reminderTitle.trim() !== "" || date || timeStart || timeEnd;
+
+    // 🔴 Se começou a preencher lembrete, todos os campos são obrigatórios
+    if (reminderTouched) {
+      if (reminderTitle.trim() === "" || !date || !timeStart || !timeEnd) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+    }
+
+    try {
+      // ✅ Criar nota
+      await createNote(Number(injuryRecordID), text);
+
+      // ✅ Criar lembrete apenas se estiver completo
+      if (reminderTouched) {
+        // Aqui podes chamar createReminder se necessário
+        // await createReminder({
+        //   title: reminderTitle,
+        //   date: formatDate(date!),
+        //   timeStart: formatTime(timeStart!),
+        //   timeEnd: formatTime(timeEnd!),
+        //   injuryRecordID: Number(injuryRecordID),
+        // });
+      }
+
+      // ✅ Fechar lesão
+      await closeInjuryRecord(Number(injuryRecordID), nowISO);
+
+      resetForm();
+      router.push("/historical");
+    } catch (error) {
+      console.log("Erro ao guardar nota final:", error);
+    }
   }
 
-  useEffect(() => {
-    loadInjury();
-  }, []);
-  
-
-  async function handleSave() {
-  if (!injuryRecordID) return;
-
-  try {
-    // 1. Criar nota
-    await createNote(Number(injuryRecordID), text);
-
-    // 2. Fechar lesão com a MESMA data
-    await closeInjuryRecord(Number(injuryRecordID), nowISO);
-
-    router.push("/historical");
-  } catch (error) {
-    console.log("Erro ao guardar nota:", error);
-  }
-}
-
-
-
-  function handGoBack() {
-
+  function handleGoBack() {
+    resetForm();
     router.push("/historical");
   }
 
@@ -81,19 +150,24 @@ export default function AddNoteScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Adicionar Nota</Text>
+      <Text style={styles.title}>Adicionar Nota Final</Text>
 
       <View style={styles.card}>
         <Text style={styles.titleHistorical}>Histórico</Text>
 
-        <Text style={styles.label}>Tipo de Lesão: </Text>
+        <Text style={styles.label}>Tipo de Lesão:</Text>
         <Text style={styles.infoText}>{injury?.title}</Text>
 
-        
-        <Text style={styles.label}>Nome do Fisio: </Text>
+        <Text style={styles.label}>Nome do Fisio:</Text>
         <Text style={styles.infoText}>{injury?.userID}</Text>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+        >
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Data de começo:</Text>
             <Text style={styles.infoText}>{injury?.dateStart}</Text>
@@ -107,11 +181,7 @@ export default function AddNoteScreen() {
           </View>
         </View>
 
-
-        
-  
-        <Text style={styles.label}>Nota: </Text>
-
+        <Text style={styles.label}>Nota:</Text>
         <TextInput
           style={styles.input}
           multiline
@@ -122,10 +192,10 @@ export default function AddNoteScreen() {
 
         <Text style={styles.titleReminder}>Lembrete</Text>
 
-    <Text style={styles.label}>Título do Lembrete:</Text>
+        <Text style={styles.label}>Título do Lembrete:</Text>
         <TextInput
           style={styles.inputReminder}
-          placeholder="Escreva o titulo do lembrete..."
+          placeholder="Escreva o título do lembrete..."
           value={reminderTitle}
           onChangeText={setReminderTitle}
         />
@@ -149,35 +219,40 @@ export default function AddNoteScreen() {
           />
         )}
 
-        <Text style={styles.label}>Hora de Início e Fim:</Text>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <TouchableOpacity
-            style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
-            onPress={() => setShowStartPicker(true)}
-          >
-            <Text>
-              {timeStart
-                ? timeStart.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Selecionar início"}
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flex: 1, marginRight: 5 }}>
+            <Text style={styles.label}>Hora de Início:</Text>
+            <TouchableOpacity
+              style={styles.pickerButton}
+              onPress={() => setShowStartPicker(true)}
+            >
+              <Text>
+                {timeStart
+                  ? timeStart.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Selecionar Início"}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
-            onPress={() => setShowEndPicker(true)}
-          >
-            <Text>
-              {timeEnd
-                ? timeEnd.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Selecionar fim"}
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flex: 1, marginLeft: 5 }}>
+            <Text style={styles.label}>Hora de Fim:</Text>
+            <TouchableOpacity
+              style={styles.pickerButton}
+              onPress={() => setShowEndPicker(true)}
+            >
+              <Text>
+                {timeEnd
+                  ? timeEnd.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Selecionar Fim"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {showStartPicker && (
@@ -202,21 +277,18 @@ export default function AddNoteScreen() {
           />
         )}
 
-        {/* Botão */}
         <View style={styles.buttonRow}>
-
-        <TouchableOpacity style={styles.btncancel} onPress={handGoBack}>
+          <TouchableOpacity style={styles.btncancel} onPress={handleGoBack}>
             <Text style={styles.btnText}>Cancelar</Text>
             <Ionicons name="arrow-back" size={20} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btn} onPress={handleSave}>
-          <Text style={styles.btnText}>Guardar Nota</Text>
-          <Ionicons name="document-outline" size={20} color="#000" />
-        </TouchableOpacity>
-        </View>
+          </TouchableOpacity>
 
+          <TouchableOpacity style={styles.btn} onPress={handleSave}>
+            <Text style={styles.btnText}>Guardar Nota Final</Text>
+            <Ionicons name="document-outline" size={20} color="#000" />
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
 }
-

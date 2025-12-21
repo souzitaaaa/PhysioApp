@@ -8,9 +8,13 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { fetchAllInjuryRecords, InjuryRecord } from "../../services/injuryRecordService";
-import { fetchAthleteByID } from "../../services/athleteService"; 
+import { fetchAthleteByID } from "../../services/athleteService";
+
+import { styles } from "../../css/notification";
+
 
 export default function NotificationScreen() {
   const [records, setRecords] = useState<InjuryRecord[]>([]);
@@ -18,23 +22,28 @@ export default function NotificationScreen() {
   const [athleteNames, setAthleteNames] = useState<{ [key: number]: string }>({});
   const router = useRouter();
 
+  // Carregar os registros ao montar a tela
   useEffect(() => {
     loadRecords();
   }, []);
+
+  // Limpar o expandedID quando a tela perder o foco
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        setExpandedID(null);
+      };
+    }, [])
+  );
 
   async function loadRecords() {
     const result = await fetchAllInjuryRecords();
     setRecords(result);
 
-    // buscar os nomes dos atletas
     const names: { [key: number]: string } = {};
     for (const record of result) {
       const athlete = await fetchAthleteByID(record.athleteID);
-      if (athlete) {
-        names[record.injuryRecordID] = athlete.name;
-      } else {
-        names[record.injuryRecordID] = `Athlete ${record.athleteID}`;
-      }
+      names[record.injuryRecordID] = athlete ? athlete.name : `Athlete ${record.athleteID}`;
     }
     setAthleteNames(names);
   }
@@ -68,7 +77,7 @@ export default function NotificationScreen() {
               numberOfLines={expanded ? undefined : 3}
               ellipsizeMode={expanded ? "clip" : "tail"}
             >
-              {item.resume ?? "Sem resumo"}
+              {item.resume}
             </Text>
 
             {expanded && (
@@ -80,7 +89,7 @@ export default function NotificationScreen() {
                     onPress={() => {
                       router.push({
                         pathname: "/historical",
-                        params: { 
+                        params: {
                           athleteID: item.athleteID.toString(),
                           athleteName: athleteName,
                         },
@@ -97,51 +106,3 @@ export default function NotificationScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f0f0f0",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    paddingTop: 40,
-    paddingLeft: 16,
-    marginBottom: 12,
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 16,
-    padding: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  sender: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  date: {
-    fontSize: 14,
-    color: "#666",
-  },
-  subject: {
-    fontSize: 15,
-    color: "#333",
-  },
-  buttonsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 12,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-});

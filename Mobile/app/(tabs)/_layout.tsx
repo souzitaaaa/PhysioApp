@@ -1,13 +1,15 @@
-import { Tabs } from "expo-router";
+import { Tabs, usePathname } from "expo-router";
 import React from "react";
 import { View, Text } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { usePathname } from "expo-router";
 import { styles } from "../../css/_layout";
 
 export default function TabLayout() {
+  const pathname = usePathname() || "";
+
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
@@ -20,8 +22,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="notification"
         options={{
-          tabBarIcon: ({ color, size, focused }) => {
-            const pathname = usePathname() || "";
+          tabBarIcon: ({ size, focused }) => {
             const shouldBeActive =
               focused ||
               pathname.includes("historical") ||
@@ -61,7 +62,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <View style={[styles.tabItem, focused && styles.tabItemActive]}>
               <FontAwesome name="home" size={size} color={color} />
-
               {focused && (
                 <Text style={[styles.tabText, { color }]}>Início</Text>
               )}
@@ -77,7 +77,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <View style={[styles.tabItem, focused && styles.tabItemActive]}>
               <FontAwesome name="calendar" size={size} color={color} />
-
               {focused && (
                 <Text style={[styles.tabText, { color }]}>Calendário</Text>
               )}
@@ -85,24 +84,10 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="historical"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="add-note"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="end-note"
-        options={{
-          href: null,
-        }}
-      />
+
+      <Tabs.Screen name="historical" options={{ href: null }} />
+      <Tabs.Screen name="add-note" options={{ href: null }} />
+      <Tabs.Screen name="end-note" options={{ href: null }} />
     </Tabs>
   );
 }
