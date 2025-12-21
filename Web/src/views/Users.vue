@@ -11,7 +11,8 @@
         </IconField>
       </template>
       <template #end>
-        <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Utilizador" size="small" />
+        <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Utilizador" size="small"
+          @click="createUserDrawer" />
       </template>
     </Toolbar>
 
@@ -21,10 +22,12 @@
           <div class="flex items-center gap-2">
             <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
             <span>{{ data.name }}</span>
-            <i v-if="data.notification_status" class="fa-solid fa-bell text-slate-600 font-medium"
-              style="font-size: 0.8rem"></i>
-            <i v-else-if="!data.notification_status" class="fa-solid text-slate-600 fa-bell-slash font-medium"
-              style="font-size: 0.8rem"></i>
+            <i :class="[
+              'fa-solid',
+              data.notification_status ? 'fa-bell' : 'fa-bell-slash',
+              'text-slate-600',
+              'font-medium'
+            ]" style="font-size: 0.8rem" />
           </div>
         </template>
       </Column>
@@ -65,6 +68,8 @@
 </template>
 
 <script>
+import { supabase } from '../../utils/supabase'
+import { uploadImageToSupabase } from '../../utils/utils'
 import UsersDrawer from './UserComponents/UsersDrawer.vue'
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
@@ -94,6 +99,8 @@ export default {
 
       const data = await safeGet(axios.get(endpoint), userID ? null : []);
 
+      if (userID) return data;
+
       this.users = data
     },
     exportCSV() {
@@ -104,6 +111,11 @@ export default {
       this.drawerMode = 'view'
       this.userDrawerVisible = false
       await this.getUserData();
+    },
+    createUserDrawer() {
+      this.selectedUser = null
+      this.drawerMode = 'add'
+      this.userDrawerVisible = true
     },
     getSeverityFromUserType(usertypeID) {
       if (usertypeID === 1) return 'danger'
@@ -116,10 +128,84 @@ export default {
       this.userDrawerVisible = true
     },
     async handleAddUser(payload, callback) {
-      // const userID = await this.addAthlete(payload);
-      // if (callback) callback(userID);
+      const userID = await this.addUser(payload);
+      if (callback) callback(userID);
+    },
+    async addUser(formData) {
+      const pfpUrl =
+        formData.pfp instanceof File
+          ? await uploadImageToSupabase(formData.pfp, "user-images")
+          : formData.pfp || null
+
+      const { data, error } = await supabase
+        .from('t_user')
+        .insert([
+          {
+            name: formData.name,
+            birthdate: formData.birthdate,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            pfp: pfpUrl,
+            nationality: formData.nationality,
+            usertypeID: formData.usertypeID,
+            password: '123',
+            notification_status: formData.notification_status ? formData.notification_status : false
+          },
+        ])
+        .select(`userID`)
+
+      if (error) {
+        console.log(error)
+        //! NAO ESQUECER TOASTER
+        return
+      }
+
+      const newUser = await this.getUserData(data[0].userID)
+      await this.getUserData()
+
+      this.selectedUser = newUser
+      this.drawerMode = 'view'
+      this.userDrawerVisible = true
+
+      return data[0].userID
     },
     async updateUser(formData, callback) {
+      let pfpUrl = formData.pfp;
+
+      if (formData.pfp instanceof File)
+        pfpUrl = await uploadImageToSupabase(formData.pfp, 'user-images');
+
+      const { data, error } = await supabase.from('t_user').update([
+        {
+          name: formData.name,
+          birthdate: formData.birthdate,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          pfp: pfpUrl,
+          nationality: formData.nationality,
+          usertypeID: formData.usertypeID,
+          notification_status: formData.notification_status ? formData.notification_status : false
+        },
+      ])
+        .eq('userID', formData.userID)
+        .select()
+
+      if (error) {
+        console.log(error)
+        return
+      }
+
+      if (callback)
+        await callback();
+
+      const newUser = await this.getUserData(data[0].userID)
+      console.log("newUser: ", newUser)
+
+      await this.getUserData()
+
+      this.selectedUser = newUser
+      this.drawerMode = 'view'
+      this.userDrawerVisible = true
     }
   },
 }

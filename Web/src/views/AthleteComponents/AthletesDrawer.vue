@@ -139,7 +139,8 @@
                   <span class="text-form-title text-sm col-span-3">Nome {{ Number(index) + 1 }}:</span>
                 <div class="col-span-5">
                   <span v-if="mode === 'view'" class="text-form-value">{{ item.name }} </span>
-                  <span v-if="mode === 'view'" class="text-form-value text-sm text-slate-600!"> ({{ item.relation }})
+                  <span v-if="mode === 'view'" class="text-form-value text-sm text-slate-600!"> ({{ item.relation_name
+                    }})
                   </span>
 
                   <div v-else>
@@ -393,9 +394,11 @@ export default {
       }
     },
     startEditMode() {
+      console.log("startEditMode")
       this.$emit('update:mode', 'edit')
     },
     showDeleteConfirmation() {
+      console.log("showDeleteConfirmation")
       this.athleteDeleteModalVisible = true;
     },
     closeDeleteModal() {
@@ -488,14 +491,12 @@ export default {
 
       if (this.mode === 'add') {
         this.$emit('addAthlete', payload, async (athleteID) => {
-          console.log("athleteID: ", athleteID);
           await this.addAccountables(athleteID);
           this.$emit('update:mode', 'view')
         });
       }
       else if (this.mode === 'edit') {
         this.$emit('updateAthlete', payload, async () => {
-          console.log("entrou");
           await this.saveAccountables();
           this.$emit('update:mode', 'view')
         });

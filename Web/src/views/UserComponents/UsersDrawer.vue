@@ -7,7 +7,7 @@
         <div class="flex justify-end items-center gap-2 px-2 pt-2">
           <Button v-if="mode === 'view'" icon="fa-solid fa-ellipsis-vertical" severity="contrast" text @click="toggle"
             aria-haspopup="true" aria-controls="actions_menu" />
-          <Menu ref="menu" id="actions_menu" :model="actions" :popup="true">
+          <Menu ref="menu_user" id="actions_menu" :model="actions" :popup="true">
             <template #item="{ item, props }">
               <a v-ripple class="flex items-center justify-between w-full px-2 py-1" v-bind="props.item"
                 @click="item.command">
@@ -112,6 +112,23 @@
               </div>
             </div>
             </p>
+            <!-- Notificações -->
+            <p class="grid grid-cols-12 items-center gap-2">
+              <span class="text-form-title text-sm col-span-3">Notificações:</span>
+            <div class="col-span-5">
+              <span v-if="mode === 'view'" class="text-form-value">
+                <i v-if="formData.notification_status" class="fa-solid fa-check text-green-600 font-medium"></i>
+                <i v-else class="fa-solid fa-x text-red-600 font-medium"></i>
+              </span>
+
+              <div v-else>
+                <ToggleSwitch v-model="formData.notification_status" size="small"
+                  :invalid="!!errors.notification_status" fluid />
+                <small v-if="errors.notification_status" class="text-red-600 text-xs">{{ errors.notification_status
+                }}</small>
+              </div>
+            </div>
+            </p>
           </div>
 
         </div>
@@ -130,15 +147,22 @@
       </div>
     </template>
   </Drawer>
+
+  <UsersModal :visible="userDeleteModalVisible" :user="formData" @deleted="handleUserDeleted" @close="closeDeleteModal">
+  </UsersModal>
+
 </template>
 
 <script>
 import { getEmptyUser, validateUserForm } from '../../../utils/userUtils';
 import axios from 'axios';
 import { safeGet, getAuxTable } from '../../../utils/utils.js'
+import UsersModal from './UsersModal.vue';
 
 export default {
-  components: {},
+  components: {
+    UsersModal
+  },
   props: {
     visible: {
       type: Boolean,
@@ -187,15 +211,24 @@ export default {
     async loadUserTypes() {
       this.userTypes = await getAuxTable('userType')
     },
+    closeDeleteModal() {
+      this.userDeleteModalVisible = false;
+    },
+    handleUserDeleted() {
+      this.userDeleteModalVisible = false;
+      this.$emit('close');
+    },
     toggle(event) {
-      if (this.$refs.menu) {
-        this.$refs.menu.toggle(event)
+      if (this.$refs.menu_user) {
+        this.$refs.menu_user.toggle(event)
       }
     },
     startEditMode() {
+      console.log("startEditMode")
       this.$emit('update:mode', 'edit')
     },
     showDeleteConfirmation() {
+      console.log("showDeleteConfirmation")
       this.userDeleteModalVisible = true;
     },
     resetDrawer() {
@@ -215,6 +248,26 @@ export default {
     },
     async save() {
       this.errors = validateUserForm(this.formData)
+      if (Object.keys(this.errors).length > 0) return
+
+      const birthdateObj = this.formData.birthdate instanceof Date
+        ? this.formData.birthdate
+        : new Date(this.formData.birthdate)
+
+      const payload = {
+        ...this.formData,
+        birthdate: birthdateObj.toISOString().split('T')[0]
+      }
+
+      if (this.mode === 'add') {
+        this.$emit('addUser', payload, async (userID) => {
+          this.$emit('update:mode', 'view')
+        });
+      } else if (this.mode === 'edit') {
+        this.$emit('updateUser', payload, async () => {
+          this.$emit('update:mode', 'view')
+        });
+      }
     }
   }
 }
