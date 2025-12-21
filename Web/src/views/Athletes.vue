@@ -64,7 +64,7 @@
 <script>
 import { supabase } from '../../utils/supabase'
 import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
-import { uploadImageToSupabase } from '../../utils/athleteUtils'
+import { uploadImageToSupabase } from '../../utils/utils'
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
 
@@ -122,7 +122,7 @@ export default {
     async addAthlete(formData) {
       const pfpUrl =
         formData.pfp instanceof File
-          ? await uploadImageToSupabase(formData.pfp)
+          ? await uploadImageToSupabase(formData.pfp, "athlete-images")
           : formData.pfp || null
 
       const { data, error } = await supabase
@@ -159,7 +159,7 @@ export default {
       let pfpUrl = formData.pfp;
 
       if (formData.pfp instanceof File)
-        pfpUrl = await uploadImageToSupabase(formData.pfp);
+        pfpUrl = await uploadImageToSupabase(formData.pfp, "athlete-images");
 
       const { data, error } = await supabase.from('t_athlete').update([
         {

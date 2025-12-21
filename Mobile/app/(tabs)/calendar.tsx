@@ -86,8 +86,8 @@ export default function HomeScreen() {
             <View key={r.reminderID} style={styles.reminderRow}>
               {/* Lado esquerdo: hora */}
               <View style={styles.timeBox}>
-                <Text style={styles.timeText}>{r.timeStart?.slice(0,5) ?? "--:--"}</Text>
-                <Text style={styles.timeText}>{r.timeEnd?.slice(0,5) ?? "--:--"}</Text>
+                <Text style={styles.timeText}>{r.timeStart?.slice(0,5)}</Text>
+                <Text style={styles.timeText}>{r.timeEnd?.slice(0,5)}</Text>
               </View>
 
               {/* Lado direito: title */}

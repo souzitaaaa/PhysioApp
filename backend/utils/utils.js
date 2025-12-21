@@ -32,7 +32,7 @@ export const SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
 export const TOKEN_PATH = "token.json";
 
 //? Update Accountable Payload
-const STRIP_FIELDS = ['_isNew', 'created_at', 'relation'];
+const STRIP_FIELDS = ['_isNew', 'created_at', 'relation_name', 'athlete_name'];
 
 export function stripIsNew(data) {
     const sanitize = obj =>
