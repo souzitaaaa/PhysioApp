@@ -1,35 +1,144 @@
 <template>
-  <div class="flex justify-center px-5 mt-4">
-    <img src="/images/logo-big.svg" alt="Logo" class="max-w-[140px] mb-5" />
+  <div :class="[
+    'flex flex-col p-4 rounded-xl transition-all duration-300',
+    isCollapsed ? 'w-16' : 'w-48'
+  ]" style="background-color: var(--color-primary);">
+    <!-- Logo -->
+    <div class="flex items-center justify-center shrink-0 mb-2">
+      <img :src="isCollapsed ? '/images/logo-small.svg' : '/images/logo-big.svg'" alt="Logo"
+        :class="isCollapsed ? 'max-w-12' : 'max-w-28'" />
+    </div>
+
+    <!-- Menu Items -->
+    <div class="overflow-y-auto flex-1">
+      <ul v-for="(menu, index) in menus" :key="index" class="list-none pt-4 m-0">
+        <li>
+          <!-- Title -->
+          <div class="mb-2 flex items-center justify-between text-gray-400">
+            <span class="font-semibold text-xs truncate whitespace-nowrap overflow-hidden text-center"
+              :title="menu.label">
+              {{ menu.label }}
+            </span>
+          </div>
+
+          <ul class="list-none p-0 m-0 overflow-hidden">
+            <li v-for="(item, itemIndex) in menu.items" :key="itemIndex">
+              <RouterLink :to="item.route" :class="[
+                'group mb-2 py-2 px-2 rounded-lg transition-all duration-200',
+                isCollapsed
+                  ? 'flex justify-center items-center text-white hover:bg-white hover:text-[--color-primary]'
+                  : 'flex items-center gap-3 text-white hover:bg-white hover:text-[--color-primary]'
+              ]">
+                <!-- Icon -->
+                <i :class="[item.icon, 'text-lg transition-colors duration-200']"></i>
+
+                <!-- Label -->
+                <h1 v-if="!isCollapsed" class="text-base font-semibold transition-colors duration-200">
+                  {{ item.label }}
+                </h1>
+
+                <!-- Badge -->
+                <span v-if="item.badge && !isCollapsed" class="ml-auto inline-flex items-center justify-center
+           bg-white rounded-lg font-bold transition-colors duration-200"
+                  style="min-width:1.5rem;height:1.5rem;color: var(--color-primary);">
+                  {{ item.badge }}
+                </span>
+              </RouterLink>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="mt-auto">
+      <hr class="mb-4 border-t border-0 border-gray-400" />
+      <div class="flex items-center shrink-0" :class="isCollapsed ? 'justify-center' : 'justify-between'">
+        <!-- Avatar + Username (hidden when collapsed) -->
+        <template v-if="!isCollapsed" class="flex items-center">
+          <Avatar :image="'/images/ado.jpg'" alt="UserPfp" shape="circle"></Avatar>
+          <p :class="isCollapsed ? 'ml-0' : 'ml-2'" class="text-base font-base text-white truncate max-w-[85px]">
+            aaaaaaaaaaaaaaa
+          </p>
+        </template>
+
+        <!-- Logout Icon -->
+        <span :class="isCollapsed ? 'ml-0' : 'ml-auto'">
+          <span role="button" aria-label="Logout"
+            class="text-white cursor-pointer transition duration-200 hover:opacity-60">
+            <i class="fa-solid fa-right-from-bracket text-lg"></i>
+          </span>
+        </span>
+      </div>
+    </div>
+
   </div>
 
-  <div class="mt-5 flex flex-col gap-3">
-    <div v-for="(item, index) in navOptions" :key="index" class="flex justify-end items-center">
-      <RouterLink
-        :to="item.route"
-        class="flex justify-start content-center button-sidebar color-grey-details"
-      >
-        <i :class="['fa-solid', item.icon, 'text-2xl']"></i>
-        <h1 class="text-base ms-6">{{ item.text }}</h1>
-      </RouterLink>
-    </div>
-  </div>
 </template>
 
 <script>
+import { safeGet } from '../../utils/utils.js'
+import axios from 'axios';
+
 export default {
   data() {
     return {
-      navOptions: [
-        { text: 'Início', icon: 'fa-house', route: '/' },
-        { text: 'Emails', icon: 'fa-envelope', route: '/email' },
-        { text: 'Atletas', icon: 'fa-dumbbell', route: '/atletas' },
-        { text: 'Utilizadores', icon: 'fa-users', route: '/utilizadores' },
+      sidebarOpen: true,
+      windowWidth: window.innerWidth,
+      collapseWidth: 768,
+      emailErrorCount: [],
+      menus: [
+        {
+          label: 'GERAL',
+          items: [
+            { label: 'Dashboard', icon: 'fa-solid fa-house', route: '/' },
+            { label: 'Emails', icon: 'fa-solid fa-envelope', route: '/email', badge: '' },
+            { label: 'Atletas', icon: 'fa-solid fa-dumbbell', route: '/atletas' },
+          ]
+        },
+        {
+          label: 'ADMINISTRADOR',
+          items: [
+            { label: 'Utilizadores', icon: 'fa-solid fa-users', route: '/utilizadores' },
+          ]
+        }
       ],
     }
   },
+  computed: {
+    isCollapsed() {
+      return this.windowWidth < this.collapseWidth;
+    },
+  },
   mounted() {
-  }
+    window.addEventListener('resize', this.handleResize);
+    this.loadEmailErrorCount()
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  },
+  methods: {
+    async loadEmailErrorCount() {
+      const response = await safeGet(
+        axios.get('http://localhost:3000/emails/error_count'),
+        { count: 0 }
+      );
+
+      this.emailErrorCount = response.count;
+
+      this.menus.forEach(menu => {
+        menu.items.forEach(item => {
+          if (item.label === 'Emails') {
+            item.badge = this.emailErrorCount > 0 ? this.emailErrorCount : '';
+          }
+        });
+      });
+
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth;
+    },
+  },
 }
 
 </script>

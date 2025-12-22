@@ -5,8 +5,16 @@ body,
 #app {
   height: 100%;
   overflow: hidden;
+  margin: 0;
 }
 
+.main-container {
+  background-color: var(--color-primary);
+}
+
+.content-container {
+  background-color: var(--color-background);
+}
 
 .color-grey-details {
     color: var(--color-grey);

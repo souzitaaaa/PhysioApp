@@ -1,12 +1,10 @@
 <template>
-  <div class="h-full flex main-container">
-    <!-- Sidebar -->
-    <div v-show="sidebarOpen" class="w-64">
-      <Sidebar />
-    </div>
-    <!-- Content -->
-    <div class="w-full flex flex-col rounded-l-2xl content-container p-9 overflow-hidden">
-      <RouterView />
+  <div class="w-full h-full flex p-2 gap-2 bg-gray-300">
+    <Sidebar />
+    <div class="flex-1 h-full overflow-y-auto">
+      <div class="w-auto h-full rounded-2xl p-4 bg-white">
+        <RouterView />
+      </div>
     </div>
   </div>
 </template>

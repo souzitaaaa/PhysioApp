@@ -143,7 +143,7 @@ export default {
           {
             name: formData.name,
             birthdate: formData.birthdate,
-            email: formData.email,
+            email: formData.email,  
             phoneNumber: formData.phoneNumber,
             pfp: pfpUrl,
             nationality: formData.nationality,

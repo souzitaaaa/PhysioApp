@@ -22,6 +22,33 @@ export async function getEmailByID(req, res) {
 	return res.json(data);
 }
 
+// GET | Email Count with StatusID = 1 (Error)
+export async function getEmailErrorCount(req, res) {
+	const { count, error } = await supabase
+		.from("t_injury_record")
+		.select("*", { count: "exact", head: true })
+		.eq("statusID", 1);
+
+	if (error) return res.status(500).json({ error: error.message });
+
+	return res.json({ count });
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//! HELPER FUNCTIONS FOR GMAIL LOGIC
+
 // GET | Email with ID already exists
 export async function getEmailExists(emailID) {
 	const { data, error } = await supabase

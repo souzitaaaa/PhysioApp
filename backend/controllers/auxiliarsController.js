@@ -23,3 +23,27 @@ export async function getUserType(req, res) {
 	if (error) return res.status(500).json({ error });
 	return res.json(data);
 }
+
+// GET | Athletes Injury Summary
+export async function getAthleteInjurySummary(req, res) {
+	const { data, error } = await supabase.from("v_athlete_injury_summary").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+// GET | Athletes Stats Summary
+export async function getAthleteStatsSummary(req, res) {
+	const { data, error } = await supabase.from("v_total_athletes_summary").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+// GET | Injuries by Month
+export async function getInjuriesByMonth(req, res) {
+	const { data, error } = await supabase.from("v_injuries_by_month").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}

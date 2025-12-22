@@ -1,5 +1,61 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+      <!-- Health Overview Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-48">
+        <template #content>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-black"></i>
+            <span class="text-sm font-bold text-gray-700">Estado de Saúde dos Atletas</span>
+          </div>
+          <div class="px-2 flex flex-col justify-center items-center h-full">
+            <HealthPieChart v-if="healthOverview" :chartData="healthOverview" :height="120" />
+            <div v-else class="flex items-center justify-center h-28 text-gray-400">
+              <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
+
+
+      <!-- Placeholder Cards -->
+      <Card class="shadow-md lg:col-span-1 bg-amber-200! h-48"></Card>
+      <Card class="shadow-md lg:col-span-1 bg-amber-200! h-48"></Card>
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-48">
+        <template #content>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-calendar text-black"></i>
+            <span class="text-sm font-bold text-gray-700">Lesões nos Últimos 12 Meses</span>
+          </div>
+          <div class="px-2 flex flex-col justify-center items-center h-full">
+            <MonthlyInjuriesChart v-if="injuriesByMonth" :chartData="injuriesByMonth" :height="120" />
+            <div v-else class="flex items-center justify-center h-28 text-gray-400">
+              <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+            </div>
+          </div>
+        </template>
+      </Card>
+    </div>
+
+    <!-- Stats Cards Section -->
+    <!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      <Card class="shadow-md lg:col-span-1">
+        <template #title>
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-chart-bar text-purple-500"></i>
+            <span class="text-lg">Distribuição de Lesões por Escalão</span>
+          </div>
+        </template>
+<template #content>
+          <DivisionInjuryChart v-if="divisionStats.length > 0" :divisionData="divisionStats" :height="280" />
+          <div v-else class="flex items-center justify-center h-64 text-gray-400">
+            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+          </div>
+        </template>
+</Card>
+</div> -->
+
     <Toolbar class="mb-4">
       <template #start>
         <IconField>
@@ -64,6 +120,8 @@
 <script>
 import { supabase } from '../../utils/supabase'
 import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
+import HealthPieChart from './AthleteComponents/HealthPieChart.vue'
+import MonthlyInjuriesChart from './AthleteComponents/MonthlyInjuriesChart.vue'
 import { uploadImageToSupabase } from '../../utils/utils'
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
@@ -71,18 +129,35 @@ import { safeGet } from '../../utils/utils.js'
 export default {
   components: {
     AthletesDrawer,
+    HealthPieChart,
+    MonthlyInjuriesChart
   },
   data() {
     return {
       athletes: [],
+      healthOverview: [],
+      injuriesByMonth: [],
       selectedAthlete: null,
       athleteDrawerVisible: false,
       drawerMode: 'view',
     }
   },
+  computed: {
+    totalAthletes() {
+      return this.athletes.length
+    },
+    healthyAthletes() {
+      return this.athletes.filter(a => !a.injuredBit).length
+    },
+    injuredAthletes() {
+      return this.athletes.filter(a => a.injuredBit).length
+    }
+  },
   watch: {},
   mounted() {
     this.getAthleteData()
+    this.loadHealthOverview()
+    this.loadInjuriesByMonth()
   },
   methods: {
     async getAthleteData(athleteID) {
@@ -95,6 +170,21 @@ export default {
       if (athleteID) return data;
 
       this.athletes = data;
+    },
+    async loadHealthOverview() {
+      const response = await safeGet(
+        axios.get('http://localhost:3000/aux/stats/athleteSummary'),
+        null
+      );
+      this.healthOverview = response[0];
+      console.log('Health Overview:', response[0]);
+    },
+    async loadInjuriesByMonth() {
+      const response = await safeGet(
+        axios.get('http://localhost:3000/aux/stats/injuriesByMonth'),
+        null
+      );
+      this.injuriesByMonth = response;
     },
     exportCSV() {
       this.$refs.dt.exportCSV()

@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import Email from '../views/Email.vue'
 import Athletes from '../views/Athletes.vue'
 import Users from '../views/Users.vue'
+import Tests from '../views/Tests.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'Users',
       component: Users,
       meta: { title: 'Users' },
+    },
+    {
+      path: '/tests',
+      name: 'Tests',
+      component: Tests,
+      meta: { title: 'Tests' },
     },
   ],
 })
