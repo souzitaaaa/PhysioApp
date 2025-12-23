@@ -24,9 +24,17 @@ export async function getUserType(req, res) {
 	return res.json(data);
 }
 
-// GET | Athletes Injury Summary
+// GET | Athletes Monthly Summary
 export async function getAthletesStatistics(req, res) {
 	const { data, error } = await supabase.from("v_monthly_comparison").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+// GET | Users Monthly Summary
+export async function getUsersStatistics(req, res) {
+	const { data, error } = await supabase.from("v_user_monthly_stats").select("*");
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);

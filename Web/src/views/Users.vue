@@ -1,22 +1,148 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
+    <span class="text-xs font-medium text-gray-600 px-1 pb-1">Estatísticas mensais</span>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+      <!-- Emails Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
+        <template #content>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-envelope text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Emails Recebidos</span>
+          </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ userStatistics?.emails_this_month ?? '-' }}
+            </span>
+            <Tag v-if="userStatistics?.emails_percent_change !== null &&
+              userStatistics?.emails_percent_change !== undefined &&
+              !isNaN(userStatistics?.emails_percent_change)"
+              :severity="userStatistics.emails_percent_change >= 0 ? 'success' : 'danger'"
+              :icon="userStatistics.emails_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+              v-tooltip.bottom="{
+                value: userStatistics.emails_percent_change >= 0
+                  ? `Aumento de ${Math.abs(userStatistics.emails_percent_change).toFixed(1)}% em emails enviados comparado ao mês passado (${userStatistics.emails_last_month} → ${userStatistics.emails_this_month})`
+                  : `Diminuição de ${Math.abs(userStatistics.emails_percent_change).toFixed(1)}% em emails enviados comparado ao mês passado (${userStatistics.emails_last_month} → ${userStatistics.emails_this_month})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
+              {{ Math.abs(userStatistics.emails_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
+          </div>
+        </template>
+      </Card>
+      <!-- Cases Closed Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
+        <template #content>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-check-circle text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Lesões Fechadas</span>
+          </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ userStatistics?.cases_closed_this_month ?? '-' }}
+            </span>
+            <Tag v-if="userStatistics?.cases_closed_percent_change !== null &&
+              userStatistics?.cases_closed_percent_change !== undefined &&
+              !isNaN(userStatistics?.cases_closed_percent_change)"
+              :severity="userStatistics.cases_closed_percent_change >= 0 ? 'success' : 'danger'"
+              :icon="userStatistics.cases_closed_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+              v-tooltip.bottom="{
+                value: userStatistics.cases_closed_percent_change >= 0
+                  ? `Aumento de ${Math.abs(userStatistics.cases_closed_percent_change).toFixed(1)}% em casos fechados comparado ao mês passado (${userStatistics.cases_closed_last_month} → ${userStatistics.cases_closed_this_month})`
+                  : `Diminuição de ${Math.abs(userStatistics.cases_closed_percent_change).toFixed(1)}% em casos fechados comparado ao mês passado (${userStatistics.cases_closed_last_month} → ${userStatistics.cases_closed_this_month})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
+              {{ Math.abs(userStatistics.cases_closed_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
+          </div>
+        </template>
+      </Card>
 
-    <Toolbar class="mb-4">
-      <template #start>
-        <IconField>
-          <InputIcon>
-            <i class="fa-solid fa-magnifying-glass" />
-          </InputIcon>
-          <InputText placeholder="Procurar" size="small" />
-        </IconField>
-      </template>
-      <template #end>
-        <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Utilizador" size="small"
-          @click="createUserDrawer" />
-      </template>
-    </Toolbar>
+      <!-- Notes Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
+        <template #content>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-note-sticky text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Notas Efetuadas</span>
+          </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ userStatistics?.notes_this_month ?? '-' }}
+            </span>
+            <Tag v-if="userStatistics?.notes_percent_change !== null &&
+              userStatistics?.notes_percent_change !== undefined &&
+              !isNaN(userStatistics?.notes_percent_change)"
+              :severity="userStatistics.notes_percent_change >= 0 ? 'success' : 'danger'"
+              :icon="userStatistics.notes_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+              v-tooltip.bottom="{
+                value: userStatistics.notes_percent_change >= 0
+                  ? `Aumento de ${Math.abs(userStatistics.notes_percent_change).toFixed(1)}% em notas criadas comparado ao mês passado (${userStatistics.notes_last_month} → ${userStatistics.notes_this_month})`
+                  : `Diminuição de ${Math.abs(userStatistics.notes_percent_change).toFixed(1)}% em notas criadas comparado ao mês passado (${userStatistics.notes_last_month} → ${userStatistics.notes_this_month})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
+              {{ Math.abs(userStatistics.notes_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
+          </div>
+        </template>
+      </Card>
+
+      <!-- Reminders Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
+        <template #content>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-bell text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Lembretes Criados</span>
+          </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ userStatistics?.reminders_created_this_month ?? '-' }}
+            </span>
+            <Tag v-if="userStatistics?.reminders_percent_change !== null &&
+              userStatistics?.reminders_percent_change !== undefined &&
+              !isNaN(userStatistics?.reminders_percent_change)"
+              :severity="userStatistics.reminders_percent_change >= 0 ? 'success' : 'danger'"
+              :icon="userStatistics.reminders_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+              v-tooltip.bottom="{
+                value: userStatistics.reminders_percent_change >= 0
+                  ? `Aumento de ${Math.abs(userStatistics.reminders_percent_change).toFixed(1)}% em lembretes criados comparado ao mês passado (${userStatistics.reminders_created_last_month} → ${userStatistics.reminders_created_this_month})`
+                  : `Diminuição de ${Math.abs(userStatistics.reminders_percent_change).toFixed(1)}% em lembretes criados comparado ao mês passado (${userStatistics.reminders_created_last_month} → ${userStatistics.reminders_created_this_month})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
+              {{ Math.abs(userStatistics.reminders_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
+          </div>
+        </template>
+      </Card>
+    </div>
 
     <DataTable ref="dt" :value="users" dataKey="userID" class="style-table" scrollable scrollHeight="flex">
+      <template #header>
+        <Toolbar class="border-0!">
+          <template #start>
+            <IconField>
+              <InputIcon>
+                <i class="fa-solid fa-magnifying-glass" />
+              </InputIcon>
+              <InputText placeholder="Procurar" size="small" />
+            </IconField>
+          </template>
+          <template #end>
+            <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Utilizador" size="small"
+              @click="createUserDrawer" />
+          </template>
+        </Toolbar>
+      </template>
       <Column header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
@@ -83,6 +209,7 @@ export default {
     return {
       users: [],
       selectedUser: null,
+      userStatistics: [],
       userDrawerVisible: false,
       drawerMode: 'view',
     }
@@ -90,6 +217,7 @@ export default {
   watch: {},
   mounted() {
     this.getUserData()
+    this.loadUsersStatistics()
   },
   methods: {
     async getUserData(userID) {
@@ -102,6 +230,14 @@ export default {
       if (userID) return data;
 
       this.users = data
+    },
+    async loadUsersStatistics() {
+      const response = await safeGet(
+        axios.get('http://localhost:3000/aux/stats/users/statistics'),
+        null
+      );
+      this.userStatistics = response[0];
+      console.log('loadUsersStatistics:', response[0]);
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
@@ -143,7 +279,7 @@ export default {
           {
             name: formData.name,
             birthdate: formData.birthdate,
-            email: formData.email,  
+            email: formData.email,
             phoneNumber: formData.phoneNumber,
             pfp: pfpUrl,
             nationality: formData.nationality,

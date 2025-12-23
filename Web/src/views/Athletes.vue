@@ -17,7 +17,15 @@
               athleteStatistics?.healthy_athletes_percent_change !== undefined &&
               !isNaN(athleteStatistics?.healthy_athletes_percent_change)"
               :severity="athleteStatistics.healthy_athletes_percent_change >= 0 ? 'success' : 'danger'"
-              :icon="athleteStatistics.healthy_athletes_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'">
+              :icon="athleteStatistics.healthy_athletes_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+              v-tooltip.bottom="{
+                value: athleteStatistics.healthy_athletes_percent_change >= 0
+                  ? `Aumento de ${Math.abs(athleteStatistics.healthy_athletes_percent_change).toFixed(1)}% em atletas saudáveis comparado ao mês passado (${athleteStatistics.healthy_athletes_last_month} → ${athleteStatistics.healthy_athletes_current})`
+                  : `Diminuição de ${Math.abs(athleteStatistics.healthy_athletes_percent_change).toFixed(1)}% em atletas saudáveis comparado ao mês passado (${athleteStatistics.healthy_athletes_last_month} → ${athleteStatistics.healthy_athletes_current})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
               {{ Math.abs(athleteStatistics.healthy_athletes_percent_change).toFixed(1) }}%
             </Tag>
             <span v-else class="text-xs text-gray-400">-</span>
@@ -40,7 +48,15 @@
               athleteStatistics?.injured_athletes_percent_change !== undefined &&
               !isNaN(athleteStatistics?.injured_athletes_percent_change)"
               :severity="athleteStatistics.injured_athletes_percent_change <= 0 ? 'success' : 'danger'"
-              :icon="athleteStatistics.injured_athletes_percent_change <= 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'">
+              :icon="athleteStatistics.injured_athletes_percent_change <= 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'"
+              v-tooltip.bottom="{
+                value: athleteStatistics.injured_athletes_percent_change >= 0
+                  ? `Aumento de ${Math.abs(athleteStatistics.injured_athletes_percent_change).toFixed(1)}% em atletas lesionados comparado ao mês passado (${athleteStatistics.injured_athletes_last_month} → ${athleteStatistics.injured_athletes_current})`
+                  : `Diminuição de ${Math.abs(athleteStatistics.injured_athletes_percent_change).toFixed(1)}% em atletas lesionados comparado ao mês passado (${athleteStatistics.injured_athletes_last_month} → ${athleteStatistics.injured_athletes_current})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
               {{ Math.abs(athleteStatistics.injured_athletes_percent_change).toFixed(1) }}%
             </Tag>
             <span v-else class="text-xs text-gray-400">-</span>
@@ -63,7 +79,15 @@
               athleteStatistics?.injuries_this_month_percent_change !== undefined &&
               !isNaN(athleteStatistics?.injuries_this_month_percent_change)"
               :severity="athleteStatistics.injuries_this_month_percent_change >= 0 ? 'danger' : 'success'"
-              :icon="athleteStatistics.injuries_this_month_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'">
+              :icon="athleteStatistics.injuries_this_month_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+              v-tooltip.bottom="{
+                value: athleteStatistics.injuries_this_month_percent_change >= 0
+                  ? `Aumento de ${Math.abs(athleteStatistics.injuries_this_month_percent_change).toFixed(1)}% em novos registos de lesões este mês comparado ao mês passado (${athleteStatistics.injuries_last_month} → ${athleteStatistics.injuries_this_month})`
+                  : `Diminuição de ${Math.abs(athleteStatistics.injuries_this_month_percent_change).toFixed(1)}% em novos registos de lesões este mês comparado ao mês passado (${athleteStatistics.injuries_last_month} → ${athleteStatistics.injuries_this_month})`,
+                showDelay: 300,
+                hideDelay: 200,
+                class: 'text-xs'
+              }">
               {{ Math.abs(athleteStatistics.injuries_this_month_percent_change).toFixed(1) }}%
             </Tag>
             <span v-else class="text-xs text-gray-400">-</span>
@@ -87,46 +111,31 @@
       </Card>
     </div>
 
-    <!-- Stats Cards Section -->
-    <!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-      <Card class="shadow-md lg:col-span-1">
-        <template #title>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-chart-bar text-purple-500"></i>
-            <span class="text-lg">Distribuição de Lesões por Escalão</span>
-          </div>
-        </template>
-<template #content>
-          <DivisionInjuryChart v-if="divisionStats.length > 0" :divisionData="divisionStats" :height="280" />
-          <div v-else class="flex items-center justify-center h-64 text-gray-400">
-            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
-          </div>
-        </template>
-</Card>
-</div> -->
+    <DataTable ref="dt" v-model:filters="filters" :value="athletes" stripedRows dataKey="athleteID"
+      class="style-table shadow-md!" paginator :rows="8" scrollable scrollHeight="flex" :filters="filters"
+      filterDisplay="menu" :globalFilterFields="['name', 'email']">
+      <template #header>
+        <Toolbar class="border-0!">
+          <template #start>
+            <IconField>
+              <InputIcon>
+                <i class="fa-solid fa-magnifying-glass" />
+              </InputIcon>
+              <InputText v-model="filters['global'].value" placeholder="Procurar" size="small" />
+            </IconField>
+          </template>
+          <template #center>
+            <Button v-if="1 == true" icon="fa-solid fa-download" severity="secondary" text @click="exportCSV($event)"
+              size="small" v-tooltip.bottom="{ value: 'Exportar Informação', showDelay: 500, hideDelay: 250 }" />
+          </template>
+          <template #end>
+            <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Atleta" size="small"
+              @click="createAthleteDrawer" />
+          </template>
+        </Toolbar>
 
-    <Toolbar class="mb-4">
-      <template #start>
-        <IconField>
-          <InputIcon>
-            <i class="fa-solid fa-magnifying-glass" />
-          </InputIcon>
-          <InputText placeholder="Procurar" size="small" />
-        </IconField>
       </template>
-      <template #center>
-        <Button v-if="1 === true" icon="fa-solid fa-download" severity="secondary" text @click="exportCSV($event)"
-          size="small" v-tooltip.bottom="{ value: 'Exportar Informação', showDelay: 500, hideDelay: 250 }" />
-      </template>
-      <template #end>
-        <Button icon="fa-solid fa-plus" class="mr-2" severity="success" label="Criar Atleta" size="small"
-          @click="createAthleteDrawer" />
-      </template>
-    </Toolbar>
-
-    <DataTable ref="dt" :value="athletes" stripedRows dataKey="athleteID" class="style-table" paginator :rows="10"
-      scrollable scrollHeight="flex">
-      <Column header="Nome" style="min-width: 16rem">
+      <Column field="name" header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
             <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
@@ -136,8 +145,18 @@
           </div>
         </template>
       </Column>
-      <Column field="division" header="Escalão"></Column>
-      <Column header="Idade">
+      <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false"
+        :filterMenuStyle="{ width: '8rem' }" style="min-width: 8rem">
+        <template #body="{ data }">
+          {{ data.division }}
+        </template>
+        <template #filter="{ filterModel, filterCallback }">
+          <MultiSelect v-model="filterModel.value" :options="uniqueDivisions" placeholder="Selecionar" showClear
+            @change="filterCallback()" class="p-column-filter" size="small">
+          </MultiSelect>
+        </template>
+      </Column>
+      <Column field="age" header="Idade">
         <template #body="{ data }">
           <div class="flex flex-col">
             <span class="">{{ data.age }}</span>
@@ -146,7 +165,7 @@
         </template>
       </Column>
       <Column field="nationality" header="Nacionalidade"></Column>
-      <Column header="Contactos">
+      <Column field="email" header="Contactos">
         <template #body="{ data }">
           <div class="flex flex-col">
             <span class="text-base">{{ data.phoneNumber }}</span>
@@ -172,6 +191,7 @@ import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
 import HealthPieChart from './AthleteComponents/HealthPieChart.vue'
 import MonthlyInjuriesChart from './AthleteComponents/MonthlyInjuriesChart.vue'
 import { uploadImageToSupabase } from '../../utils/utils'
+import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
 
@@ -187,6 +207,7 @@ export default {
       athleteStatistics: [],
       selectedAthlete: null,
       athleteDrawerVisible: false,
+      filters: {},
       drawerMode: 'view',
     }
   },
@@ -199,9 +220,26 @@ export default {
     },
     injuredAthletes() {
       return this.athletes.filter(a => a.injuredBit).length
+    },
+    uniqueDivisions() {
+      // Extract unique divisions from athletes array
+      const divisions = this.athletes.map(a => a.division).filter(Boolean);
+      return [...new Set(divisions)].sort();
     }
   },
-  watch: {},
+  created() {
+    this.initFilters();
+  },
+  watch: {
+    athletes: {
+      handler(newVal) {
+        if (newVal && newVal.length > 0) {
+          console.log('Athletes loaded, unique divisions:', this.uniqueDivisions);
+        }
+      },
+      immediate: true
+    }
+  },
   mounted() {
     this.getAthleteData()
     this.loadAthletesStatistics()
@@ -217,6 +255,7 @@ export default {
       if (athleteID) return data;
 
       this.athletes = data;
+      console.log('Unique divisions:', this.uniqueDivisions);
     },
     async loadAthletesStatistics() {
       const response = await safeGet(
@@ -225,6 +264,17 @@ export default {
       );
       this.athleteStatistics = response[0];
       console.log('loadAthletesStatistics:', response[0]);
+    },
+    initFilters() {
+      this.filters = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        division: {
+          operator: FilterOperator.AND,
+          constraints: [
+            { value: null, matchMode: FilterMatchMode.IN }
+          ]
+        }
+      }
     },
     exportCSV() {
       this.$refs.dt.exportCSV()

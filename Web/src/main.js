@@ -43,6 +43,8 @@ import Card from 'primevue/card';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 import Timeline from 'primevue/timeline';
+import MultiSelect from 'primevue/multiselect';
+
 
 import { myPreset } from './theme'
 
@@ -59,6 +61,7 @@ app.use(PrimeVue, {
   },
 });
 
+app.component('MultiSelect', MultiSelect);
 app.component('Button', Button);
 app.component('Tag', Tag);
 app.component('ToggleSwitch', ToggleSwitch);
