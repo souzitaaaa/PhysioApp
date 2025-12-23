@@ -99,6 +99,7 @@
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span class="text-xl font-bold">Gestão dos Fisios</span>
+            <DivisionInjuryChart v-if="divisionData" :divisionData="divisionData"/>
           </div>
         </template>
 
@@ -109,21 +110,34 @@
 
 <script>
 import { supabase } from '../../utils/supabase'
+import DivisionInjuryChart from './AthleteComponents/DivisionInjuryChart.vue'
+import { safeGet } from '../../utils/utils.js'
+import axios from 'axios';
 
 export default {
-  components: {},
+  components: { DivisionInjuryChart },
   data() {
     return {
       athletes: [],
       injuryRecords: [],
+      divisionData: [],
     }
   },
   watch: {},
   mounted() {
     this.getAthleteData()
     this.getInjuryRecords()
+    this.getDivisionData()
   },
   methods: {
+    async getDivisionData() {
+      const response = await safeGet(
+        axios.get('http://localhost:3000/aux/stats/athleteInjurySummary'),
+        null
+      );
+      this.divisionData = response;
+      console.log('Health Overview:', response);
+    },
     async getInjuryRecords() {
       const { data, error } = await supabase.from('t_injury_record').select(`
       id,

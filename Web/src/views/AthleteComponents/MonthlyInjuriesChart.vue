@@ -53,7 +53,6 @@ export default {
                         rotate: -45,
                         style: { fontSize: "12px" },
                         formatter: function (val, index) {
-                            // return empty string for skipped labels, not null
                             return index % 2 === 0 ? val : "";
                         },
                     },

@@ -25,6 +25,14 @@ export async function getUserType(req, res) {
 }
 
 // GET | Athletes Injury Summary
+export async function getAthletesStatistics(req, res) {
+	const { data, error } = await supabase.from("v_monthly_comparison").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+// GET | Athletes Injury Summary
 export async function getAthleteInjurySummary(req, res) {
 	const { data, error } = await supabase.from("v_athlete_injury_summary").select("*");
 

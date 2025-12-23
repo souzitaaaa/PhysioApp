@@ -20,7 +20,7 @@ export default {
         },
         height: {
             type: Number,
-            default: 300
+            default: 350
         }
     },
     computed: {
@@ -45,7 +45,7 @@ export default {
                 chart: {
                     type: 'bar',
                     height: this.height,
-                    stacked: false,
+                    stacked: true,
                     toolbar: { show: false }
                 },
                 plotOptions: {
@@ -64,7 +64,7 @@ export default {
                     },
                     formatter: function (val, opt) {
                         const seriesName = opt.w.config.series[opt.seriesIndex].name
-                        return `${seriesName}: ${val}`
+                        return `${val}`
                     }
                 },
                 stroke: {

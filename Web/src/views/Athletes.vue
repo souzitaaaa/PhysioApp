@@ -1,38 +1,87 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-
+    <span class="text-xs font-medium text-gray-600 px-1 pb-1">Estatísticas mensais</span>
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
       <!-- Health Overview Card -->
-      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-48">
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
         <template #content>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-chart-pie text-black"></i>
-            <span class="text-sm font-bold text-gray-700">Estado de Saúde dos Atletas</span>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-heart-pulse text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Saudáveis</span>
           </div>
-          <div class="px-2 flex flex-col justify-center items-center h-full">
-            <HealthPieChart v-if="healthOverview" :chartData="healthOverview" :height="120" />
-            <div v-else class="flex items-center justify-center h-28 text-gray-400">
-              <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
-            </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ athleteStatistics?.healthy_athletes_current ?? '-' }}
+            </span>
+            <Tag v-if="athleteStatistics?.healthy_athletes_percent_change !== null &&
+              athleteStatistics?.healthy_athletes_percent_change !== undefined &&
+              !isNaN(athleteStatistics?.healthy_athletes_percent_change)"
+              :severity="athleteStatistics.healthy_athletes_percent_change >= 0 ? 'success' : 'danger'"
+              :icon="athleteStatistics.healthy_athletes_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'">
+              {{ Math.abs(athleteStatistics.healthy_athletes_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
           </div>
         </template>
       </Card>
 
-
-      <!-- Placeholder Cards -->
-      <Card class="shadow-md lg:col-span-1 bg-amber-200! h-48"></Card>
-      <Card class="shadow-md lg:col-span-1 bg-amber-200! h-48"></Card>
-      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-48">
+      <!-- Injured Athletes Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
         <template #content>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-calendar text-black"></i>
-            <span class="text-sm font-bold text-gray-700">Lesões nos Últimos 12 Meses</span>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-suitcase-medical text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Lesionados</span>
           </div>
-          <div class="px-2 flex flex-col justify-center items-center h-full">
-            <MonthlyInjuriesChart v-if="injuriesByMonth" :chartData="injuriesByMonth" :height="120" />
-            <div v-else class="flex items-center justify-center h-28 text-gray-400">
-              <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
-            </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ athleteStatistics?.injured_athletes_current ?? '-' }}
+            </span>
+            <Tag v-if="athleteStatistics?.injured_athletes_percent_change !== null &&
+              athleteStatistics?.injured_athletes_percent_change !== undefined &&
+              !isNaN(athleteStatistics?.injured_athletes_percent_change)"
+              :severity="athleteStatistics.injured_athletes_percent_change <= 0 ? 'success' : 'danger'"
+              :icon="athleteStatistics.injured_athletes_percent_change <= 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up'">
+              {{ Math.abs(athleteStatistics.injured_athletes_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
+          </div>
+        </template>
+      </Card>
+
+      <!-- Injury Records Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
+        <template #content>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-book-medical text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Registos</span>
+          </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ athleteStatistics?.injuries_this_month ?? '-' }}
+            </span>
+            <Tag v-if="athleteStatistics?.injuries_this_month_percent_change !== null &&
+              athleteStatistics?.injuries_this_month_percent_change !== undefined &&
+              !isNaN(athleteStatistics?.injuries_this_month_percent_change)"
+              :severity="athleteStatistics.injuries_this_month_percent_change >= 0 ? 'danger' : 'success'"
+              :icon="athleteStatistics.injuries_this_month_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'">
+              {{ Math.abs(athleteStatistics.injuries_this_month_percent_change).toFixed(1) }}%
+            </Tag>
+            <span v-else class="text-xs text-gray-400">-</span>
+          </div>
+        </template>
+      </Card>
+
+      <!-- Total Athletes Card -->
+      <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
+        <template #content>
+          <div class="flex items-center gap-2 mb-2">
+            <i class="text-sm font-bold fa-solid fa-users text-gray-700"></i>
+            <span class="text-sm font-bold text-gray-700">Total</span>
+          </div>
+          <div class="px-2 flex items-center justify-between">
+            <span class="text-2xl font-bold text-gray-800">
+              {{ athleteStatistics?.total_athletes ?? '-' }}
+            </span>
           </div>
         </template>
       </Card>
@@ -135,8 +184,7 @@ export default {
   data() {
     return {
       athletes: [],
-      healthOverview: [],
-      injuriesByMonth: [],
+      athleteStatistics: [],
       selectedAthlete: null,
       athleteDrawerVisible: false,
       drawerMode: 'view',
@@ -156,8 +204,7 @@ export default {
   watch: {},
   mounted() {
     this.getAthleteData()
-    this.loadHealthOverview()
-    this.loadInjuriesByMonth()
+    this.loadAthletesStatistics()
   },
   methods: {
     async getAthleteData(athleteID) {
@@ -171,20 +218,13 @@ export default {
 
       this.athletes = data;
     },
-    async loadHealthOverview() {
+    async loadAthletesStatistics() {
       const response = await safeGet(
-        axios.get('http://localhost:3000/aux/stats/athleteSummary'),
+        axios.get('http://localhost:3000/aux/stats/athletes/statistics'),
         null
       );
-      this.healthOverview = response[0];
-      console.log('Health Overview:', response[0]);
-    },
-    async loadInjuriesByMonth() {
-      const response = await safeGet(
-        axios.get('http://localhost:3000/aux/stats/injuriesByMonth'),
-        null
-      );
-      this.injuriesByMonth = response;
+      this.athleteStatistics = response[0];
+      console.log('loadAthletesStatistics:', response[0]);
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
