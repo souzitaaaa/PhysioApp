@@ -7,6 +7,7 @@ import { fetchAllReminders, Reminder } from "../../services/reminderService";
 import "../../config/calendarLocale";
 
 import { styles } from "../../css/calendar";
+import { supabase } from "../../scripts/supabase";
 
 export default function HomeScreen() {
   const today = new Date().toISOString().split("T")[0]; 
@@ -16,6 +17,25 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadReminders();
+
+    const channel = supabase
+      .channel("reminders-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "t_reminder",
+        },
+        async () => {
+          await loadReminders();
+        }
+      )
+      .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      }
   }, []);
 
   // Redefinir para hoje sempre que a tela ganhar foco

@@ -10,6 +10,7 @@ import { fetchAthleteByID } from "../../services/athleteService";
 import { fetchAllReminders, Reminder } from "../../services/reminderService";
 
 import { styles } from "../../css/index";
+import { supabase } from "@/scripts/supabase";
 
 type NotificationItem = InjuryRecord & {
   athleteName: string;
@@ -23,6 +24,35 @@ export default function HomeScreen() {
   useEffect(() => {
     loadNotifications();
     loadUpcomingEvents();
+
+    // --- Realtime: Injuries ---
+    const injuryChannel = supabase
+      .channel("injuries-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "t_injury_record" },
+        async () => {
+          await loadNotifications();
+        }
+      )
+      .subscribe();
+
+    // --- Realtime: Reminders ---
+    const remindersChannel = supabase
+      .channel("reminders-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "t_reminder" },
+        async () => {
+          await loadUpcomingEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(injuryChannel);
+      supabase.removeChannel(remindersChannel);
+    };
   }, []);
 
   function formatDateShort(dateString: string) {
@@ -48,7 +78,14 @@ export default function HomeScreen() {
 
   async function loadNotifications() {
     const records = await fetchAllInjuryRecords();
-    const latest = records.slice(0, 4);
+
+    const sortedRecords = records.sort(
+      (a, b) => b.injuryRecordID - a.injuryRecordID
+
+    );
+    
+    const latest = sortedRecords.slice(0,4);
+
     const withNames: NotificationItem[] = [];
 
     for (const record of latest) {

@@ -10,24 +10,48 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 
-import { fetchAllInjuryRecords, InjuryRecord } from "../../services/injuryRecordService";
+import {
+  fetchAllInjuryRecords,
+  InjuryRecord,
+} from "../../services/injuryRecordService";
 import { fetchAthleteByID } from "../../services/athleteService";
+import { supabase } from "../../scripts/supabase";
 
 import { styles } from "../../css/notification";
-
 
 export default function NotificationScreen() {
   const [records, setRecords] = useState<InjuryRecord[]>([]);
   const [expandedID, setExpandedID] = useState<number | null>(null);
-  const [athleteNames, setAthleteNames] = useState<{ [key: number]: string }>({});
+  const [athleteNames, setAthleteNames] = useState<{ [key: number]: string }>(
+    {}
+  );
   const router = useRouter();
 
-  // Carregar os registros ao montar a tela
   useEffect(() => {
-    loadRecords();
-  }, []);
+  loadRecords();
 
-  // Limpar o expandedID quando a tela perder o foco
+  const channel = supabase
+    .channel("injury-records-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*", 
+        schema: "public",
+        table: "t_injury_record",
+      },
+      async () => {
+
+        await loadRecords();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+
   useFocusEffect(
     React.useCallback(() => {
       return () => {
@@ -37,16 +61,27 @@ export default function NotificationScreen() {
   );
 
   async function loadRecords() {
-    const result = await fetchAllInjuryRecords();
-    setRecords(result);
+  const records = await fetchAllInjuryRecords();
 
-    const names: { [key: number]: string } = {};
-    for (const record of result) {
-      const athlete = await fetchAthleteByID(record.athleteID);
-      names[record.injuryRecordID] = athlete ? athlete.name : `Athlete ${record.athleteID}`;
-    }
-    setAthleteNames(names);
+  // Ordena do mais recente para o mais antigo pelo ID
+  const sortedRecords = records.sort(
+    (a, b) => b.injuryRecordID - a.injuryRecordID
+  );
+
+  // Adiciona os nomes dos atletas
+  const withNames: (InjuryRecord & { athleteName: string })[] = [];
+
+  for (const record of sortedRecords) {
+    const athlete = await fetchAthleteByID(record.athleteID);
+    withNames.push({
+      ...record,
+      athleteName: athlete?.name ?? `Athlete ${record.athleteID}`,
+    });
   }
+
+  setRecords(withNames);
+}
+
 
   function toggleExpand(id: number) {
     setExpandedID(expandedID === id ? null : id);
@@ -58,7 +93,8 @@ export default function NotificationScreen() {
 
       {records.map((item) => {
         const expanded = expandedID === item.injuryRecordID;
-        const athleteName = athleteNames[item.injuryRecordID] || `Athlete ${item.athleteID}`;
+        const athleteName =
+          athleteNames[item.injuryRecordID] || `Athlete ${item.athleteID}`;
 
         return (
           <TouchableOpacity
@@ -105,4 +141,3 @@ export default function NotificationScreen() {
     </ScrollView>
   );
 }
-
