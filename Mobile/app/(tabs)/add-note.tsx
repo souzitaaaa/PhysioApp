@@ -21,7 +21,12 @@ import { createReminder } from "../../services/reminderService";
 import { styles } from "../../css/add-note";
 
 export default function AddNoteScreen() {
-  const { injuryRecordID } = useLocalSearchParams<{ injuryRecordID: string }>();
+  const { injuryRecordID, athleteID, athleteName } = useLocalSearchParams<{
+    injuryRecordID: string;
+    athleteID: string;
+    athleteName: string;
+  }>();
+
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -98,15 +103,8 @@ export default function AddNoteScreen() {
 
     // 🔴 Se começou a preencher lembrete, todos os campos são obrigatórios
     if (reminderTouched) {
-      if (
-        reminderTitle.trim() === "" ||
-        !date ||
-        !timeStart ||
-        !timeEnd
-      ) {
-        alert(
-          "Preencha todos os campos."
-        );
+      if (reminderTitle.trim() === "" || !date || !timeStart || !timeEnd) {
+        alert("Preencha todos os campos.");
         return;
       }
     }
@@ -126,12 +124,24 @@ export default function AddNoteScreen() {
     }
 
     resetForm();
-    router.push("/historical");
+    router.replace({
+      pathname: "/historical",
+      params: {
+        athleteID,
+        athleteName,
+      },
+    });
   }
 
   function handleGoBack() {
     resetForm();
-    router.push("/historical");
+    router.replace({
+      pathname: "/historical",
+      params: {
+        athleteID,
+        athleteName,
+      },
+    });
   }
 
   if (loading) {
@@ -196,42 +206,41 @@ export default function AddNoteScreen() {
           />
         )}
 
-        
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ flex: 1, marginRight: 5 }}>
             <Text style={styles.label}>Hora de Início:</Text>
-          <TouchableOpacity
-            style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
-            onPress={() => setShowStartPicker(true)}
-          >
-            <Text>
-              {timeStart
-                ? timeStart.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Selecionar Início"}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
+              onPress={() => setShowStartPicker(true)}
+            >
+              <Text>
+                {timeStart
+                  ? timeStart.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Selecionar Início"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={{ flex: 1, marginRight: 5 }}>
-          <Text style={styles.label}>Hora de Fim:</Text>
+            <Text style={styles.label}>Hora de Fim:</Text>
 
-          <TouchableOpacity
-            style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
-            onPress={() => setShowEndPicker(true)}
-          >
-            <Text>
-              {timeEnd
-                ? timeEnd.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Selecionar Fim"}
-            </Text>
-          </TouchableOpacity>
-           </View>
+            <TouchableOpacity
+              style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
+              onPress={() => setShowEndPicker(true)}
+            >
+              <Text>
+                {timeEnd
+                  ? timeEnd.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Selecionar Fim"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {showStartPicker && (

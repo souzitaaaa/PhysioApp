@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Toolbar class="mb-4">
+    <Toolbar class="mb-4 border-0!">
       <template #start>
         <IconField>
           <InputIcon>
@@ -10,6 +10,10 @@
         </IconField>
       </template>
       <template #end>
+        <!-- Tag com número de emails com erro -->
+        <Tag severity="danger" class="mr-8">
+          Emails com erro [{{ errorCount }}]
+        </Tag>
         <Button icon="fa-solid fa-gear" class="mr-2" severity="secondary" size="small" />
       </template>
     </Toolbar>
@@ -20,7 +24,7 @@
           <div class="flex flex-col p-5 table-email" :class="{ 'expanded': expandedIndex === index }"
             @click="toggleExpand(index)">
             <div class="flex justify-between items-center">
-              <span>{{ data.from }}</span>
+              <span>{{ data.from }}</span> 
               <span>{{ data.date }}</span>
             </div>
 
@@ -42,15 +46,29 @@ export default {
     return {
       emails: [],
       expandedIndex: null,
+      errorCount: 0,
     }
   },
   mounted() {
     this.getEmailData()
+    this.getEmailErrorCount() 
   },
   methods: {
     async getEmailData() {
-      const { data } = await supabase.from('t_email').select(`*`)
-      this.emails = data
+      const { data, error } = await supabase.from('t_email').select('*')
+      if (!error) this.emails = data
+    },
+    async getEmailErrorCount() {
+      const { count, error } = await supabase
+        .from('t_injury_record')
+        .select('*', { count: 'exact', head: true })
+        .eq('statusID', 1)
+
+      if (!error) {
+        this.errorCount = count
+      } else {
+        console.error('Erro ao buscar emails com erro:', error.message)
+      }
     },
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index

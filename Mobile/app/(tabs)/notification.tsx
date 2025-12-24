@@ -20,37 +20,37 @@ import { supabase } from "../../scripts/supabase";
 import { styles } from "../../css/notification";
 
 export default function NotificationScreen() {
-  const [records, setRecords] = useState<InjuryRecord[]>([]);
+  type InjuryRecordWithAthlete = InjuryRecord & {
+    athleteName: string;
+  };
+
+  const [records, setRecords] = useState<InjuryRecordWithAthlete[]>([]);
+
   const [expandedID, setExpandedID] = useState<number | null>(null);
-  const [athleteNames, setAthleteNames] = useState<{ [key: number]: string }>(
-    {}
-  );
   const router = useRouter();
 
   useEffect(() => {
-  loadRecords();
+    loadRecords();
 
-  const channel = supabase
-    .channel("injury-records-realtime")
-    .on(
-      "postgres_changes",
-      {
-        event: "*", 
-        schema: "public",
-        table: "t_injury_record",
-      },
-      async () => {
+    const channel = supabase
+      .channel("injury-records-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "t_injury_record",
+        },
+        async () => {
+          await loadRecords();
+        }
+      )
+      .subscribe();
 
-        await loadRecords();
-      }
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
-
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -63,19 +63,17 @@ export default function NotificationScreen() {
   async function loadRecords() {
   const records = await fetchAllInjuryRecords();
 
-  // Ordena do mais recente para o mais antigo pelo ID
   const sortedRecords = records.sort(
     (a, b) => b.injuryRecordID - a.injuryRecordID
   );
 
-  // Adiciona os nomes dos atletas
-  const withNames: (InjuryRecord & { athleteName: string })[] = [];
+  const withNames: InjuryRecordWithAthlete[] = [];
 
   for (const record of sortedRecords) {
     const athlete = await fetchAthleteByID(record.athleteID);
     withNames.push({
       ...record,
-      athleteName: athlete?.name ?? `Athlete ${record.athleteID}`,
+      athleteName: athlete?.name ?? "Nome não encontrado",
     });
   }
 
@@ -93,8 +91,8 @@ export default function NotificationScreen() {
 
       {records.map((item) => {
         const expanded = expandedID === item.injuryRecordID;
-        const athleteName =
-          athleteNames[item.injuryRecordID] || `Athlete ${item.athleteID}`;
+        const athleteName = item.athleteName;
+
 
         return (
           <TouchableOpacity

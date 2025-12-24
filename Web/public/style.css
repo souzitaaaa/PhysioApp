@@ -149,3 +149,18 @@ body,
 }
 
 
+.p-button.p-button-success {
+    background-color: #dcfce7;
+    border: 0;     
+    color: #15803d;            
+    font-weight: bold;         
+}
+
+.p-button.p-button-success .p-button-icon {
+    color: #15803d;
+}
+
+.p-button.p-button-success:hover .p-button-icon {
+    color: #ffffff; 
+}
+

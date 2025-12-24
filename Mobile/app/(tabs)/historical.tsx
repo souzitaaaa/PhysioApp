@@ -16,6 +16,8 @@ import {
 
 import { fetchNotesByRecord } from "../../services/noteService";
 
+import { supabase } from "../../scripts/supabase";
+
 import { styles } from "../../css/historical";
 
 export default function HistoricalScreen() {
@@ -32,8 +34,45 @@ export default function HistoricalScreen() {
   const [notes, setNotes] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
-    if (athleteID) loadHistory();
-  }, [athleteID]);
+    if (!athleteID) return;
+
+    loadHistory();
+
+    const channel = supabase
+      .channel(`injury-history-${athleteID}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "t_injury_record",
+          filter: `athleteID=eq.${athleteID}`,
+        },
+        async () => {
+          await loadHistory();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "t_note",
+        },
+        async (payload) => {
+          // Se uma nota for adicionada ao record aberto, recarrega só as notas
+          if (expanded) {
+            const n = await fetchNotesByRecord(expanded);
+            setNotes((prev) => ({ ...prev, [expanded]: n }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [athleteID, expanded]);
 
   async function loadHistory() {
     setLoading(true);
@@ -136,7 +175,11 @@ export default function HistoricalScreen() {
                           onPress={() =>
                             router.push({
                               pathname: "/add-note",
-                              params: { injuryRecordID: item.injuryRecordID },
+                              params: {
+                                injuryRecordID: item.injuryRecordID,
+                                athleteID,
+                                athleteName,
+                              },
                             })
                           }
                         >
@@ -149,7 +192,11 @@ export default function HistoricalScreen() {
                           onPress={() =>
                             router.push({
                               pathname: "/end-note",
-                              params: { injuryRecordID: item.injuryRecordID },
+                              params: {
+                                injuryRecordID: item.injuryRecordID,
+                                athleteID,
+                                athleteName,
+                              },
                             })
                           }
                         >

@@ -21,7 +21,11 @@ import {
 import { styles } from "../../css/end_note";
 
 export default function EndNoteScreen() {
-  const { injuryRecordID } = useLocalSearchParams<{ injuryRecordID: string }>();
+  const { injuryRecordID, athleteID, athleteName } = useLocalSearchParams<{
+    injuryRecordID: string;
+    athleteID: string;
+    athleteName: string;
+  }>();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -129,7 +133,13 @@ export default function EndNoteScreen() {
       await closeInjuryRecord(Number(injuryRecordID), nowISO);
 
       resetForm();
-      router.push("/historical");
+      router.replace({
+      pathname: "/historical",
+      params: {
+        athleteID,
+        athleteName,
+      },
+    });
     } catch (error) {
       console.log("Erro ao guardar nota final:", error);
     }
@@ -137,7 +147,13 @@ export default function EndNoteScreen() {
 
   function handleGoBack() {
     resetForm();
-    router.push("/historical");
+    router.replace({
+      pathname: "/historical",
+      params: {
+        athleteID,
+        athleteName,
+      },
+    });
   }
 
   if (loading) {

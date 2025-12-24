@@ -10,7 +10,7 @@ import { fetchAthleteByID } from "../../services/athleteService";
 import { fetchAllReminders, Reminder } from "../../services/reminderService";
 
 import { styles } from "../../css/index";
-import { supabase } from "@/scripts/supabase";
+import { supabase } from "../../scripts/supabase";
 
 type NotificationItem = InjuryRecord & {
   athleteName: string;

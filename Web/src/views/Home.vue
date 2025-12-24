@@ -1,4 +1,5 @@
 <template>
+  <div class="overscroll-auto">
   <div class="flex h-1/2 mb-6">
     <div class="w-full">
       <DataTable ref="dt" :value="athletes" dataKey="athletesID" class="style-table h-full" paginator :rows="4"
@@ -105,6 +106,9 @@
 
       </DataTable>
     </div>
+
+    
+  </div>
   </div>
 </template>
 
