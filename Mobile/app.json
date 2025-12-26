@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Physioapp-mobile",
-    "slug": "Physioapp-mobile",
+    "slug": "physio-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "useNextNotificationsApi": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -43,6 +44,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "77601e12-4588-403a-b180-2a4be145c1f3"
+      },
+      "router": {}
+    },
+    "owner": "rodrigosouzaaas-organization"
   }
 }
