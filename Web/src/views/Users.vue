@@ -268,42 +268,40 @@ export default {
       if (callback) callback(userID);
     },
     async addUser(formData) {
-      const pfpUrl =
-        formData.pfp instanceof File
-          ? await uploadImageToSupabase(formData.pfp, "user-images")
-          : formData.pfp || null
+      try {
+        const pfpUrl =
+          formData.pfp instanceof File
+            ? await uploadImageToSupabase(formData.pfp, 'user-images')
+            : formData.pfp || null
 
-      const { data, error } = await supabase
-        .from('t_user')
-        .insert([
-          {
-            name: formData.name,
-            birthdate: formData.birthdate,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            pfp: pfpUrl,
-            nationality: formData.nationality,
-            usertypeID: formData.usertypeID,
-            password: '123',
-            notification_status: formData.notification_status ? formData.notification_status : false
-          },
-        ])
-        .select(`userID`)
+        const payload = {
+          name: formData.name,
+          birthdate: formData.birthdate,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          nationality: formData.nationality,
+          usertypeID: formData.usertypeID,
+          notification_status: formData.notification_status,
+          pfp: pfpUrl,
+        }
 
-      if (error) {
-        console.log(error)
-        //! NAO ESQUECER TOASTER
-        return
+        const { data } = await axios.post(
+          'http://localhost:3000/users/',
+          payload
+        )
+
+        const newUser = await this.getUserData(data.userId)
+        await this.getUserData()
+
+        this.selectedUser = newUser
+        this.drawerMode = 'view'
+        this.userDrawerVisible = true
+
+        return data.userId
+
+      } catch (error) {
+        console.error(error)
       }
-
-      const newUser = await this.getUserData(data[0].userID)
-      await this.getUserData()
-
-      this.selectedUser = newUser
-      this.drawerMode = 'view'
-      this.userDrawerVisible = true
-
-      return data[0].userID
     },
     async updateUser(formData, callback) {
       let pfpUrl = formData.pfp;
