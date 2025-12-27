@@ -12,10 +12,10 @@
           </template>
 
           <!-- Coluna de Nome e Avatar -->
-          <Column field="name" header="Nome" style="width: 20%">
+          <Column field="name" header="Atelta" style="width: 20%">
             <template #body="{ data }">
               <div class="flex items-center gap-2 overflow-hidden">
-                <Avatar :image="data.pfp" class="mr-2 flex-shrink-0" shape="circle" />
+                <Avatar :image="data.pfp" class="mr-2 shrink-0" shape="circle" />
                 <div class="flex flex-col overflow-hidden">
                   <span class="truncate font-medium">{{ data.name }}</span>
                   <span class="truncate text-sm text-gray-500">
@@ -145,7 +145,7 @@ export default {
     },
     async getInjuryRecords() {
       const { data, error } = await supabase.from('t_injury_record').select(`
-      id,
+      injuryRecordID,
       resume,
       statusID,
       athleteID,

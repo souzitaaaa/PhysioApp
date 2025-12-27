@@ -99,16 +99,35 @@
               </div>
             </div>
             </p>
-            <!-- Nacionalidade -->
+            <!-- País -->
             <p class="grid grid-cols-12 items-center gap-2">
-              <span class="text-form-title text-sm col-span-3">Nacionalidade:</span>
+              <span class="text-form-title text-sm col-span-3">País:</span>
             <div class="col-span-5">
-              <span v-if="mode === 'view'" class="text-form-value">{{ formData.nationality }}</span>
+              <span v-if="mode === 'view'" class="text-form-value">{{ formData.country_name }}</span>
 
               <div v-else>
-                <InputText v-model="formData.nationality" size="small" type="text" :invalid="!!errors.nationality"
-                  fluid />
-                <small v-if="errors.nationality" class="text-red-600 text-xs">{{ errors.nationality }}</small>
+                <Select v-model="formData.countryID" :options="countries" optionLabel="name" optionValue="countryID"
+                  size="small" :invalid="!!errors.countryID" fluid placeholder="Selecionar">
+                  <!-- Selected value with flag -->
+                  <template #value="slotProps">
+                    <div v-if="slotProps.value" class="flex items-center gap-2">
+                      <!-- find the country object by ID -->
+                      <img :src="countries.find(c => c.countryID === slotProps.value)?.flagURL"
+                        :alt="countries.find(c => c.countryID === slotProps.value)?.name" class="w-6 h-4" />
+                      <span>{{countries.find(c => c.countryID === slotProps.value)?.name}}</span>
+                    </div>
+                    <span v-else>{{ slotProps.placeholder }}</span>
+                  </template>
+
+                  <!-- Dropdown options with flag -->
+                  <template #option="slotProps">
+                    <div class="flex items-center gap-2">
+                      <img :src="slotProps.option.flagURL" :alt="slotProps.option.name" class="w-6 h-4" />
+                      <span>{{ slotProps.option.name }}</span>
+                    </div>
+                  </template>
+                </Select>
+                <small v-if="errors.countryID" class="text-red-600 text-xs">{{ errors.countryID }}</small>
               </div>
             </div>
             </p>
@@ -183,6 +202,7 @@ export default {
         { label: 'Apagar', icon: 'fa-solid fa-trash-can', command: () => this.showDeleteConfirmation() },
       ],
       userTypes: [],
+      countries: [],
       userDeleteModalVisible: false,
       // Main
       formData: null,
@@ -206,10 +226,14 @@ export default {
   },
   mounted() {
     this.loadUserTypes()
+    this.loadCountries()
   },
   methods: {
     async loadUserTypes() {
       this.userTypes = await getAuxTable('userType')
+    },
+    async loadCountries() {
+      this.countries = await getAuxTable('country')
     },
     closeDeleteModal() {
       this.userDeleteModalVisible = false;

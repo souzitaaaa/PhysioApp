@@ -14,7 +14,8 @@ export function validateUserForm(formData) {
 
     if (!formData.birthdate) errors.birthdate = 'A data de nascimento é obrigatória.'
 
-    if (!formData.nationality?.trim()) errors.nationality = 'A nacionalidade é obrigatória.'
+    if (!formData.countryID)
+        errors.countryID = 'O país é obrigatório.'
 
     if (!formData.usertypeID)
         errors.usertypeID = 'A divisão é obrigatória.'
@@ -29,7 +30,7 @@ export function getEmptyUser() {
         email: '',
         phoneNumber: '',
         pfp: '',
-        nationality: '',
+        countryID: '',
         usertypeID: '',
         notification_status: false,
     }

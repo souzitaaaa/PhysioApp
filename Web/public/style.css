@@ -59,14 +59,14 @@ body,
 .style-table {
   border-radius: 16px;         
   overflow: hidden;            
-  border: 1px solid var(--color-grey-details); 
+  border: 1px solid #cad5e2; 
   background-color: #ffffff;
 }
 
 /*Email*/
 
 .table-email{
-  border: 1px solid var(--color-grey-details); 
+  border: 1px solid #cad5e2; 
   border-radius: 16px;
   background: #ffffff;
 }
@@ -74,7 +74,7 @@ body,
 .email-table {
   border-radius: 16px;         
   overflow: hidden;            
-  border: 1px solid var(--color-grey-details);  
+  border: 1px solid #cad5e2;  
   background: #ffffff;
 }
 
@@ -93,7 +93,7 @@ body,
 }
 
 .line-hr {
-  color: var(--color-grey-details);   
+  color: #cad5e2;   
 }
 
 .text-form-title{

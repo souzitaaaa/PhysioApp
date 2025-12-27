@@ -21,9 +21,10 @@
             v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
         </div>
 
-        <!-- <span class="text-xs!">
+        <span class="text-xs!">
           {{ JSON.stringify(formData, null, 2) }}
         </span>
+        <!-- 
         <span class="text-xs!">
           {{ JSON.stringify(accountableFormData, null, 2) }}
         </span>
@@ -98,16 +99,35 @@
                 </div>
               </div>
               </p>
-              <!-- Nacionalidade -->
+              <!-- País -->
               <p class="grid grid-cols-12 items-center gap-2">
-                <span class="text-form-title text-sm col-span-3">Nacionalidade:</span>
+                <span class="text-form-title text-sm col-span-3">País:</span>
               <div class="col-span-5">
-                <span v-if="mode === 'view'" class="text-form-value">{{ formData.nationality }}</span>
+                <span v-if="mode === 'view'" class="text-form-value">{{ formData.country_name }}</span>
 
                 <div v-else>
-                  <InputText v-model="formData.nationality" size="small" type="text" :invalid="!!errors.nationality"
-                    fluid />
-                  <small v-if="errors.nationality" class="text-red-600 text-xs">{{ errors.nationality }}</small>
+                  <Select v-model="formData.countryID" :options="countries" optionLabel="name" optionValue="countryID"
+                    size="small" :invalid="!!errors.countryID" fluid placeholder="Selecionar">
+                    <!-- Selected value with flag -->
+                    <template #value="slotProps">
+                      <div v-if="slotProps.value" class="flex items-center gap-2">
+                        <!-- find the country object by ID -->
+                        <img :src="countries.find(c => c.countryID === slotProps.value)?.flagURL"
+                          :alt="countries.find(c => c.countryID === slotProps.value)?.name" class="w-6 h-4" />
+                        <span>{{countries.find(c => c.countryID === slotProps.value)?.name}}</span>
+                      </div>
+                      <span v-else>{{ slotProps.placeholder }}</span>
+                    </template>
+
+                    <!-- Dropdown options with flag -->
+                    <template #option="slotProps">
+                      <div class="flex items-center gap-2">
+                        <img :src="slotProps.option.flagURL" :alt="slotProps.option.name" class="w-6 h-4" />
+                        <span>{{ slotProps.option.name }}</span>
+                      </div>
+                    </template>
+                  </Select>
+                  <small v-if="errors.countryID" class="text-red-600 text-xs">{{ errors.countryID }}</small>
                 </div>
               </div>
               </p>
@@ -140,7 +160,7 @@
                 <div class="col-span-5">
                   <span v-if="mode === 'view'" class="text-form-value">{{ item.name }} </span>
                   <span v-if="mode === 'view'" class="text-form-value text-sm text-slate-600!"> ({{ item.relation_name
-                    }})
+                  }})
                   </span>
 
                   <div v-else>
@@ -308,6 +328,7 @@ export default {
       ],
       divisions: [],
       relations: [],
+      countries: [],
       injuryRecord: [],
       // Main
       formData: null,
@@ -346,6 +367,7 @@ export default {
   mounted() {
     this.loadDivions()
     this.loadRelations()
+    this.loadCountries()
   },
   methods: {
     async loadDivions() {
@@ -353,6 +375,10 @@ export default {
     },
     async loadRelations() {
       this.relations = await getAuxTable('relations')
+    },
+    async loadCountries() {
+      this.countries = await getAuxTable('country')
+      console.log("countries: ", this.countries)
     },
     async loadAthleteHistory(athleteID) {
       const data = await safeGet(

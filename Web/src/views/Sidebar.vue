@@ -26,8 +26,11 @@
               <RouterLink :to="item.route" :class="[
                 'group mb-2 py-2 px-2 rounded-lg transition-all duration-200',
                 isCollapsed
-                  ? 'flex justify-center items-center text-white hover:bg-white hover:text-[--color-primary]'
-                  : 'flex items-center gap-3 text-white hover:bg-white hover:text-[--color-primary]'
+                  ? 'flex justify-center items-center'
+                  : 'flex items-center gap-3',
+                $route.path === item.route
+                  ? 'bg-white text-[--color-primary]'
+                  : 'text-white hover:bg-white hover:text-[--color-primary]'
               ]">
                 <!-- Icon -->
                 <i :class="[item.icon, 'text-lg transition-colors duration-200']"></i>
@@ -50,24 +53,27 @@
       </ul>
     </div>
 
+    {{ this.$route.path }}
+
     <!-- Bottom Section -->
     <div class="mt-auto">
       <hr class="mb-4 border-t border-0 border-gray-400" />
       <div class="flex items-center shrink-0" :class="isCollapsed ? 'justify-center' : 'justify-between'">
         <!-- Avatar + Username (hidden when collapsed) -->
         <template v-if="!isCollapsed" class="flex items-center">
-          <Avatar :image="'/images/ado.jpg'" alt="UserPfp" shape="circle"></Avatar>
+          <Avatar :image="currentUser?.profile?.pfp || '/images/ado.jpg'" alt="UserPfp" shape="circle"></Avatar>
           <p :class="isCollapsed ? 'ml-0' : 'ml-2'" class="text-base font-base text-white truncate max-w-[85px]">
-            aaaaaaaaaaaaaaa
+            {{ currentUser?.profile?.name || 'User' }}
           </p>
         </template>
 
         <!-- Logout Icon -->
         <span :class="isCollapsed ? 'ml-0' : 'ml-auto'">
           <span role="button" aria-label="Logout"
-            class="text-white cursor-pointer transition duration-200 hover:opacity-60">
+            class="text-white cursor-pointer transition duration-200 hover:opacity-60" @click="handleLogout">
             <i class="fa-solid fa-right-from-bracket text-lg"></i>
           </span>
+
         </span>
       </div>
     </div>
@@ -97,12 +103,13 @@ export default {
           ]
         },
         {
-          label: 'ADMINISTRADOR',
+          label: 'ADMINISTRAÇÃO',
           items: [
             { label: 'Utilizadores', icon: 'fa-solid fa-users', route: '/utilizadores' },
           ]
         }
       ],
+      currentUser: null,
     }
   },
   computed: {
@@ -113,6 +120,7 @@ export default {
   mounted() {
     window.addEventListener('resize', this.handleResize);
     this.loadEmailErrorCount()
+    this.loadCurrentUser()
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize);
@@ -133,7 +141,39 @@ export default {
           }
         });
       });
+    },
+    async loadCurrentUser() {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) return
 
+        const response = await axios.get('http://localhost:3000/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        this.currentUser = response.data
+      } catch (err) {
+        console.error('Erro ao carregar user', err)
+        this.currentUser = null
+      }
+    },
+    async handleLogout() {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) return
+
+        await axios.post('http://localhost:3000/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+
+        localStorage.removeItem('access_token')
+        this.currentUser = null
+        this.$router.push('/login')
+      } catch (err) {
+        console.error('Erro ao fazer logout', err)
+      }
     },
     handleResize() {
       this.windowWidth = window.innerWidth;

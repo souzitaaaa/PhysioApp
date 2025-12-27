@@ -126,7 +126,7 @@
       </Card>
     </div>
 
-    <DataTable ref="dt" :value="users" dataKey="userID" class="style-table" scrollable scrollHeight="flex">
+    <DataTable ref="dt" :value="users" dataKey="userID" class="style-table shadow-md!" scrollable scrollHeight="flex">
       <template #header>
         <Toolbar class="border-0!">
           <template #start>
@@ -170,7 +170,18 @@
           </div>
         </template>
       </Column>
-      <Column field="nationality" header="Nacionalidade"></Column>
+      <Column field="country_name" header="País" style="max-width: 8rem">
+        <template #body="{ data }">
+          <div class="card flex justify-start">
+            <Tag class="bg-transparent!">
+              <div class="flex items-center gap-2 px-1">
+                <img alt="Country" :src='data.country_flag' class="flag flag-it" style="width: 18px" />
+                <span class="text-sm">{{ data.country_name }}</span>
+              </div>
+            </Tag>
+          </div>
+        </template>
+      </Column>
       <Column header="Contactos">
         <template #body="{ data }">
           <div class="flex flex-col">
@@ -279,7 +290,7 @@ export default {
           birthdate: formData.birthdate,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
-          nationality: formData.nationality,
+          countryID: formData.countryID,
           usertypeID: formData.usertypeID,
           notification_status: formData.notification_status,
           pfp: pfpUrl,
@@ -316,7 +327,7 @@ export default {
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           pfp: pfpUrl,
-          nationality: formData.nationality,
+          countryID: formData.countryID,
           usertypeID: formData.usertypeID,
           notification_status: formData.notification_status ? formData.notification_status : false
         },

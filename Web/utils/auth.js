@@ -1,43 +1,67 @@
 import { ref } from 'vue'
-import { supabase } from './supabase'
+import axios from 'axios'
 
 const user = ref(null)
 const loading = ref(true)
 
-supabase.auth.getSession().then(({ data }) => {
-  user.value = data.session?.user ?? null
-  loading.value = false
+const api = axios.create({
+  baseURL: 'http://localhost:3000',
 })
 
-supabase.auth.onAuthStateChange((_event, session) => {
-  user.value = session?.user ?? null
-})
+function setToken(token) {
+  if (token) {
+    localStorage.setItem('access_token', token)
+    api.defaults.headers.common.Authorization = `Bearer ${token}`
+  } else {
+    localStorage.removeItem('access_token')
+    delete api.defaults.headers.common.Authorization
+  }
+}
 
-export function useAuth() {
-  const signUp = async (email, password) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    if (error) throw error
+// Initialize auth on app load
+async function initAuth() {
+  const token = localStorage.getItem('access_token')
+
+  if (!token) {
+    loading.value = false
+    return
   }
 
+  setToken(token)
+
+  try {
+    const { data } = await api.get('/auth/me')
+    user.value = data
+  } catch {
+    setToken(null)
+    user.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+initAuth()
+
+export function useAuth() {
   const signIn = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data } = await api.post('/auth/login', {
       email,
       password,
     })
-    if (error) throw error
+
+    setToken(data.session.access_token)
+    user.value = data.user
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await api.post('/auth/logout')
+    setToken(null)
+    user.value = null
   }
 
   return {
     user,
     loading,
-    signUp,
     signIn,
     signOut,
   }

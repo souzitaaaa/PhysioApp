@@ -41,9 +41,12 @@ import Accordion from 'primevue/accordion';
 import AccordionPanel from 'primevue/accordionpanel';
 import Card from 'primevue/card';
 import AccordionHeader from 'primevue/accordionheader';
-import AccordionContent from 'primevue/accordioncontent';
+import AccordionContent from 'primevue/accordioncontent'
+import Message from 'primevue/message';
 import Timeline from 'primevue/timeline';
 import MultiSelect from 'primevue/multiselect';
+import Password from 'primevue/password';
+import ProgressSpinner from 'primevue/progressspinner';
 
 
 import { myPreset } from './theme'
@@ -61,7 +64,10 @@ app.use(PrimeVue, {
   },
 });
 
+app.component('ProgressSpinner', ProgressSpinner);
+app.component('Password', Password);
 app.component('MultiSelect', MultiSelect);
+app.component('Message', Message);
 app.component('Button', Button);
 app.component('Tag', Tag);
 app.component('ToggleSwitch', ToggleSwitch);

@@ -1,5 +1,4 @@
 import { supabase } from "../services/supabaseService.js";
-import { stripIsNew } from "../utils/utils.js"
 
 export async function login(req, res) {
   const { email, password } = req.body
@@ -45,11 +44,28 @@ export async function me(req, res) {
     return res.status(401).json({ error: 'No token' })
   }
 
-  const { data, error } = await supabase.auth.getUser(accessToken)
-
-  if (error) {
+  const { data: authData, error: authError } = await supabase.auth.getUser(accessToken)
+  if (authError || !authData.user) {
     return res.status(401).json({ error: 'Invalid token' })
   }
 
-  return res.json(data.user)
+  const authUserId = authData.user.id
+
+  // Use maybeSingle() para evitar erro se não existir registro
+  const { data: userData, error: userError } = await supabase
+    .from('t_user')
+    .select('*')
+    .eq('auth_userID', authUserId)
+    .maybeSingle()
+
+  if (userError) {
+    return res.status(500).json({ error: userError.message })
+  }
+
+  return res.json({
+    auth: authData.user,
+    profile: userData || null, // null se não existir
+  })
 }
+
+

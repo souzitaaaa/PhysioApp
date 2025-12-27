@@ -121,7 +121,7 @@
               <InputIcon>
                 <i class="fa-solid fa-magnifying-glass" />
               </InputIcon>
-              <InputText v-model="filters['global'].value" placeholder="Procurar" size="small" />
+              <InputText v-model="filters['global'].value" placeholder="Procurar (nome ou email)" size="small" />
             </IconField>
           </template>
           <template #center>
@@ -164,7 +164,18 @@
           </div>
         </template>
       </Column>
-      <Column field="nationality" header="Nacionalidade"></Column>
+      <Column field="country_name" header="País" style="max-width: 8rem">
+        <template #body="{ data }">
+          <div class="card flex justify-start">
+            <Tag class="bg-transparent!">
+              <div class="flex items-center gap-2 px-1">
+                <img alt="Country" :src='data.country_flag' class="flag flag-it" style="width: 18px" />
+                <span class="text-sm">{{ data.country_name }}</span>
+              </div>
+            </Tag>
+          </div>
+        </template>
+      </Column>
       <Column field="email" header="Contactos">
         <template #body="{ data }">
           <div class="flex flex-col">
@@ -314,7 +325,7 @@ export default {
             email: formData.email,
             phoneNumber: formData.phoneNumber,
             pfp: pfpUrl,
-            nationality: formData.nationality,
+            countryID: formData.countryID,
             divisionID: formData.divisionID,
           },
         ])
@@ -348,7 +359,7 @@ export default {
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           pfp: pfpUrl,
-          nationality: formData.nationality,
+          countryID: formData.countryID,
           divisionID: formData.divisionID,
         },
       ])

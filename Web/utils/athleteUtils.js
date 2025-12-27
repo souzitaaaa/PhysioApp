@@ -18,7 +18,8 @@ export function validateAthleteForm(formData) {
 
   if (!formData.birthdate) errors.birthdate = 'A data de nascimento é obrigatória.'
 
-  if (!formData.nationality?.trim()) errors.nationality = 'A nacionalidade é obrigatória.'
+  if (!formData.countryID)
+    errors.countryID = 'O País é obrigatório.'
 
   if (!formData.divisionID)
     errors.divisionID = 'A divisão é obrigatória.'
@@ -82,7 +83,7 @@ export function getEmptyAthlete() {
     email: '',
     phoneNumber: '',
     pfp: '',
-    nationality: '',
+    countryID: '',
     divisionID: '',
   }
 }

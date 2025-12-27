@@ -24,6 +24,14 @@ export async function getUserType(req, res) {
 	return res.json(data);
 }
 
+// GET | User Type
+export async function getCountry(req, res) {
+	const { data, error } = await supabase.from("taux_country").select("*");
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
 // GET | Athletes Monthly Summary
 export async function getAthletesStatistics(req, res) {
 	const { data, error } = await supabase.from("v_monthly_comparison").select("*");
