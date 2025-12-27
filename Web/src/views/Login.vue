@@ -1,88 +1,85 @@
 <template>
-  <div class="w-full h-full flex flex-col mt-16 p-4">
-    <!-- Header -->
-    <div class="flex flex-col items-center justify-center shrink-0 mb-8">
-      <img src="/images/logo-big-dark.svg" alt="Logo" class="max-w-48 mb-2" />
-      <p class="text-black-900 text-xl font-semibold mb-2">
-        Bem-vindo novamente
-      </p>
-      <p class="text-black-600 text-sm text-center">
-        Caso esteja com dificuldades a aceder à plataforma, contacte o Administrador
-      </p>
+  <div
+    class="w-full h-full flex flex-col items-center justify-center bg-no-repeat bg-cover bg-center"
+    style="background-image: url('/images/background.svg')"
+  >
+    <!-- Email -->
+    <div class="input-container">
+      <input type="text" id="email" v-model="formData.email" required />
+      <label for="email">Email</label>
+      <span class="underline"></span>
     </div>
 
-    <div class="border-t border-gray-300 mx-12"></div>
+    <!-- Password -->
+    <div class="input-container mt-6">
+      <input
+        :type="showPassword ? 'text' : 'password'"
+        id="password"
+        v-model="formData.password"
+        required
+      />
+      <label for="password">Palavra-Passe</label>
+      <span class="underline"></span>
 
+      <!-- Ícone Font Awesome -->
+      <i
+        class="icon-password fa-solid"
+        :class="[showPassword ? 'fa-eye-slash active' : 'fa-eye']"
+        @click="togglePassword"
+      ></i>
 
-    <!-- Content -->
-    <div class="flex-1 flex items-start justify-center my-8">
-      <div class="w-2/3 max-w-xl flex flex-col gap-6">
-        <!-- Email -->
-        <div class="flex flex-col gap-1">
-          <label for="email">Email</label>
-          <InputText id="email" v-model="formData.email" :invalid="!!errors.email" fluid />
-          <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
-        </div>
-
-        <!-- Password -->
-        <div class="flex flex-col gap-1">
-          <label for="password">Palavra-Passe</label>
-          <Password id="password" v-model="formData.password" :invalid="!!errors.password" :feedback="false" toggleMask
-            fluid />
-          <small v-if="errors.password" class="text-red-600 text-xs">{{ errors.password }}</small>
-        </div>
-
-        <!-- Action -->
-        <Button icon="fa-solid fa-right-to-bracket" label="Entrar" class="w-full" size="large" @click="handleLogin" />
-        <small v-if="apiError" class="text-red-600 text-xs">{{ apiError }}</small>
-      </div>
     </div>
 
-
+    <!-- Botão de login -->
+    <Button
+      icon="fa-solid fa-right-to-bracket"
+      label="Entrar"
+      class="w-25 mt-6"
+      size="large"
+      @click="handleLogin"
+    />
+    <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
+    <small v-if="errors.password" class="text-red-600 text-xs">{{ errors.password }}</small>
+    <small v-if="apiError" class="text-red-600 text-xs mt-2">{{ apiError }}</small>
   </div>
 </template>
 
-
 <script>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'  // <- Importar useRouter
 import { useAuth } from '../../utils/auth.js'
-import { validateAuthForm } from '../../utils/authUtils.js';
+import { validateAuthForm } from '../../utils/authUtils.js'
 
 export default {
   name: 'Auth',
-  data() {
-    return {
-      // Main
-      formData: {
-        email: '',
-        password: '',
-      },
-      // Helpers
-      errors: {},
-      apiError: null,
-    }
-  },
   setup() {
+    const router = useRouter()  // <- Inicializar o router aqui
+    const formData = ref({ email: '', password: '' })
+    const errors = ref({})
+    const apiError = ref(null)
+    const showPassword = ref(false)
+
     const { signIn } = useAuth()
-    return { signIn }
-  },
-  methods: {
-    async handleLogin() {
-      this.errors = validateAuthForm(this.formData)
-      if (Object.keys(this.errors).length > 0) return
+
+    const togglePassword = () => {
+      showPassword.value = !showPassword.value
+    }
+
+    const handleLogin = async () => {
+      errors.value = validateAuthForm(formData.value)
+      if (Object.keys(errors.value).length > 0) return
 
       try {
-        await this.signIn(
-          this.formData.email,
-          this.formData.password
-        )
-
-        this.$router.push('/')
+        const response = await signIn(formData.value.email, formData.value.password)
+        console.log('Resposta do login:', response)
+        router.push('/')  // <- Agora funciona
       } catch (err) {
-        this.apiError =
-          err.response?.data?.error || 'Login failed'
+        console.error('Erro no login:', err)
+        apiError.value = err.response?.data?.error || 'Login failed'
       }
     }
 
+    return { formData, errors, apiError, showPassword, togglePassword, handleLogin }
   }
 }
 </script>

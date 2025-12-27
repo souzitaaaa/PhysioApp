@@ -8,13 +8,14 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from "@expo/vector-icons";
 
 import { createNote } from "../../services/noteService";
 import {
   InjuryRecord,
   fetchInjuryRecordById,
+  setInjuryRecordWithNote,
 } from "../../services/injuryRecordService";
 import { createReminder } from "../../services/reminderService";
 
@@ -46,7 +47,6 @@ export default function AddNoteScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
-  // 🔹 Reset de todos os campos
   const resetForm = useCallback(() => {
     setText("");
     setReminderTitle("");
@@ -59,7 +59,6 @@ export default function AddNoteScreen() {
     setShowEndPicker(false);
   }, []);
 
-  // 🔹 Limpar tudo ao sair do ecrã
   useFocusEffect(
     useCallback(() => {
       return () => {
@@ -68,7 +67,6 @@ export default function AddNoteScreen() {
     }, [resetForm])
   );
 
-  // 🔹 Carregar lesão
   useEffect(() => {
     async function loadInjury() {
       if (!injuryRecordID) return;
@@ -87,60 +85,78 @@ export default function AddNoteScreen() {
     return date.toTimeString().slice(0, 5);
   }
 
-  // 🔹 Função de salvar com validação obrigatória
-  async function handleSave() {
-    if (!injuryRecordID) return;
+ async function handleSave() {
+  if (!injuryRecordID) return;
 
-    // 🔴 Nota obrigatória
-    if (text.trim() === "") {
-      alert("A nota é obrigatória.");
+  // Verifica se a nota foi preenchida
+  if (text.trim() === "") {
+    alert("A nota é obrigatória.");
+    return;
+  }
+
+  // Verifica se o lembrete foi tocado
+  const reminderTouched =
+    reminderTitle.trim() !== "" || date || timeStart || timeEnd;
+
+  if (reminderTouched) {
+    if (
+      reminderTitle.trim() === "" ||
+      !date ||
+      !timeStart ||
+      !timeEnd
+    ) {
+      alert("Preencha todos os campos do lembrete.");
       return;
     }
+  }
 
-    // 🔴 Ver se o lembrete foi iniciado
-    const reminderTouched =
-      reminderTitle.trim() !== "" || date || timeStart || timeEnd;
-
-    // 🔴 Se começou a preencher lembrete, todos os campos são obrigatórios
-    if (reminderTouched) {
-      if (reminderTitle.trim() === "" || !date || !timeStart || !timeEnd) {
-        alert("Preencha todos os campos.");
-        return;
-      }
-    }
-
-    // ✅ Criar nota
+  try {
+    // Criar nota
     await createNote(Number(injuryRecordID), text);
 
-    // ✅ Criar lembrete apenas se estiver completo
+    // Criar lembrete (se necessário)
     if (reminderTouched) {
-      await createReminder({
+      const reminderPayload = {
         title: reminderTitle,
         date: formatDate(date!),
-        timeStart: formatTime(timeStart!),
-        timeEnd: formatTime(timeEnd!),
-        injuryRecordID: Number(injuryRecordID),
-      });
+        timeStart: formatTime(timeStart!), 
+        timeEnd: formatTime(timeEnd!),     
+        injuryRecordID: Number(injuryRecordID), 
+      };
+
+
+      console.log("Payload do lembrete:", reminderPayload);
+
+      const reminderData = await createReminder(reminderPayload);
+      console.log("Reminder criado com sucesso:", reminderData);
     }
 
+    // Atualiza injuryRecord para indicar que tem nota
+    await setInjuryRecordWithNote(Number(injuryRecordID));
+
+    // Reset do formulário
     resetForm();
+
+    // Redireciona para histórico
     router.replace({
       pathname: "/historical",
-      params: {
-        athleteID,
-        athleteName,
-      },
+      params: { athleteID, athleteName },
     });
+  } catch (error: any) {
+    console.log("Erro ao guardar nota ou lembrete:", error);
+    alert(
+      `Ocorreu um erro ao guardar. Verifique os dados e tente novamente.\n${error.message || ""}`
+    );
   }
+}
+
+
 
   function handleGoBack() {
     resetForm();
     router.replace({
       pathname: "/historical",
-      params: {
-        athleteID,
-        athleteName,
-      },
+      params: { athleteID, athleteName },
     });
   }
 
@@ -163,7 +179,7 @@ export default function AddNoteScreen() {
         <Text style={styles.infoText}>{injury?.title}</Text>
 
         <Text style={styles.label}>Nome do Fisio:</Text>
-        <Text style={styles.infoText}>{injury?.userID}</Text>
+        <Text style={styles.infoText}>{injury?.t_user?.name}</Text>
 
         <Text style={styles.label}>Data de começo:</Text>
         <Text style={styles.infoText}>{injury?.dateStart}</Text>
@@ -177,7 +193,23 @@ export default function AddNoteScreen() {
           onChangeText={setText}
         />
 
-        <Text style={styles.titleReminder}>Lembrete</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <Text style={styles.titleReminder}>Lembrete</Text>
+
+          {(reminderTitle || date || timeStart || timeEnd) && (
+            <TouchableOpacity
+              onPress={() => {
+                setReminderTitle("");
+                setDate(null);
+                setTimeStart(null);
+                setTimeEnd(null);
+              }}
+            >
+              <Text style={{ color: "red", fontSize: 12  }}>Limpar Lembrete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
 
         <Text style={styles.label}>Título do Lembrete:</Text>
         <TextInput
@@ -207,63 +239,78 @@ export default function AddNoteScreen() {
         )}
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          {/* Hora de Início */}
           <View style={{ flex: 1, marginRight: 5 }}>
             <Text style={styles.label}>Hora de Início:</Text>
             <TouchableOpacity
-              style={[styles.pickerButton, { flex: 1, marginRight: 5 }]}
+              style={styles.pickerButton}
               onPress={() => setShowStartPicker(true)}
             >
               <Text>
                 {timeStart
-                  ? timeStart.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                  ? timeStart.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
                   : "Selecionar Início"}
               </Text>
             </TouchableOpacity>
+            {showStartPicker && (
+              <DateTimePicker
+                value={timeStart || new Date()}
+                mode="time"
+                is24Hour={true}
+                onChange={(_, selectedDate) => {
+                  setShowStartPicker(false);
+                  if (selectedDate) {
+                    setTimeStart(selectedDate);
+                    setTimeEnd(null); // limpa hora de fim
+                  }
+                }}
+              />
+            )}
           </View>
 
-          <View style={{ flex: 1, marginRight: 5 }}>
+          {/* Hora de Fim */}
+          <View style={{ flex: 1, marginLeft: 5 }}>
             <Text style={styles.label}>Hora de Fim:</Text>
-
             <TouchableOpacity
-              style={[styles.pickerButton, { flex: 1, marginLeft: 5 }]}
-              onPress={() => setShowEndPicker(true)}
+              style={styles.pickerButton}
+              onPress={() => {
+                if (!timeStart) {
+                  alert("Selecione primeiro a hora de início.");
+                  return;
+                }
+                setShowEndPicker(true);
+              }}
             >
               <Text>
                 {timeEnd
-                  ? timeEnd.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                  ? timeEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
                   : "Selecionar Fim"}
               </Text>
             </TouchableOpacity>
+
+            {showEndPicker && (
+              <DateTimePicker
+                value={timeEnd || timeStart!}
+                mode="time"
+                is24Hour={true}
+                onChange={(_, selectedDate) => {
+                  setShowEndPicker(false);
+                  if (!selectedDate || !timeStart) return;
+
+                  const maxEndTime = new Date(timeStart.getTime() + 60 * 60 * 1000);
+
+                  if (selectedDate > maxEndTime) {
+                    alert("A hora de fim não pode ser mais de 1 hora após a hora de início.");
+                    setTimeEnd(null);
+                    return;
+                  }
+
+                  setTimeEnd(selectedDate);
+                }}
+              />
+            )}
           </View>
         </View>
-
-        {showStartPicker && (
-          <DateTimePicker
-            value={timeStart || new Date()}
-            mode="time"
-            onChange={(_, selectedDate) => {
-              setShowStartPicker(false);
-              if (selectedDate) setTimeStart(selectedDate);
-            }}
-          />
-        )}
-
-        {showEndPicker && (
-          <DateTimePicker
-            value={timeEnd || new Date()}
-            mode="time"
-            onChange={(_, selectedDate) => {
-              setShowEndPicker(false);
-              if (selectedDate) setTimeEnd(selectedDate);
-            }}
-          />
-        )}
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.btncancel} onPress={handleGoBack}>

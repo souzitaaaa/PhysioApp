@@ -164,3 +164,68 @@ body,
     color: #ffffff; 
 }
 
+.input-container {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  margin: 20px auto;
+}
+
+.input-container input {
+  width: 100%;
+  padding: 10px 40px 10px 0; /* espaço para ícone */
+  font-size: 18px;
+  border: none;
+  border-bottom: 2px solid #9a9a9a;
+  background: transparent;
+  color: #f0f0f0;
+  outline: none;
+}
+
+.input-container label {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  color: #9a9a9a;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.input-container input:focus ~ label,
+.input-container input:valid ~ label {
+  top: -20px;
+  font-size: 14px;
+  color: #f0f0f0;
+}
+
+.input-container .underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: #f0f0f0;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.input-container input:focus ~ .underline,
+.input-container input:valid ~ .underline {
+  transform: scaleX(1);
+}
+
+/* Ícone Font Awesome de ver/ocultar password */
+.icon-password {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #9a9a9a;
+  font-size: 18px;
+  transition: color 0.2s ease;
+}
+
+.icon-password.active {
+  color: #f0f0f0;
+}

@@ -47,4 +47,27 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 4,
   },
+  senderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+loadingContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+
+loadingText: {
+  marginTop: 10,
+  fontSize: 16,
+  color: "#666",
+},
+
 });

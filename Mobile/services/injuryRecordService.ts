@@ -13,6 +13,10 @@ export type InjuryRecord = {
   taux_status?: {
     status: string;
   };
+  t_user?: {
+    name: string;
+  };
+
 };
 
 
@@ -55,10 +59,18 @@ export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
 }
 
 
-export async function fetchInjuryRecordById(injuryRecordID: number): Promise<InjuryRecord | null> {
+
+export async function fetchInjuryRecordById(
+  injuryRecordID: number
+): Promise<InjuryRecord | null> {
   const { data, error } = await supabase
     .from("t_injury_record")
-    .select("*")
+    .select(`
+      *,
+      t_user (
+        name
+      )
+    `)
     .eq("injuryRecordID", injuryRecordID)
     .single();
 
@@ -69,6 +81,7 @@ export async function fetchInjuryRecordById(injuryRecordID: number): Promise<Inj
 
   return data;
 }
+
 
 
 export async function closeInjuryRecord(
@@ -89,3 +102,16 @@ export async function closeInjuryRecord(
   }
 }
 
+export async function setInjuryRecordWithNote(injuryRecordID: number) {
+  const { error } = await supabase
+    .from("t_injury_record")
+    .update({
+      statusID: 3, // com nota
+    })
+    .eq("injuryRecordID", injuryRecordID);
+
+  if (error) {
+    console.log("Erro ao mudar status para 3:", error);
+    throw error;
+  }
+}

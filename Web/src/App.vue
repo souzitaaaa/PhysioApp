@@ -3,23 +3,26 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="w-full h-full flex items-center justify-center bg-gray-300">
       <div class="flex flex-col items-center gap-4">
-        <ProgressSpinner style="width: 50px; height: 50px; stroke: var(--color-primary);" strokeWidth="8"
-          fill="transparent" animationDuration=".5s" aria-label="Custom ProgressSpinner" />
+        <ProgressSpinner
+          style="width: 50px; height: 50px; stroke: var(--color-primary)"
+          strokeWidth="8"
+          fill="transparent"
+          animationDuration=".5s"
+          aria-label="Custom ProgressSpinner"
+        />
         <p class="text-gray-600 font-medium">A carregar...</p>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div v-else class="w-full h-full flex p-2 gap-2 bg-gray-300">
+    <div v-else :class="['w-full h-full flex bg-gray-300', showSidebar ? 'p-2 gap-2' : '']">
       <Sidebar v-if="showSidebar" />
       <div class="flex-1 h-full overflow-y-auto">
         <div v-if="showSidebar" class="w-auto h-full rounded-2xl p-4 bg-white">
           <RouterView />
         </div>
         <div v-else class="flex h-full items-center justify-center">
-          <div class="w-1/2 h-2/3 p-4 rounded-2xl bg-white">
-            <RouterView />
-          </div>
+          <RouterView />
         </div>
       </div>
     </div>
@@ -27,13 +30,13 @@
 </template>
 
 <script>
-import { RouterView } from 'vue-router';
+import { RouterView } from 'vue-router'
 import Sidebar from './views/Sidebar.vue'
 
 export default {
   components: {
     Sidebar,
-    RouterView
+    RouterView,
   },
   data() {
     return {
@@ -41,20 +44,18 @@ export default {
       isLoading: true,
     }
   },
-  watch: {
-  },
+  watch: {},
   computed: {
     showSidebar() {
       return this.$route.meta.showSidebar
-    }
+    },
   },
   mounted() {
     setTimeout(() => {
-      this.isLoading = false;
-    }, 300);
+      this.isLoading = false
+    }, 300)
   },
-  methods: {
-  },
+  methods: {},
 }
 </script>
 

@@ -100,7 +100,7 @@ export default function HistoricalScreen() {
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.Text}>Histórico do Atleta</Text>
-            <Text>{athleteName || athleteID}</Text>
+            <Text>{athleteName}</Text>
           </View>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -118,7 +118,8 @@ export default function HistoricalScreen() {
         {!loading &&
           records.map((item) => {
             const isOpen = expanded === item.injuryRecordID;
-            const isClosed = item.statusID === 2;
+            const hasButtons = item.statusID !== 1 && item.statusID !== 2;
+
 
             return (
               <TouchableOpacity
@@ -168,7 +169,7 @@ export default function HistoricalScreen() {
                       </View>
                     )}
 
-                    {!isClosed && (
+                    {hasButtons  && (
                       <View style={styles.buttonsRow}>
                         <TouchableOpacity
                           style={styles.btn}

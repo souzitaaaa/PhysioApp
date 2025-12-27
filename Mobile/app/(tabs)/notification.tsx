@@ -9,6 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { ActivityIndicator } from "react-native";
 
 import {
   fetchAllInjuryRecords,
@@ -25,9 +26,9 @@ export default function NotificationScreen() {
   };
 
   const [records, setRecords] = useState<InjuryRecordWithAthlete[]>([]);
-
   const [expandedID, setExpandedID] = useState<number | null>(null);
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadRecords();
@@ -61,81 +62,109 @@ export default function NotificationScreen() {
   );
 
   async function loadRecords() {
-  const records = await fetchAllInjuryRecords();
+    const records = await fetchAllInjuryRecords();
 
-  const sortedRecords = records.sort(
-    (a, b) => b.injuryRecordID - a.injuryRecordID
-  );
+    const sortedRecords = records.sort(
+      (a, b) => b.injuryRecordID - a.injuryRecordID
+    );
 
-  const withNames: InjuryRecordWithAthlete[] = [];
+    const withNames: InjuryRecordWithAthlete[] = [];
 
-  for (const record of sortedRecords) {
-    const athlete = await fetchAthleteByID(record.athleteID);
-    withNames.push({
-      ...record,
-      athleteName: athlete?.name ?? "Nome não encontrado",
-    });
+    for (const record of sortedRecords) {
+      const athlete = await fetchAthleteByID(record.athleteID);
+      withNames.push({
+        ...record,
+        athleteName: athlete?.name ?? "Nome não encontrado",
+      });
+    }
+
+    setRecords(withNames);
+    setLoading(false);
   }
-
-  setRecords(withNames);
-}
-
 
   function toggleExpand(id: number) {
     setExpandedID(expandedID === id ? null : id);
+  }
+
+  function getStatusColor(statusID: number) {
+    switch (statusID) {
+      case 1:
+        return "#e7000b";
+      case 2:
+        return "#00a63e";
+      case 3:
+        return "#d08700";
+      case 4:
+        return "#0084d1";
+    }
   }
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Notificações</Text>
 
-      {records.map((item) => {
-        const expanded = expandedID === item.injuryRecordID;
-        const athleteName = item.athleteName;
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#22333B" />
+          <Text style={styles.loadingText}>A carregar notificações…</Text>
+        </View>
+      ) : (
+        records.map((item) => {
+          const expanded = expandedID === item.injuryRecordID;
+          const athleteName = item.athleteName;
 
-
-        return (
-          <TouchableOpacity
-            key={item.injuryRecordID}
-            style={styles.card}
-            activeOpacity={0.8}
-            onPress={() => toggleExpand(item.injuryRecordID)}
-          >
-            <View style={styles.row}>
-              <Text style={styles.sender}>{athleteName}</Text>
-              <Text style={styles.date}>{item.dateStart}</Text>
-            </View>
-
-            <Text
-              style={styles.subject}
-              numberOfLines={expanded ? undefined : 3}
-              ellipsizeMode={expanded ? "clip" : "tail"}
+          return (
+            <TouchableOpacity
+              key={item.injuryRecordID}
+              style={styles.card}
+              activeOpacity={0.8}
+              onPress={() => toggleExpand(item.injuryRecordID)}
             >
-              {item.resume}
-            </Text>
-
-            {expanded && (
-              <View style={styles.buttonsRow}>
-                <View style={styles.button}>
-                  <Button
-                    title="Histórico"
-                    color="#22333B"
-                    onPress={() => {
-                      router.push({
-                        pathname: "/historical",
-                        params: {
-                          athleteID: item.athleteID.toString(),
-                          athleteName: athleteName,
-                        },
-                      });
-                    }}
+              <View style={styles.row}>
+                <View style={styles.senderRow}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      { backgroundColor: getStatusColor(item.statusID) },
+                    ]}
                   />
+                  <Text style={styles.sender}>{athleteName}</Text>
                 </View>
+
+                <Text style={styles.date}>{item.dateStart}</Text>
               </View>
-            )}
-          </TouchableOpacity>
-        );
-      })}
+
+              <Text
+                style={styles.subject}
+                numberOfLines={expanded ? undefined : 3}
+                ellipsizeMode={expanded ? "clip" : "tail"}
+              >
+                {item.resume}
+              </Text>
+
+              {expanded && (
+                <View style={styles.buttonsRow}>
+                  <View style={styles.button}>
+                    <Button
+                      title="Histórico"
+                      color="#22333B"
+                      onPress={() => {
+                        router.push({
+                          pathname: "/historical",
+                          params: {
+                            athleteID: item.athleteID.toString(),
+                            athleteName: athleteName,
+                          },
+                        });
+                      }}
+                    />
+                  </View>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })
+      )}
     </ScrollView>
   );
 }
