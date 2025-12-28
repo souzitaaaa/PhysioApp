@@ -1,5 +1,48 @@
 import { supabase } from "../services/supabaseService.js";
 
+// GET | All Records
+export async function getAllRecords(req, res) {
+	const { data, error } = await supabase.from("v_injury_record").select("*").order("injuryRecordID", { ascending: false });
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+// GET | Record by ID
+export async function getRecordByID(req, res) {
+	const injuryRecordID = req.params.id;
+
+	const { data, error } = await supabase
+		.from("v_injury_record")
+		.select("*")
+		.eq("injuryRecordID", injuryRecordID)
+		.single();
+
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // POST | Creates email from gmail API
 export async function createInjuryRecord(injuryRecordData, athleteID, errorSpecID) {
 

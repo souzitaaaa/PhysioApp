@@ -126,7 +126,7 @@
       </Card>
     </div>
 
-    <DataTable ref="dt" :value="users" dataKey="userID" class="style-table shadow-md!" scrollable scrollHeight="flex">
+    <DataTable ref="dt" v-model:filters="filters" :value="users" stripedRows dataKey="userID" class="style-table shadow-md!" paginator :rows="8" scrollable scrollHeight="flex" :filters="filters" :globalFilterFields="['name', 'email']">
       <template #header>
         <Toolbar class="border-0!">
           <template #start>
@@ -134,7 +134,7 @@
               <InputIcon>
                 <i class="fa-solid fa-magnifying-glass" />
               </InputIcon>
-              <InputText placeholder="Procurar" size="small" />
+              <InputText v-model="filters['global'].value" placeholder="Procurar (nome ou email)" size="small" />
             </IconField>
           </template>
           <template #end>
@@ -143,7 +143,7 @@
           </template>
         </Toolbar>
       </template>
-      <Column header="Nome" style="min-width: 16rem">
+      <Column field="name" header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
             <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
@@ -182,7 +182,7 @@
           </div>
         </template>
       </Column>
-      <Column header="Contactos">
+      <Column field="email" header="Contactos">
         <template #body="{ data }">
           <div class="flex flex-col">
             <span class="text-base">{{ data.phoneNumber }}</span>
@@ -211,6 +211,7 @@ import UsersDrawer from './UserComponents/UsersDrawer.vue'
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
 import { Tag } from 'primevue';
+import { FilterMatchMode } from '@primevue/core/api';
 
 export default {
   components: {
@@ -223,7 +224,11 @@ export default {
       userStatistics: [],
       userDrawerVisible: false,
       drawerMode: 'view',
+      filters: {}
     }
+  },
+  created() {
+    this.initFilters();
   },
   watch: {},
   mounted() {
@@ -231,6 +236,11 @@ export default {
     this.loadUsersStatistics()
   },
   methods: {
+    initFilters() {
+      this.filters = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      }
+    },
     async getUserData(userID) {
       const endpoint = userID
         ? `http://localhost:3000/users/${userID}`
@@ -248,7 +258,6 @@ export default {
         null
       );
       this.userStatistics = response[0];
-      console.log('loadUsersStatistics:', response[0]);
     },
     exportCSV() {
       this.$refs.dt.exportCSV()
@@ -344,7 +353,6 @@ export default {
         await callback();
 
       const newUser = await this.getUserData(data[0].userID)
-      console.log("newUser: ", newUser)
 
       await this.getUserData()
 

@@ -31,9 +31,9 @@ const router = createRouter({
     },
     {
       path: '/atletas',
-      name: 'Athletes',
+      name: 'Atletas',
       component: Athletes,
-      meta: { title: 'Athletes', requiresAuth: true, showSidebar: true },
+      meta: { title: 'Atletas', requiresAuth: true, showSidebar: true },
     },
     {
       path: '/utilizadores',

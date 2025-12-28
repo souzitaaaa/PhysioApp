@@ -2,7 +2,7 @@ import { supabase } from "../services/supabaseService.js";
 
 // GET | All Emails
 export async function getAllEmails(req, res) {
-	const { data, error } = await supabase.from("t_email").select("*");
+	const { data, error } = await supabase.from("v_email").select("*").not('injuryRecordID', 'is', null).order("emailID", { ascending: false });
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);

@@ -81,14 +81,14 @@ body,
 .email-table table,
 .email-table table td,
 .email-table table th,
-.email-table .p-datatable-tbody > tr,
-.email-table .p-datatable-wrapper {
+.email-table .p-dataview-tbody > tr,
+.email-table .p-dataview-wrapper {
   border: none !important;
 }
 
 /* Remove o header */
-.email-table .p-datatable-thead > tr > th,
-.email-table .p-datatable-header-cell {
+.email-table .p-dataview-thead > tr > th,
+.email-table .p-dataview-header-cell {
   display: none !important;
 }
 

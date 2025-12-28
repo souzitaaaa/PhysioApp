@@ -378,7 +378,6 @@ export default {
     },
     async loadCountries() {
       this.countries = await getAuxTable('country')
-      console.log("countries: ", this.countries)
     },
     async loadAthleteHistory(athleteID) {
       const data = await safeGet(
@@ -420,11 +419,9 @@ export default {
       }
     },
     startEditMode() {
-      console.log("startEditMode")
       this.$emit('update:mode', 'edit')
     },
     showDeleteConfirmation() {
-      console.log("showDeleteConfirmation")
       this.athleteDeleteModalVisible = true;
     },
     closeDeleteModal() {

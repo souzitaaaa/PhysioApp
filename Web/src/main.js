@@ -47,6 +47,12 @@ import Timeline from 'primevue/timeline';
 import MultiSelect from 'primevue/multiselect';
 import Password from 'primevue/password';
 import ProgressSpinner from 'primevue/progressspinner';
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+import DataView from 'primevue/dataview';
 
 
 import { myPreset } from './theme'
@@ -64,6 +70,12 @@ app.use(PrimeVue, {
   },
 });
 
+app.component('DataView', DataView);
+app.component('Tabs', Tabs);
+app.component('TabList', TabList);
+app.component('Tab', Tab);
+app.component('TabPanels', TabPanels);
+app.component('TabPanel', TabPanel);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('Password', Password);
 app.component('MultiSelect', MultiSelect);

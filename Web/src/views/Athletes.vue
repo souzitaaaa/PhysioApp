@@ -242,14 +242,6 @@ export default {
     this.initFilters();
   },
   watch: {
-    athletes: {
-      handler(newVal) {
-        if (newVal && newVal.length > 0) {
-          console.log('Athletes loaded, unique divisions:', this.uniqueDivisions);
-        }
-      },
-      immediate: true
-    }
   },
   mounted() {
     this.getAthleteData()
@@ -266,7 +258,6 @@ export default {
       if (athleteID) return data;
 
       this.athletes = data;
-      console.log('Unique divisions:', this.uniqueDivisions);
     },
     async loadAthletesStatistics() {
       const response = await safeGet(
@@ -274,7 +265,6 @@ export default {
         null
       );
       this.athleteStatistics = response[0];
-      console.log('loadAthletesStatistics:', response[0]);
     },
     initFilters() {
       this.filters = {

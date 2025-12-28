@@ -53,11 +53,9 @@
       </ul>
     </div>
 
-    {{ this.$route.path }}
-
     <!-- Bottom Section -->
     <div class="mt-auto">
-      <hr class="mb-4 border-t border-0 border-gray-400" />
+      <hr class="mb-4 border-t border-0 border-gray-500" />
       <div class="flex items-center shrink-0" :class="isCollapsed ? 'justify-center' : 'justify-between'">
         <!-- Avatar + Username (hidden when collapsed) -->
         <template v-if="!isCollapsed" class="flex items-center">

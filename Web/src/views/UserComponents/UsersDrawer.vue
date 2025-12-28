@@ -248,11 +248,9 @@ export default {
       }
     },
     startEditMode() {
-      console.log("startEditMode")
       this.$emit('update:mode', 'edit')
     },
     showDeleteConfirmation() {
-      console.log("showDeleteConfirmation")
       this.userDeleteModalVisible = true;
     },
     resetDrawer() {
