@@ -19,11 +19,6 @@
           <Button v-if="mode === 'view'" icon="fa-solid fa-xmark" severity="contrast" text @click="closeCallback"
             v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
         </div>
-
-        <span class="text-xs!">
-          {{ JSON.stringify(formData, null, 2) }}
-        </span>
-
         <div class="flex-1 overflow-y-auto px-8">
           <!-- Secção 1 -->
           <div class="flex items-center gap-4">

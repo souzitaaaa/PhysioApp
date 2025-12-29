@@ -6,9 +6,9 @@
 
         <!-- Header -->
         <div class="flex justify-end items-center gap-2 px-2 pt-2">
-          <Button v-if="mode === 'view'" icon="fa-solid fa-ellipsis-vertical" severity="contrast" text @click="toggle"
-            aria-haspopup="true" aria-controls="actions_menu" />
-          <Menu v-if="selectedPage == 0" ref="menu" id="actions_menu" :model="actions" :popup="true">
+          <Button v-if="mode === 'view' && selectedPage == 0" icon="fa-solid fa-ellipsis-vertical" severity="contrast"
+            text @click="toggle" aria-haspopup="true" aria-controls="actions_menu" />
+          <Menu ref="menu" id="actions_menu" :model="actions" :popup="true">
             <template #item="{ item, props }">
               <a v-ripple class="flex items-center justify-between w-full px-2 py-1" v-bind="props.item"
                 @click="item.command">
@@ -21,10 +21,10 @@
             v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
         </div>
 
-        <span class="text-xs!">
-          {{ JSON.stringify(formData, null, 2) }}
-        </span>
-        <!-- 
+        <!--
+          <span class="text-xs!">
+            {{ JSON.stringify(formData, null, 2) }}
+          </span>
         <span class="text-xs!">
           {{ JSON.stringify(accountableFormData, null, 2) }}
         </span>
@@ -160,7 +160,7 @@
                 <div class="col-span-5">
                   <span v-if="mode === 'view'" class="text-form-value">{{ item.name }} </span>
                   <span v-if="mode === 'view'" class="text-form-value text-sm text-slate-600!"> ({{ item.relation_name
-                  }})
+                    }})
                   </span>
 
                   <div v-else>
