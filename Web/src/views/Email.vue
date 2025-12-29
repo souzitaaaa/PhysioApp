@@ -80,14 +80,22 @@
       </template>
     </DataView>
   </div>
+
+  <EmailDrawer :visible="emailDrawerVisible" :email="selectedEmail" :mode="drawerMode" @close="closeDrawer"
+    @update:mode="drawerMode = $event"></EmailDrawer>
+
 </template>
 
 <script>
 import { supabase } from '../../utils/supabase'
 import { safeGet } from '../../utils/utils.js'
+import EmailDrawer from './EmailComponents/EmailDrawer.vue'
 import axios from 'axios';
 
 export default {
+  components: {
+    EmailDrawer
+  },
   data() {
     return {
       email: [],
