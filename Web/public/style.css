@@ -140,13 +140,15 @@ body,
 /* Remove margem/padding das células */
 .style-table .p-datatable-tbody > tr > td,
 .style-table .p-datatable-thead > tr > th {
-  padding: 0.74rem 1.5rem; /* ajusta como quiser */
+  padding: 0.6rem 1.2rem; /* ajusta como quiser */
 }
 
 /* Se quiser ainda mais compacto */
 .style-table .p-datatable-tbody > tr > td {
   line-height: 1.2;
 }
+
+
 
 
 .p-button.p-button-success {
