@@ -39,24 +39,15 @@ export default function AddNoteScreen() {
   // Reminder
   const [reminderTitle, setReminderTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
-  const [timeStart, setTimeStart] = useState<Date | null>(null);
-  const [timeEnd, setTimeEnd] = useState<Date | null>(null);
 
-  // Pickers
+  // Picker
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const resetForm = useCallback(() => {
     setText("");
     setReminderTitle("");
     setDate(null);
-    setTimeStart(null);
-    setTimeEnd(null);
-
     setShowDatePicker(false);
-    setShowStartPicker(false);
-    setShowEndPicker(false);
   }, []);
 
   useFocusEffect(
@@ -77,80 +68,62 @@ export default function AddNoteScreen() {
     loadInjury();
   }, [injuryRecordID]);
 
-  function formatDate(date: Date) {
-    return date.toISOString().split("T")[0];
-  }
+  function formatDate(date: Date | string | null) {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("pt-PT");
+}
 
-  function formatTime(date: Date) {
-    return date.toTimeString().slice(0, 5);
-  }
-
- async function handleSave() {
-  if (!injuryRecordID) return;
-
-  // Verifica se a nota foi preenchida
-  if (text.trim() === "") {
-    alert("A nota é obrigatória.");
-    return;
-  }
-
-  // Verifica se o lembrete foi tocado
-  const reminderTouched =
-    reminderTitle.trim() !== "" || date || timeStart || timeEnd;
-
-  if (reminderTouched) {
-    if (
-      reminderTitle.trim() === "" ||
-      !date ||
-      !timeStart ||
-      !timeEnd
-    ) {
-      alert("Preencha todos os campos do lembrete.");
-      return;
-    }
-  }
-
-  try {
-    // Criar nota
-    await createNote(Number(injuryRecordID), text);
-
-    // Criar lembrete (se necessário)
-    if (reminderTouched) {
-      const reminderPayload = {
-        title: reminderTitle,
-        date: formatDate(date!),
-        timeStart: formatTime(timeStart!), 
-        timeEnd: formatTime(timeEnd!),     
-        injuryRecordID: Number(injuryRecordID), 
-      };
-
-
-      console.log("Payload do lembrete:", reminderPayload);
-
-      const reminderData = await createReminder(reminderPayload);
-      console.log("Reminder criado com sucesso:", reminderData);
-    }
-
-    // Atualiza injuryRecord para indicar que tem nota
-    await setInjuryRecordWithNote(Number(injuryRecordID));
-
-    // Reset do formulário
-    resetForm();
-
-    // Redireciona para histórico
-    router.replace({
-      pathname: "/historical",
-      params: { athleteID, athleteName },
-    });
-  } catch (error: any) {
-    console.log("Erro ao guardar nota ou lembrete:", error);
-    alert(
-      `Ocorreu um erro ao guardar. Verifique os dados e tente novamente.\n${error.message || ""}`
-    );
-  }
+function formatDateForDB(date: Date) {
+  return date.toISOString().split("T")[0];
 }
 
 
+  async function handleSave() {
+    if (!injuryRecordID) return;
+
+    if (text.trim() === "") {
+      alert("A nota é obrigatória.");
+      return;
+    }
+
+    const reminderTouched = reminderTitle.trim() !== "" || date;
+
+    if (reminderTouched) {
+      if (reminderTitle.trim() === "" || !date) {
+        alert("Preencha o título e a data do lembrete.");
+        return;
+      }
+    }
+
+    try {
+      await createNote(Number(injuryRecordID), text);
+
+      if (reminderTouched) {
+        const reminderPayload = {
+          title: reminderTitle,
+          date: formatDateForDB(date!),
+          injuryRecordID: Number(injuryRecordID),
+        };
+
+        console.log("Payload do lembrete:", reminderPayload);
+        await createReminder(reminderPayload);
+      }
+
+      await setInjuryRecordWithNote(Number(injuryRecordID));
+      resetForm();
+
+      router.replace({
+        pathname: "/historical",
+        params: { athleteID, athleteName },
+      });
+    } catch (error: any) {
+      console.log("Erro ao guardar:", error);
+      alert(
+        `Erro ao guardar a nota ou lembrete.\n${error.message || ""}`
+      );
+    }
+  }
 
   function handleGoBack() {
     resetForm();
@@ -159,6 +132,8 @@ export default function AddNoteScreen() {
       params: { athleteID, athleteName },
     });
   }
+
+  
 
   if (loading) {
     return (
@@ -182,7 +157,8 @@ export default function AddNoteScreen() {
         <Text style={styles.infoText}>{injury?.t_user?.name}</Text>
 
         <Text style={styles.label}>Data de começo:</Text>
-        <Text style={styles.infoText}>{injury?.dateStart}</Text>
+        <Text style={styles.infoText}>{formatDate(injury?.dateStart)}</Text>
+
 
         <Text style={styles.label}>Nota:</Text>
         <TextInput
@@ -193,23 +169,29 @@ export default function AddNoteScreen() {
           onChangeText={setText}
         />
 
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+        >
           <Text style={styles.titleReminder}>Lembrete</Text>
 
-          {(reminderTitle || date || timeStart || timeEnd) && (
+          {(reminderTitle || date) && (
             <TouchableOpacity
               onPress={() => {
                 setReminderTitle("");
                 setDate(null);
-                setTimeStart(null);
-                setTimeEnd(null);
               }}
             >
-              <Text style={{ color: "red", fontSize: 12  }}>Limpar Lembrete</Text>
+              <Text style={{ color: "red", fontSize: 12 }}>
+                Limpar Lembrete
+              </Text>
             </TouchableOpacity>
           )}
         </View>
-
 
         <Text style={styles.label}>Título do Lembrete:</Text>
         <TextInput
@@ -224,7 +206,10 @@ export default function AddNoteScreen() {
           style={styles.pickerButton}
           onPress={() => setShowDatePicker(true)}
         >
-          <Text>{date ? date.toLocaleDateString() : "Selecionar data"}</Text>
+          <Text>
+            {date ? formatDate(date) : "Selecionar data"}
+          </Text>
+
         </TouchableOpacity>
 
         {showDatePicker && (
@@ -238,82 +223,13 @@ export default function AddNoteScreen() {
           />
         )}
 
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          {/* Hora de Início */}
-          <View style={{ flex: 1, marginRight: 5 }}>
-            <Text style={styles.label}>Hora de Início:</Text>
-            <TouchableOpacity
-              style={styles.pickerButton}
-              onPress={() => setShowStartPicker(true)}
-            >
-              <Text>
-                {timeStart
-                  ? timeStart.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
-                  : "Selecionar Início"}
-              </Text>
-            </TouchableOpacity>
-            {showStartPicker && (
-              <DateTimePicker
-                value={timeStart || new Date()}
-                mode="time"
-                is24Hour={true}
-                onChange={(_, selectedDate) => {
-                  setShowStartPicker(false);
-                  if (selectedDate) {
-                    setTimeStart(selectedDate);
-                    setTimeEnd(null); // limpa hora de fim
-                  }
-                }}
-              />
-            )}
-          </View>
-
-          {/* Hora de Fim */}
-          <View style={{ flex: 1, marginLeft: 5 }}>
-            <Text style={styles.label}>Hora de Fim:</Text>
-            <TouchableOpacity
-              style={styles.pickerButton}
-              onPress={() => {
-                if (!timeStart) {
-                  alert("Selecione primeiro a hora de início.");
-                  return;
-                }
-                setShowEndPicker(true);
-              }}
-            >
-              <Text>
-                {timeEnd
-                  ? timeEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
-                  : "Selecionar Fim"}
-              </Text>
-            </TouchableOpacity>
-
-            {showEndPicker && (
-              <DateTimePicker
-                value={timeEnd || timeStart!}
-                mode="time"
-                is24Hour={true}
-                onChange={(_, selectedDate) => {
-                  setShowEndPicker(false);
-                  if (!selectedDate || !timeStart) return;
-
-                  const maxEndTime = new Date(timeStart.getTime() + 60 * 60 * 1000);
-
-                  if (selectedDate > maxEndTime) {
-                    alert("A hora de fim não pode ser mais de 1 hora após a hora de início.");
-                    setTimeEnd(null);
-                    return;
-                  }
-
-                  setTimeEnd(selectedDate);
-                }}
-              />
-            )}
-          </View>
-        </View>
+        <View style={{ flex: 1 }} />
 
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.btncancel} onPress={handleGoBack}>
+          <TouchableOpacity
+            style={styles.btncancel}
+            onPress={handleGoBack}
+          >
             <Text style={styles.btnText}>Cancelar</Text>
             <Ionicons name="arrow-back" size={20} />
           </TouchableOpacity>

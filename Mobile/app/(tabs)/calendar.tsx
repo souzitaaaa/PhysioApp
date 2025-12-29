@@ -8,12 +8,14 @@ import "../../config/calendarLocale";
 
 import { styles } from "../../css/calendar";
 import { supabase } from "../../scripts/supabase";
+import { fetchAthleteByID } from "../../services/athleteService";
 
 export default function HomeScreen() {
-  const today = new Date().toISOString().split("T")[0]; 
+  const today = new Date().toISOString().split("T")[0];
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
-  const [selectedDate, setSelectedDate] = useState<string>(today); 
+  const [selectedDate, setSelectedDate] = useState<string>(today);
+  const [athletes, setAthletes] = useState<Record<number, string>>({});
 
   useEffect(() => {
     loadReminders();
@@ -33,9 +35,9 @@ export default function HomeScreen() {
       )
       .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      }
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Redefinir para hoje sempre que a tela ganhar foco
@@ -56,13 +58,32 @@ export default function HomeScreen() {
       };
       return acc;
     }, {} as Record<string, any>);
-
     setMarkedDates(marks);
+
+    // Fetch atletas
+    const athleteMap: Record<number, string> = {};
+    for (const r of allReminders) {
+      const athlete = await fetchAthleteByID(r.injuryRecordID);
+      athleteMap[r.injuryRecordID] = athlete?.name ?? " ";
+    }
+    setAthletes(athleteMap);
   };
 
   const remindersOfSelectedDate = reminders.filter(
     (r) => r.date === selectedDate
   );
+
+  function formatDate(dateString: string | Date | null) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-PT"); // formato dia/mês/ano
+  }
+  
+  function getFirstAndLastName(fullName: string) {
+    const parts = fullName.trim().split(" ");
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]} ${parts[parts.length - 1]}`;
+  }
 
   return (
     <View style={styles.container}>
@@ -99,7 +120,9 @@ export default function HomeScreen() {
       {/* REMINDERS FOR SELECTED DAY */}
       <View style={styles.remindersContainer}>
         <Text style={styles.remindersTitle}>
-          {selectedDate ? `Lembrete de ${selectedDate}` : "Selecione um dia"}
+          {selectedDate
+            ? `Lembrete de ${formatDate(selectedDate)}`
+            : "Selecione um dia"}
         </Text>
 
         <ScrollView style={styles.reminderList}>
@@ -112,9 +135,10 @@ export default function HomeScreen() {
           {remindersOfSelectedDate.map((r) => (
             <View key={r.reminderID} style={styles.reminderRow}>
               {/* Lado esquerdo: hora */}
-              <View style={styles.timeBox}>
-                <Text style={styles.timeText}>{r.timeStart?.slice(0,5)}</Text>
-                <Text style={styles.timeText}>{r.timeEnd?.slice(0,5)}</Text>
+              <View style={styles.nameBox}>
+                <Text style={styles.nameText}>
+                  {athletes[r.injuryRecordID] ? getFirstAndLastName(athletes[r.injuryRecordID]) : "" }
+                </Text>
               </View>
 
               {/* Lado direito: title */}

@@ -91,6 +91,12 @@ export default function HistoricalScreen() {
     }
   }
 
+  function formatDate(dateString: string | Date | null) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-PT"); // formato dia/mês/ano
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Histórico do Atleta</Text>
@@ -120,7 +126,6 @@ export default function HistoricalScreen() {
             const isOpen = expanded === item.injuryRecordID;
             const hasButtons = item.statusID !== 1 && item.statusID !== 2;
 
-
             return (
               <TouchableOpacity
                 key={item.injuryRecordID}
@@ -130,10 +135,25 @@ export default function HistoricalScreen() {
               >
                 {/* Linha: Nome à esquerda, datas à direita */}
                 <View style={styles.rowBetween}>
-                  <Text style={styles.noteTitle}>{item.title}</Text>
-                  <Text style={styles.noteDates}>
-                    {item.dateStart} — {item.taux_status?.status}
-                  </Text>
+                  <View style={styles.leftColumn}>
+                    <Text
+                      style={styles.noteTitle}
+                      numberOfLines={isOpen ? undefined : 1}
+                      ellipsizeMode="tail"
+                    >
+                      {item.title}
+                    </Text>
+                  </View>
+
+                  <View style={styles.rightColumn}>
+                    <Text
+                      style={styles.noteDates}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {formatDate(item.dateStart)} — {item.taux_status?.status}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Conteúdo expandido */}
@@ -161,7 +181,7 @@ export default function HistoricalScreen() {
                             }}
                           >
                             <Text style={{ fontWeight: "500" }}>
-                              {note.date}
+                              {formatDate(note.date)}
                             </Text>
                             <Text>{note.text}</Text>
                           </View>
@@ -169,7 +189,7 @@ export default function HistoricalScreen() {
                       </View>
                     )}
 
-                    {hasButtons  && (
+                    {hasButtons && (
                       <View style={styles.buttonsRow}>
                         <TouchableOpacity
                           style={styles.btn}

@@ -99,8 +99,15 @@ export default function NotificationScreen() {
     }
   }
 
+
+  function formatDate(dateString: string | Date | null) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-PT"); // formato dia/mês/ano
+  }
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <Text style={styles.title}>Notificações</Text>
 
       {loading ? (
@@ -131,7 +138,7 @@ export default function NotificationScreen() {
                   <Text style={styles.sender}>{athleteName}</Text>
                 </View>
 
-                <Text style={styles.date}>{item.dateStart}</Text>
+                <Text style={styles.date}>{formatDate(item.dateStart)}</Text>
               </View>
 
               <Text

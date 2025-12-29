@@ -36,13 +36,13 @@ export const styles = StyleSheet.create({
   athleteName: {
     width: "30%",
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 15,
     paddingRight: 6,
   },
 
   resume: {
     width: "70%",
-    fontSize: 14,
+    fontSize: 15,
     color: "#444",
   },
   dateColumn: {
@@ -50,7 +50,7 @@ export const styles = StyleSheet.create({
   },
 
   eventDate: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
 
@@ -60,7 +60,7 @@ export const styles = StyleSheet.create({
   },
   timeText: {
     color: "#ffffff",
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "bold",
     textAlign: "center",
   },
@@ -89,7 +89,7 @@ export const styles = StyleSheet.create({
   },
   titleText: {
     color: "#22333b",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "500",
   },
   reminderRow: {

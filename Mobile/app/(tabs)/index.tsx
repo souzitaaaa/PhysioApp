@@ -25,7 +25,6 @@ export default function HomeScreen() {
     loadNotifications();
     loadUpcomingEvents();
 
-    // --- Realtime: Injuries ---
     const injuryChannel = supabase
       .channel("injuries-realtime")
       .on(
@@ -37,7 +36,6 @@ export default function HomeScreen() {
       )
       .subscribe();
 
-    // --- Realtime: Reminders ---
     const remindersChannel = supabase
       .channel("reminders-realtime")
       .on(
@@ -59,18 +57,18 @@ export default function HomeScreen() {
     const [year, month, day] = dateString.split("-").map(Number);
 
     const months = [
-      "jan",
-      "fev",
-      "mar",
-      "abr",
-      "mai",
-      "jun",
-      "jul",
-      "ago",
-      "set",
-      "out",
-      "nov",
-      "dez",
+      "Jan",
+      "Fev",
+      "Mar",
+      "Abr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Set",
+      "Out",
+      "Nov",
+      "Dez",
     ];
 
     return `${day} ${months[month - 1]}`;
@@ -81,11 +79,9 @@ export default function HomeScreen() {
 
     const sortedRecords = records.sort(
       (a, b) => b.injuryRecordID - a.injuryRecordID
-
     );
-    
-    const latest = sortedRecords.slice(0,4);
 
+    const latest = sortedRecords.slice(0, 4);
     const withNames: NotificationItem[] = [];
 
     for (const record of latest) {
@@ -102,33 +98,26 @@ export default function HomeScreen() {
   async function loadUpcomingEvents() {
     const allReminders = await fetchAllReminders();
 
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const futureEvents = allReminders.filter((event) => {
       const [year, month, day] = event.date.split("-").map(Number);
-      const [hour, minute] = (event.timeStart ?? "00:00")
-        .split(":")
-        .map(Number);
-
-      const eventDateTime = new Date(year, month - 1, day, hour, minute);
-
-      return eventDateTime >= now;
+      const eventDate = new Date(year, month - 1, day);
+      return eventDate >= today;
     });
 
-    // Ordenar por data e hora
     const sorted = futureEvents.sort((a, b) => {
       const [y1, m1, d1] = a.date.split("-").map(Number);
-      const [h1, min1] = (a.timeStart ?? "00:00").split(":").map(Number);
-      const dateTimeA = new Date(y1, m1 - 1, d1, h1, min1);
-
       const [y2, m2, d2] = b.date.split("-").map(Number);
-      const [h2, min2] = (b.timeStart ?? "00:00").split(":").map(Number);
-      const dateTimeB = new Date(y2, m2 - 1, d2, h2, min2);
 
-      return dateTimeA.getTime() - dateTimeB.getTime();
+      const dateA = new Date(y1, m1 - 1, d1);
+      const dateB = new Date(y2, m2 - 1, d2);
+
+      return dateA.getTime() - dateB.getTime();
     });
 
-    setUpcomingEvents(sorted.slice(0, 4)); // pegar os 4 próximos
+    setUpcomingEvents(sorted.slice(0, 4));
   }
 
   return (
@@ -147,7 +136,7 @@ export default function HomeScreen() {
             <Text style={styles.athleteName} numberOfLines={1}>
               {item.athleteName}
             </Text>
-            <Text style={styles.resume} numberOfLines={2} ellipsizeMode="tail">
+            <Text style={styles.resume} numberOfLines={1} ellipsizeMode="tail">
               {item.resume}
             </Text>
           </View>
@@ -163,22 +152,16 @@ export default function HomeScreen() {
 
         {upcomingEvents.map((event) => (
           <View key={event.reminderID} style={styles.reminderRow}>
-            {/* Retângulo azul (data + horas) */}
+            {/* Caixa azul (data) */}
+            <View style={styles.timeBox}>
+              <Text style={styles.timeText}>
+                {formatDateShort(event.date)}
+              </Text>
+            </View>
 
-              <View style={styles.timeBox}>
-                <Text style={styles.timeText}>
-                  {formatDateShort(event.date)}
-                </Text>
-
-                <Text style={styles.timeText}>
-                  {event.timeStart?.slice(0, 5)}
-                  {event.timeEnd ? ` - ${event.timeEnd.slice(0, 5)}` : ""}
-                </Text>
-              </View>
-
-            {/* Retângulo branco (título) */}
+            {/* Caixa branca (título) */}
             <View style={styles.titleBox}>
-              <Text style={styles.titleText} numberOfLines={2}>
+              <Text style={styles.titleText} numberOfLines={1}>
                 {event.title}
               </Text>
             </View>

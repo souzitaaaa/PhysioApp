@@ -32,7 +32,9 @@ export async function fetchInjuryRecordsByAthlete(
       )
     `)
     .eq("athleteID", athleteID)
+    .neq("statusID", 1) 
     .order("dateStart", { ascending: false });
+    
 
   if (error) {
     console.log("Erro ao carregar histórico do atleta:", error);
@@ -48,6 +50,7 @@ export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
   const { data, error } = await supabase
     .from("t_injury_record")
     .select("*")
+    .neq("statusID", 1) 
     .order("dateStart", { ascending: false });
 
   if (error) {

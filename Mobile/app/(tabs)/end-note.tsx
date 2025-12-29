@@ -19,7 +19,6 @@ import {
 } from "../../services/injuryRecordService";
 
 import { createReminder } from "../../services/reminderService";
-
 import { styles } from "../../css/end_note";
 
 export default function EndNoteScreen() {
@@ -28,6 +27,7 @@ export default function EndNoteScreen() {
     athleteID: string;
     athleteName: string;
   }>();
+
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -36,16 +36,12 @@ export default function EndNoteScreen() {
   // Nota final
   const [text, setText] = useState("");
 
-  // Reminder
+  // Reminder (SEM HORAS)
   const [reminderTitle, setReminderTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
-  const [timeStart, setTimeStart] = useState<Date | null>(null);
-  const [timeEnd, setTimeEnd] = useState<Date | null>(null);
 
-  // Pickers
+  // Picker
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const nowISO = new Date().toISOString();
   const nowDate = nowISO.split("T")[0];
@@ -54,12 +50,7 @@ export default function EndNoteScreen() {
     setText("");
     setReminderTitle("");
     setDate(null);
-    setTimeStart(null);
-    setTimeEnd(null);
-
     setShowDatePicker(false);
-    setShowStartPicker(false);
-    setShowEndPicker(false);
   }, []);
 
   useFocusEffect(
@@ -78,13 +69,15 @@ export default function EndNoteScreen() {
     loadInjury();
   }, [injuryRecordID]);
 
-  function formatDate(date: Date) {
-    return date.toISOString().split("T")[0];
-  }
+  function formatDate(date: Date | string | null) {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("pt-PT");
+}
 
-  function formatTime(date: Date) {
-    return date.toTimeString().slice(0, 5);
-  }
+function formatDateForDB(date: Date) {
+  return date.toISOString().split("T")[0];
+}
 
   async function handleSave() {
     if (!injuryRecordID) return;
@@ -94,12 +87,11 @@ export default function EndNoteScreen() {
       return;
     }
 
-    const reminderTouched =
-      reminderTitle.trim() !== "" || date || timeStart || timeEnd;
+    const reminderTouched = reminderTitle.trim() !== "" || date;
 
     if (reminderTouched) {
-      if (reminderTitle.trim() === "" || !date || !timeStart || !timeEnd) {
-        alert("Preencha todos os campos do lembrete.");
+      if (reminderTitle.trim() === "" || !date) {
+        alert("Preencha o título e a data do lembrete.");
         return;
       }
     }
@@ -108,24 +100,14 @@ export default function EndNoteScreen() {
       await createNote(Number(injuryRecordID), text);
 
       if (reminderTouched) {
-            const reminderPayload = {
-              title: reminderTitle,
-              date: formatDate(date!),
-              timeStart: formatTime(timeStart!), 
-              timeEnd: formatTime(timeEnd!),     
-              injuryRecordID: Number(injuryRecordID), 
-            };
-      
-      
-            console.log("Payload do lembrete:", reminderPayload);
-      
-            const reminderData = await createReminder(reminderPayload);
-            console.log("Reminder criado com sucesso:", reminderData);
-          }
+        const reminderPayload = {
+          title: reminderTitle,
+          date: formatDateForDB(date!),
+          injuryRecordID: Number(injuryRecordID),
+        };
 
-      if (reminderTouched) {
-        // Se quiseres, podes chamar createReminder aqui
-        // await createReminder({ ... })
+        console.log("Payload do lembrete:", reminderPayload);
+        await createReminder(reminderPayload);
       }
 
       await closeInjuryRecord(Number(injuryRecordID), nowISO);
@@ -137,6 +119,7 @@ export default function EndNoteScreen() {
       });
     } catch (error) {
       console.log("Erro ao guardar nota final:", error);
+      alert("Erro ao guardar a nota final.");
     }
   }
 
@@ -178,14 +161,15 @@ export default function EndNoteScreen() {
         >
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Data de começo:</Text>
-            <Text style={styles.infoText}>{injury?.dateStart}</Text>
+            <Text style={styles.infoText}>{formatDate(injury?.dateStart)}</Text>
           </View>
 
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Data de fim:</Text>
             <Text style={styles.infoText}>
-              {injury?.dateEnd ? injury.dateEnd.split("T")[0] : nowDate}
+              {injury?.dateEnd ? formatDate(injury.dateEnd) : formatDate(nowDate)}
             </Text>
+
           </View>
         </View>
 
@@ -198,7 +182,7 @@ export default function EndNoteScreen() {
           onChangeText={setText}
         />
 
-        {/* Lembrete com botão único Limpar */}
+        {/* Lembrete */}
         <View
           style={{
             flexDirection: "row",
@@ -209,16 +193,16 @@ export default function EndNoteScreen() {
         >
           <Text style={styles.titleReminder}>Lembrete</Text>
 
-          {(reminderTitle || date || timeStart || timeEnd) && (
+          {(reminderTitle || date) && (
             <TouchableOpacity
               onPress={() => {
                 setReminderTitle("");
                 setDate(null);
-                setTimeStart(null);
-                setTimeEnd(null);
               }}
             >
-              <Text style={{ color: "red", fontSize: 12 }}>Limpar Lembrete</Text>
+              <Text style={{ color: "red", fontSize: 12 }}>
+                Limpar Lembrete
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -236,7 +220,9 @@ export default function EndNoteScreen() {
           style={styles.pickerButton}
           onPress={() => setShowDatePicker(true)}
         >
-          <Text>{date ? date.toLocaleDateString() : "Selecionar data"}</Text>
+          <Text>
+            {date ? formatDate(date) : "Selecionar data"}
+          </Text>
         </TouchableOpacity>
 
         {showDatePicker && (
@@ -249,80 +235,8 @@ export default function EndNoteScreen() {
             }}
           />
         )}
-
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          {/* Hora de Início */}
-          <View style={{ flex: 1, marginRight: 5 }}>
-            <Text style={styles.label}>Hora de Início:</Text>
-            <TouchableOpacity
-              style={styles.pickerButton}
-              onPress={() => setShowStartPicker(true)}
-            >
-              <Text>
-                {timeStart
-                  ? timeStart.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
-                  : "Selecionar Início"}
-              </Text>
-            </TouchableOpacity>
-
-            {showStartPicker && (
-              <DateTimePicker
-                value={timeStart || new Date()}
-                mode="time"
-                is24Hour={true}
-                onChange={(_, selectedDate) => {
-                  setShowStartPicker(false);
-                  if (selectedDate) {
-                    setTimeStart(selectedDate);
-                    setTimeEnd(null); // limpa hora de fim
-                  }
-                }}
-              />
-            )}
-          </View>
-
-          {/* Hora de Fim */}
-          <View style={{ flex: 1, marginLeft: 5 }}>
-            <Text style={styles.label}>Hora de Fim:</Text>
-            <TouchableOpacity
-              style={styles.pickerButton}
-              onPress={() => {
-                if (!timeStart) {
-                  alert("Selecione primeiro a hora de início.");
-                  return;
-                }
-                setShowEndPicker(true);
-              }}
-            >
-              <Text>
-                {timeEnd
-                  ? timeEnd.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
-                  : "Selecionar Fim"}
-              </Text>
-            </TouchableOpacity>
-
-            {showEndPicker && (
-              <DateTimePicker
-                value={timeEnd || timeStart!}
-                mode="time"
-                is24Hour={true}
-                onChange={(_, selectedDate) => {
-                  setShowEndPicker(false);
-                  if (!selectedDate || !timeStart) return;
-
-                  const maxEndTime = new Date(timeStart.getTime() + 60 * 60 * 1000);
-                  if (selectedDate > maxEndTime) {
-                    alert("A hora de fim não pode ser mais de 1 hora após a hora de início.");
-                    setTimeEnd(null);
-                    return;
-                  }
-
-                  setTimeEnd(selectedDate);
-                }}
-              />
-            )}
-          </View>
-        </View>
+        
+        <View style={{ flex: 1 }} />
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.btncancel} onPress={handleGoBack}>

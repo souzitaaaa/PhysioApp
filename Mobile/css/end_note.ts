@@ -22,6 +22,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
     minHeight: 640,
+    flex: 1, 
   },
   input: {
     borderWidth: 1,

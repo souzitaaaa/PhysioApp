@@ -59,45 +59,44 @@ export const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   reminderRow: {
-  flexDirection: "row",
-  marginBottom: 12,
-  alignItems: "stretch", 
-},
-timeBox: {
-  width: 80,
-  backgroundColor: "#22333b",
-  borderRadius: 16,
-  paddingVertical: 12,
-  paddingHorizontal: 4,
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 1,   
-},
+    flexDirection: "row",
+    marginBottom: 12,
+    alignItems: "stretch",
+  },
+  nameBox: {
+    width: 85,
+    backgroundColor: "#22333b",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  nameText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 
-timeText: {
-  color: "#ffffff",
-  fontSize: 14,
-  fontWeight: "bold",
-},
+  titleBox: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    borderColor: "#cccccc",
+    borderWidth: 1,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingStart: 40,
+    marginLeft: -30,
+    justifyContent: "center",
+  },
 
-titleBox: {
-  flex: 1,
-  backgroundColor: "#ffffff",
-  borderColor: "#cccccc",
-  borderWidth: 1,
-  borderTopRightRadius: 16,
-  borderBottomRightRadius: 16,
-  paddingVertical: 12,
-  paddingHorizontal: 20, 
-  paddingStart: 40,
-  marginLeft: -30,      
-  justifyContent: "center",
-},
-
-titleText: {
-  color: "#22333b",
-  fontSize: 16,
-  fontWeight: "500",
-},
-
+  titleText: {
+    color: "#22333b",
+    fontSize: 16,
+    fontWeight: "500",
+  },
 });

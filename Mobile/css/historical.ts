@@ -33,10 +33,13 @@ export const styles = StyleSheet.create({
   noteTitle: {
     fontSize: 16,
     fontWeight: "700",
+  flexWrap: "nowrap",
   },
   noteDates: {
     fontSize: 14,
     color: "#555",
+    textAlign: "right",
+  flexWrap: "wrap",
   },
   headerRow: {
     flexDirection: "row",
@@ -80,8 +83,25 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   rowBetween: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+  flexDirection: "row",
+  width: "100%",
+},
+
+leftColumn: {
+  width: "50%",
+  paddingRight: 8,
+},
+
+rightColumn: {
+  width: "50%",
+  alignItems: "flex-end",
+},
+
+
+
+
+
+
+
+
 });

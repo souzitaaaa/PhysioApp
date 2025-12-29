@@ -1,5 +1,5 @@
-import { Slot } from "expo-router";
-import { useEffect } from "react";
+import { Slot, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
@@ -15,66 +15,69 @@ Notifications.setNotificationHandler({
 });
 
 export default function RootLayout() {
+  const router = useRouter();
+  const segments = useSegments();
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    checkSession();
     registerForPush();
   }, []);
 
+  async function checkSession() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!session && !inAuthGroup) {
+      router.replace("/(auth)/login");
+    }
+
+    if (session && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+
+    setLoading(false);
+  }
+
   async function registerForPush() {
     try {
-      if (!Device.isDevice) {
-        console.log("Must use physical device");
-        return;
-      }
+      if (!Device.isDevice) return;
 
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
+      const { status } =
+        await Notifications.requestPermissionsAsync();
 
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== "granted") {
-        const { status } =
-          await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== "granted") {
-        console.log("Permission not granted");
-        return;
-      }
+      if (status !== "granted") return;
 
       const projectId =
         Constants.expoConfig?.extra?.eas?.projectId ??
         Constants.easConfig?.projectId;
 
-      if (!projectId) {
-        console.log("Missing EAS projectId");
-        return;
-      }
+      if (!projectId) return;
 
       const token = (
         await Notifications.getExpoPushTokenAsync({ projectId })
       ).data;
 
-      console.log("Expo push token:", token);
-
-      // Buscar user logado
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      // if (!user) return;
-      console.log("antes supabase")
-      // Guardar token na Supabase
+      if (!user) return;
+
       await supabase.from("t_notification_token").upsert({
-        user_id: "1",
+        user_id: user.id,
         expo_push_token: token,
         platform: Device.osName,
-        
       });
     } catch (e) {
       console.log("Push error:", e);
     }
   }
+
+  if (loading) return null;
 
   return <Slot />;
 }

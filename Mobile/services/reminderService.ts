@@ -4,8 +4,6 @@ export type Reminder = {
   reminderID?: number;
   title: string;
   date: string;
-  timeStart: string;
-  timeEnd: string;
   injuryRecordID: number; // ou injury_id conforme tabela
   created_at?: string;
 };
