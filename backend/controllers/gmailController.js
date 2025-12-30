@@ -1,22 +1,33 @@
 import * as gmailService from "../services/gmailService.js"
 import { parseEmailAI } from "../emailDetection/parseEmailAI.js";
 import { getEmailExists, getExistingEmailHasRecord, createEmail, updateEmailWithRecord } from "./emailsController.js";
-import { getVerifyAccountable, getVerifyAthlete } from "./athletesController.js";
+import { getVerifyAccountable, getVerifyAthlete } from "../functions/athletesFunctions.js";
 import { createInjuryRecord } from "./injuriesController.js";
 import { getMatchingAthletes } from "../utils/utils.js"
 
 // AUTH | Get Auth URL
 export async function auth(req, res) {
-    const url = gmailService.getAuthUrl();
+    const url = gmailService.getAuthUrl(req.user.userID);
     res.json({ url })
 }
 
 // AUTH CALLBACK | Save tokens
 export async function oauthCallback(req, res) {
-    const code = req.query.code
-    await gmailService.saveToken(code)
-    res.send("Authorization complete. You can close this window.")
+    const code = req.query.code;
+    const userID = req.query.state;
+
+    if (!userID) return res.status(400).send("Missing user context");
+
+    try {
+        const tokens = await gmailService.saveToken(code, userID);
+
+        res.redirect('http://localhost:5173/gmail-connected?success=true');
+    } catch (error) {
+        console.error("Gmail OAuth error:", error);
+        res.redirect('http://localhost:5173/gmail-connected?success=false&error=' + encodeURIComponent(error.message));
+    }
 }
+
 
 // GET | Get Gmail Labels
 export async function getLabels(req, res) {
@@ -31,7 +42,7 @@ export async function getLabels(req, res) {
 // GET | Get Gmail Inbox
 export async function getEmails(req, res) {
     try {
-        const emails = await gmailService.listEmails(10)
+        const emails = await gmailService.listEmails(req.user.userID, 10);
 
         for (const e of emails) {
             const exists = await getEmailExists(e.id);

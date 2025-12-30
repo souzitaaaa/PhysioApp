@@ -18,6 +18,7 @@
                     <Button v-if="mode === 'view'" icon="fa-solid fa-xmark" severity="contrast" text
                         @click="closeCallback" v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
                 </div>
+
                 <div class="flex-1 overflow-y-auto px-8">
                     <span class="text-form-value text-lg font-medium!">Conteúdo Original</span>
 
@@ -141,11 +142,13 @@
                             <span class="mt-2 text-form-title text-sm col-span-12">Apesar da não identificação do
                                 responsável, confirma que o
                                 registo criado é valido para o atleta identificado?</span>
+                        <div class="flex items-center col-span-12">
                             <ToggleSwitch v-model="correctInformation" size="small"
                                 :invalid="!!errors.correctInformation" fluid />
-                            <small v-if="errors.correctInformation" class="text-red-600 text-xs">{{
+                            <small v-if="errors.correctInformation" class="text-red-600 text-xs ml-4">{{
                                 errors.correctInformation
                             }}</small>
+                        </div>
                         </p>
                     </div>
                 </div>
@@ -158,8 +161,8 @@
                         severity="secondary" @click="cancelAction" />
 
                     <!-- Guardar -->
-                    <Button v-if="mode === 'edit' || mode === 'add'" icon="fa-solid fa-floppy-disk" label="Guardar"
-                        class="px-5" size="small" @click="save" />
+                    <Button v-if="mode === 'edit'" icon="fa-solid fa-floppy-disk" label="Guardar" class="px-5"
+                        size="small" @click="save" />
 
                     <!-- Corrigir Erros -->
                     <Button v-if="mode === 'view' && email.statusID === 1" icon="fa-solid fa-triangle-exclamation"
@@ -176,6 +179,7 @@
 </template>
 
 <script>
+import { validateEmailForm } from '../../../utils/emailUtils';
 import { safeGet } from '../../../utils/utils.js'
 import axios from 'axios';
 import EmailModal from './EmailModal.vue';
@@ -195,7 +199,7 @@ export default {
             default: 'view'
         }
     },
-    emits: ["close"],
+    emits: ["close", "updateEmail"],
     data() {
         return {
             // Data Helpers
@@ -235,6 +239,14 @@ export default {
         async loadPhysios() {
             this.physios = await safeGet(axios.get(`http://localhost:3000/users`), []);
         },
+        async save() {
+            this.errors = validateEmailForm(this.formData, this.correctInformation)
+            if (Object.keys(this.errors).length > 0) return
+
+            this.$emit('updateEmail', this.formData, async () => {
+                this.$emit('update:mode', 'view')
+            });
+        },
         toggle(event) {
             if (this.$refs.menu_email) {
                 this.$refs.menu_email.toggle(event)
@@ -244,7 +256,7 @@ export default {
             this.emailDeleteModalVisible = false;
         },
         handleEmailDeleted() {
-            this.emailDeleteModalVisible = false;
+            this.emailDeleteModalVisible = false;-
             this.$emit('close');
         },
         showDeleteConfirmation() {

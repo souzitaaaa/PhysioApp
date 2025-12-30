@@ -13,7 +13,7 @@ export async function getEmailByID(req, res) {
 	const emailID = req.params.id;
 
 	const { data, error } = await supabase
-		.from("t_email")
+		.from("v_email")
 		.select("*")
 		.eq("emailID", emailID)
 		.single();
@@ -35,12 +35,61 @@ export async function getEmailErrorCount(req, res) {
 
 }
 
+// UPDATE | Email with error
+export async function updateEmail(req, res) {
+	const injuryRecordID = req.params.id;
+	const payload = req.body;
 
+	if (isNaN(injuryRecordID))
+		return res.status(400).json({ error: "Invalid email" });
 
+	const { data, error } = await supabase.from('t_injury_record').update([
+		{
+			athleteID: payload.athleteID,
+			userID: payload.userID,
+			title: payload.injury_title,
+			resume: payload.injury_resume,
+			statusID: 4,
+			errorSpecID: null,
+		},
+	])
+		.eq('injuryRecordID', payload.injuryRecordID)
+		.select('*')
 
+	if (error) return res.status(500).json({ error });
+	return res.json(data);
+}
 
+// DELETE | Email by ID
+export async function deleteEmail(req, res) {
+	const emailID = parseInt(req.params.id, 10);
 
+	if (isNaN(emailID))
+		return res.status(400).json({ error: "Invalid email ID" });
 
+	const { password } = req.body
+
+	if (!password)
+		return res.status(400).json({ error: "Password is required" });
+
+	if (password !== process.env.DELETE_PASSWORD)
+		return res.status(401).json({ error: "Invalid password" });
+
+	const { data, error } = await supabase
+		.from('t_email')
+		.delete()
+		.eq('emailID', emailID)
+		.select('*');
+
+	if (error)
+		return res.status(500).json({ error });
+
+	if (!data || data.length === 0)
+		return res.status(404).json({ error: "Email not found" });
+
+	return res.json({ message: "Email deleted successfully", data });
+
+}
 
 
 

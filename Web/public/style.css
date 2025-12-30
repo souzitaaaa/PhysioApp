@@ -140,12 +140,12 @@ body,
 /* Remove margem/padding das células */
 .style-table .p-datatable-tbody > tr > td,
 .style-table .p-datatable-thead > tr > th {
-  padding: 0.6rem 1.2rem; /* ajusta como quiser */
+  padding: 0.5rem 1.2rem; /* ajusta como quiser */
 }
 
 /* Se quiser ainda mais compacto */
 .style-table .p-datatable-tbody > tr > td {
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 
@@ -231,3 +231,4 @@ body,
 .icon-password.active {
   color: #f0f0f0;
 }
+

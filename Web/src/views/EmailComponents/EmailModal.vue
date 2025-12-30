@@ -73,25 +73,25 @@ export default {
                 return
             }
 
-            // await axios.delete(`http://localhost:3000/users/${this.user.userID}`, {
-            //     data: { password: this.password }
-            // })
-            //     .then(() => {
-            //         this.$emit('deleted')
-            //         this.$emit('close')
-            //         this.resetModal()
-            //     })
-            //     .catch(err => {
-            //         if (err.response) {
-            //             if (err.response.status === 401)
-            //                 this.passwordError = 'Palavra passe inválida.'
-            //             else if (err.response.status === 404)
-            //                 this.passwordError = 'Atleta não encontrado.'
-            //             else
-            //                 this.passwordError = 'Erro ao apagar atleta. Tente novamente.'
-            //         } else
-            //             this.passwordError = 'Erro de rede. Verifique a conexão.'
-            //     })
+            await axios.delete(`http://localhost:3000/emails/${this.email.emailID}`, {
+                data: { password: this.password }
+            })
+                .then(() => {
+                    this.$emit('deleted')
+                    this.$emit('close')
+                    this.resetModal()
+                })
+                .catch(err => {
+                    if (err.response) {
+                        if (err.response.status === 401)
+                            this.passwordError = 'Palavra passe inválida.'
+                        else if (err.response.status === 404)
+                            this.passwordError = 'Atleta não encontrado.'
+                        else
+                            this.passwordError = 'Erro ao apagar atleta. Tente novamente.'
+                    } else
+                        this.passwordError = 'Erro de rede. Verifique a conexão.'
+                })
         }
     }
 }

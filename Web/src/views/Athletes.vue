@@ -112,7 +112,7 @@
     </div>
 
     <DataTable ref="dt" v-model:filters="filters" :value="athletes" stripedRows dataKey="athleteID"
-      class="style-table shadow-md!" paginator :rows="8" scrollable scrollHeight="flex" :filters="filters"
+      class="style-table shadow-md!" paginator :rows="9" scrollable scrollHeight="flex" :filters="filters"
       filterDisplay="menu" :globalFilterFields="['name', 'email']">
       <template #header>
         <Toolbar class="border-0!">
@@ -135,7 +135,7 @@
         </Toolbar>
 
       </template>
-      <Column field="name" header="Nome" style="min-width: 16rem">
+      <Column field="name" header="Nome" style="width: 30%">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
             <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
@@ -146,7 +146,7 @@
         </template>
       </Column>
       <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false"
-        :filterMenuStyle="{ width: '8rem' }" style="min-width: 8rem">
+        :filterMenuStyle="{ width: '8rem' }" style="width: 10%">
         <template #body="{ data }">
           {{ data.division }}
         </template>
@@ -156,7 +156,7 @@
           </MultiSelect>
         </template>
       </Column>
-      <Column field="age" header="Idade">
+      <Column field="age" header="Idade" style="width: 10%">
         <template #body="{ data }">
           <div class="flex flex-col">
             <span class="">{{ data.age }}</span>
@@ -164,7 +164,7 @@
           </div>
         </template>
       </Column>
-      <Column field="country_name" header="País" style="max-width: 8rem">
+      <Column field="country_name" header="País" style="width: 10%">
         <template #body="{ data }">
           <div class="card flex justify-start">
             <Tag class="bg-transparent!">

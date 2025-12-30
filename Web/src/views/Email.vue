@@ -15,7 +15,7 @@
             <Tag severity="danger" class="mr-8">
               Emails com erro [{{ errorCount }}]
             </Tag>
-            <Button icon="fa-solid fa-gear" class="mr-2" severity="secondary" size="small" />
+            <Button icon="fa-solid fa-gear" class="mr-2" severity="secondary" size="small" @click="connectGmail" />
           </template>
         </Toolbar>
       </template>
@@ -39,11 +39,13 @@
                 </div>
               </div>
               <div class="flex flex-col items-end gap-2">
-                <Tag v-if="item.status" :value="item.status" :severity="item.statusID === 1 ? 'danger' :
-                  item.statusID === 2 ? 'success' :
-                    item.statusID === 3 ? 'warn' :
-                      item.statusID === 4 ? 'info' :
-                        'info'" />
+                <Tag v-if="item.status" :value="item.statusID === 1
+                  ? `Error: ${item.error}`
+                  : item.status" :severity="item.statusID === 1 ? 'danger'
+                    : item.statusID === 2 ? 'success'
+                      : item.statusID === 3 ? 'warn'
+                        : item.statusID === 4 ? 'info'
+                          : 'info'" />
               </div>
             </div>
 
@@ -82,7 +84,7 @@
   </div>
 
   <EmailDrawer :visible="emailDrawerVisible" :email="selectedEmail" :mode="drawerMode" @close="closeDrawer"
-    @update:mode="drawerMode = $event"></EmailDrawer>
+    @update-email="updateEmail" @update:mode="drawerMode = $event"></EmailDrawer>
 
 </template>
 
@@ -111,12 +113,16 @@ export default {
     this.getEmailErrorCount()
   },
   methods: {
-    async getEmailData() {
-      const data = await safeGet(
-        axios.get('http://localhost:3000/emails/'),
-        []
-      );
-      this.email = data
+    async getEmailData(emailID) {
+      const endpoint = emailID
+        ? `http://localhost:3000/emails/${emailID}`
+        : `http://localhost:3000/emails/`;
+
+      const data = await safeGet(axios.get(endpoint), emailID ? null : []);
+
+      if (emailID) return data;
+
+      this.email = data;
     },
     async getEmailErrorCount() {
       const data = await safeGet(
@@ -143,6 +149,51 @@ export default {
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
+    async updateEmail(formData, callback) {
+      console.log("updateEmail: ", formData)
+
+      const data = await axios.put(
+        `http://localhost:3000/emails/${formData.injuryRecordID}`,
+        formData
+      );
+
+      if (callback)
+        await callback();
+
+      await this.getEmailData()
+      await this.getEmailErrorCount()
+
+
+      this.closeDrawer()
+    },
+    async connectGmail() {
+      const token = localStorage.getItem('access_token');
+
+      if (!token) {
+        console.error("User not authenticated");
+        this.$router.push('/login');
+        return;
+      }
+
+      try {
+        const res = await axios.get(
+          "http://localhost:3000/gmail/auth",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (res.data?.url) {
+          window.location.href = res.data.url;
+        }
+      } catch (err) {
+        console.error("Failed to start Gmail auth", err);
+      }
+    }
+
+
   },
 }
 </script>
