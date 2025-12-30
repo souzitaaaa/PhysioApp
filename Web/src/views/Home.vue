@@ -2,8 +2,8 @@
   <div class="overscroll-auto">
     <div class="flex h-1/2 mb-6">
       <div class="w-full">
-        <DataTable :value="injuryRecords" dataKey="injuryRecordID" paginator :rows="5" scrollable scrollHeight="flex"
-          class="style-table h-full" tableStyle="table-layout: fixed; width: 100%;" :rowClass="rowClass">
+        <DataTable ref="dt" :value="injuryRecords" dataKey="injuryRecordID"  class="style-table h-full" paginator :rows="5" scrollable scrollHeight="flex"
+          tableStyle="table-layout: fixed; width: 100%;" :rowClass="rowClass">
 
           <template #header>
             <div class="flex justify-between items-center w-full">

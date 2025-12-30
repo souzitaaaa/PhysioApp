@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native"; // <- importante
@@ -16,6 +16,8 @@ export default function HomeScreen() {
   const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const [athletes, setAthletes] = useState<Record<number, string>>({});
+  const [loadingReminders, setLoadingReminders] = useState(true);
+
 
   useEffect(() => {
     loadReminders();
@@ -48,6 +50,8 @@ export default function HomeScreen() {
   );
 
   const loadReminders = async () => {
+    setLoadingReminders(true);
+    
     const allReminders = await fetchAllReminders();
     setReminders(allReminders);
 
@@ -67,6 +71,8 @@ export default function HomeScreen() {
       athleteMap[r.injuryRecordID] = athlete?.name ?? " ";
     }
     setAthletes(athleteMap);
+
+    setLoadingReminders(false);
   };
 
   const remindersOfSelectedDate = reminders.filter(
@@ -126,29 +132,37 @@ export default function HomeScreen() {
         </Text>
 
         <ScrollView style={styles.reminderList}>
-          {selectedDate && remindersOfSelectedDate.length === 0 && (
-            <Text style={styles.noRemindersText}>
+          {loadingReminders ? (
+            <View style={{ marginTop: 20 }}>
+              <ActivityIndicator size="large" color="#22333B" />
+            </View>
+          ) : (
+            <>
+            {selectedDate && remindersOfSelectedDate.length === 0 && (
+              <Text style={styles.noRemindersText}>
               Nenhum lembrete neste dia
             </Text>
           )}
-
+          
           {remindersOfSelectedDate.map((r) => (
             <View key={r.reminderID} style={styles.reminderRow}>
-              {/* Lado esquerdo: hora */}
-              <View style={styles.nameBox}>
-                <Text style={styles.nameText}>
-                  {athletes[r.injuryRecordID] ? getFirstAndLastName(athletes[r.injuryRecordID]) : "" }
-                </Text>
-              </View>
-
-              {/* Lado direito: title */}
-              <View style={styles.titleBox}>
-                <Text style={styles.titleText}>{r.title}</Text>
-              </View>
+            {/* Lado esquerdo: hora */}
+            <View style={styles.nameBox}>
+            <Text style={styles.nameText}>
+            {athletes[r.injuryRecordID] ? getFirstAndLastName(athletes[r.injuryRecordID]) : "" }
+            </Text>
+            </View>
+            
+            {/* Lado direito: title */}
+            <View style={styles.titleBox}>
+            <Text style={styles.titleText}>{r.title}</Text>
+            </View>
             </View>
           ))}
+        </>
+        )}
         </ScrollView>
-      </View>
-    </View>
-  );
-}
+        </View>
+        </View>
+      );
+    }
