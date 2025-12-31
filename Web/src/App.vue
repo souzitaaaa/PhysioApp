@@ -61,27 +61,26 @@ export default {
     },
   },
   mounted() {
-  // Inicializa a verificação da largura da tela
-  this.checkMobile();
+    // Inicializa a verificação da largura da tela
+    this.checkMobile();
 
-  // Adiciona um event listener para atualizar o estado do dispositivo móvel ao redimensionar a janela
-  window.addEventListener('resize', this.checkMobile);
+    // Adiciona um event listener para atualizar o estado do dispositivo móvel ao redimensionar a janela
+    window.addEventListener('resize', this.checkMobile);
 
-  setTimeout(() => {
-    this.isLoading = false;
-    this.loadEmails();
-  }, 300);
-},
-beforeDestroy() {
-  // Remova o event listener quando o componente for destruído
-  window.removeEventListener('resize', this.checkMobile);
-},
-methods: {
-  // Método que verifica a largura da tela e define isMobile
-  checkMobile() {
-    this.isMobile = window.innerWidth <= 1279;
+    setTimeout(() => {
+      this.isLoading = false;
+      this.loadEmails();
+    }, 300);
+  },
+  beforeDestroy() {
+    // Remova o event listener quando o componente for destruído
+    window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
+    // Método que verifica a largura da tela e define isMobile
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 1279;
+    },
     async loadEmails() {
       try {
         const res = await api.get('/gmail/emails')
@@ -92,10 +91,5 @@ methods: {
       }
     },
   },
-}
-,
 };
 </script>
-
-
-

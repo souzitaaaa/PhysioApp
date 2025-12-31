@@ -1,14 +1,21 @@
 import express from 'express'
-import { me, login, logout } from "../controllers/authController.js"
+import { me, login, logout, refresh } from "../controllers/authController.js"
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router()
 
-// GET
-router.get('/me', me)
+// GET | Public
 
-// POST
+
+// GET | Protected
+router.get('/me', requireAuth, me)
+
+// POST | Public
 router.post('/login', login)
-router.post('/logout', logout)
+router.post('/refresh', refresh)
+
+// POST | Protected
+router.post('/logout', requireAuth, logout)
 
 // UPDATE
 

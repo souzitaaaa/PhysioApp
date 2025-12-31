@@ -1,0 +1,79 @@
+🤖 ===== AI PARSING START =====
+🤖 [parseEmailAI] Email input: {
+  id: '19b71ed72205bbed',
+  from: 'Rodrigo Ferreira <rodrigo.pintoff04@gmail.com>',
+  subject: 'lesao no pe Chinatsu',
+  date: 'Wed, 31 Dec 2025 01:02:12 +0000',
+  bodyLength: 158
+}
+🤖 [parseEmailAI] Getting Gemini model: gemini-2.5-flash
+🤖 [parseEmailAI] Input text prepared:
+   - System prompt length: 731
+   - Total input length: 1073
+🤖 [parseEmailAI] Calling Gemini API...
+🤖 [parseEmailAI] Gemini API responded in 3362ms
+🤖 [parseEmailAI] Raw AI output: ```json
+{
+  "athleteName": "Chinatsu",
+  "senderEmail": "rodrigo.pintoff04@gmail.com",
+  "title": "Lesão do Pé",
+  "resume": "Chinatsu sofreu uma lesão no pé e, por essa razão, não poderá comparecer ao jogo de amanhã. Prevê-se que esteja apta a regressar na terça-feira.",
+  "startDate": "2025-12-31"
+}
+```
+🤖 [parseEmailAI] Raw output length: 306
+🤖 [parseEmailAI] Cleaning JSON...
+🤖 [parseEmailAI] Cleaned output: {
+  "athleteName": "Chinatsu",
+  "senderEmail": "rodrigo.pintoff04@gmail.com",
+  "title": "Lesão do Pé",
+  "resume": "Chinatsu sofreu uma lesão no pé e, por essa razão, não poderá comparecer ao jogo de amanhã. Prevê-se que esteja apta a regressar na terça-feira.",
+  "startDate": "2025-12-31"
+}
+🤖 [parseEmailAI] Parsing JSON...
+✅ [parseEmailAI] Successfully parsed JSON:
+   - athleteName: Chinatsu
+   - senderEmail: rodrigo.pintoff04@gmail.com
+   - title: Lesão do Pé
+   - startDate: 2025-12-31
+   - resume length: 144
+🤖 ===== AI PARSING END (SUCCESS) =====
+
+🤖 [prepareCreation] AI parsed data: {
+  athleteName: 'Chinatsu',
+  senderEmail: 'rodrigo.pintoff04@gmail.com',
+  title: 'Lesão do Pé',
+  resume: 'Chinatsu sofreu uma lesão no pé e, por essa razão, não poderá comparecer ao jogo de amanhã. Prevê-se que esteja apta a regressar na terça-feira.',
+  startDate: '2025-12-31'
+}
+🔍 [prepareCreation] Extracted: { athleteName: 'Chinatsu', senderEmail: 'rodrigo.pintoff04@gmail.com' }
+👤 [prepareCreation] Checking if accountable exists: rodrigo.pintoff04@gmail.com
+👤 [prepareCreation] Accountable found: YES
+👤 [prepareCreation] Accountable data: [
+  {
+    accountableID: 15,
+    name: 'Rodrigo Ferreira',
+    email: 'rodrigo.pintoff04@gmail.com',
+    athleteID: 2,
+    athlete_name: 'Diogo Nogueira Sousav2'
+  }
+]
+✅ [prepareCreation] Accountable exists - matching with athlete...
+🏃 [prepareCreation] Matching athletes count: 0
+❌ [prepareCreation] No matching athlete - errorSpecID = 2
+
+💾 [prepareCreation] Creating injury record with:
+   - athleteID: NULL
+   - errorSpecID: 2
+   - injuryRecordData: {
+  athleteName: 'Chinatsu',
+  senderEmail: 'rodrigo.pintoff04@gmail.com',
+  title: 'Lesão do Pé',
+  resume: 'Chinatsu sofreu uma lesão no pé e, por essa razão, não poderá comparecer ao jogo de amanhã. Prevê-se que esteja apta a regressar na terça-feira.',
+  startDate: '2025-12-31'
+}
+✅ [prepareCreation] Injury record created with ID: 33
+🔍 [prepareCreation] ===== Finished injury record preparation =====
+
+✅ [getEmails] Injury record created with ID: 33
+✅ [getEmails] Email updated with record ID

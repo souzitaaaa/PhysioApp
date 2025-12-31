@@ -93,6 +93,7 @@ import { supabase } from '../../utils/supabase'
 import { safeGet } from '../../utils/utils.js'
 import EmailDrawer from './EmailComponents/EmailDrawer.vue'
 import axios from 'axios';
+import api from '../../utils/apiUtils';
 
 export default {
   components: {
@@ -114,23 +115,28 @@ export default {
   },
   methods: {
     async getEmailData(emailID) {
-      const endpoint = emailID
-        ? `http://localhost:3000/emails/${emailID}`
-        : `http://localhost:3000/emails/`;
+      try {
+        const endpoint = emailID ? `/emails/${emailID}` : '/emails'
+        const response = await api.get(endpoint)
 
-      const data = await safeGet(axios.get(endpoint), emailID ? null : []);
+        if (emailID)
+          return response.data
 
-      if (emailID) return data;
-
-      this.email = data;
+        this.email = response.data
+      } catch (error) {
+        if (!emailID)
+          this.email = []
+      }
     },
     async getEmailErrorCount() {
-      const data = await safeGet(
-        axios.get('http://localhost:3000/emails/error_count'),
-        { count: 0 }
-      );
+      try {
+        const response = await api.get('/emails/error_count')
+        this.errorCount = response.data.count
 
-      this.errorCount = data.count
+      } catch (error) {
+        console.error('❌ [Emails] Error loading error count:', error.response?.data || error.message)
+        this.errorCount = 0
+      }
     },
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index
@@ -150,50 +156,35 @@ export default {
       this.$refs.dt.exportCSV()
     },
     async updateEmail(formData, callback) {
-      console.log("updateEmail: ", formData)
+      try {
+        await api.put(`/emails/${formData.injuryRecordID}`, formData)
 
-      const data = await axios.put(
-        `http://localhost:3000/emails/${formData.injuryRecordID}`,
-        formData
-      );
+        if (callback) {
+          await callback()
+        }
 
-      if (callback)
-        await callback();
+        await this.getEmailData()
+        await this.getEmailErrorCount()
 
-      await this.getEmailData()
-      await this.getEmailErrorCount()
-
-
-      this.closeDrawer()
+        this.closeDrawer()
+      } catch (error) {
+        console.error('❌ [Emails] Error updating email:', error.response?.data || error.message)
+        // this.$toast.error('Erro ao atualizar email')
+      }
     },
     async connectGmail() {
-      const token = localStorage.getItem('access_token');
-
-      if (!token) {
-        console.error("User not authenticated");
-        this.$router.push('/login');
-        return;
-      }
-
       try {
-        const res = await axios.get(
-          "http://localhost:3000/gmail/auth",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
+        const response = await api.get('/gmail/auth')
 
-        if (res.data?.url) {
-          window.location.href = res.data.url;
+        if (response.data?.url)
+          window.location.href = response.data.url
+      } catch (error) {
+        console.error('❌ [Gmail] Failed to start Gmail auth:', error.response?.data || error.message)
+        if (error.response?.status !== 401) {
+          // this.$toast.error('Erro ao conectar Gmail')
         }
-      } catch (err) {
-        console.error("Failed to start Gmail auth", err);
       }
-    }
-
-
-  },
+    },
+  }
 }
 </script>
