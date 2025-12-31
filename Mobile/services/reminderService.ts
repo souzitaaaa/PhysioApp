@@ -10,10 +10,21 @@ export type Reminder = {
 
 
 // Buscar todos (já tens)
-export async function fetchAllReminders(): Promise<Reminder[]> {
+export async function fetchAllReminders() {
   const { data, error } = await supabase
     .from("t_reminder")
-    .select("*")
+    .select(`
+      reminderID,
+      title,
+      date,
+      injuryRecordID,
+      t_injury_record (
+        athleteID,
+        t_athlete (
+          name
+        )
+      )
+    `)
     .order("date", { ascending: true });
 
   if (error) {
@@ -21,8 +32,9 @@ export async function fetchAllReminders(): Promise<Reminder[]> {
     return [];
   }
 
-  return data || [];
+  return data;
 }
+
 
 export async function createReminder(reminder: Reminder) {
   const { data, error } = await supabase

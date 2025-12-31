@@ -155,23 +155,21 @@ export default function NotificationScreen() {
               </Text>
 
               {expanded && (
-                <View style={styles.buttonsRow}>
-                  <View style={styles.button}>
-                    <Button
-                      title="Histórico"
-                      color="#22333B"
-                      onPress={() => {
-                        router.push({
-                          pathname: "/historical",
-                          params: {
-                            athleteID: item.athleteID.toString(),
-                            athleteName: athleteName,
-                          },
-                        });
-                      }}
-                    />
-                  </View>
-                </View>
+                <TouchableOpacity
+                  style={styles.customButton}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/historical",
+                      params: {
+                        athleteID: item.athleteID.toString(),
+                        athleteName: athleteName,
+                      },
+                    });
+                  }}
+                >
+                  <Text style={styles.customButtonText}>Histórico</Text>
+                </TouchableOpacity>
+
               )}
             </TouchableOpacity>
           );

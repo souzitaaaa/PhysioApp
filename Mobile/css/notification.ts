@@ -72,4 +72,18 @@ export const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
+  customButton: {
+  backgroundColor: "#22333B",
+  paddingVertical: 10,
+  borderRadius: 10,
+  alignItems: "center",
+  marginTop: 10,
+},
+
+customButtonText: {
+  color: "#FFFFFF",
+  fontSize: 16,
+  fontWeight: "600",
+},
+
 });

@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useEffect, useState, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native"; // <- importante
+import { useFocusEffect } from "@react-navigation/native";
 import { fetchAllReminders, Reminder } from "../../services/reminderService";
 
 import "../../config/calendarLocale";
@@ -15,9 +15,8 @@ export default function HomeScreen() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
   const [selectedDate, setSelectedDate] = useState<string>(today);
-  const [athletes, setAthletes] = useState<Record<number, string>>({});
   const [loadingReminders, setLoadingReminders] = useState(true);
-
+  const [athletes, setAthletes] = useState<Record<number, string>>({});
 
   useEffect(() => {
     loadReminders();
@@ -51,7 +50,7 @@ export default function HomeScreen() {
 
   const loadReminders = async () => {
     setLoadingReminders(true);
-    
+
     const allReminders = await fetchAllReminders();
     setReminders(allReminders);
 
@@ -65,12 +64,6 @@ export default function HomeScreen() {
     setMarkedDates(marks);
 
     // Fetch atletas
-    const athleteMap: Record<number, string> = {};
-    for (const r of allReminders) {
-      const athlete = await fetchAthleteByID(r.injuryRecordID);
-      athleteMap[r.injuryRecordID] = athlete?.name ?? " ";
-    }
-    setAthletes(athleteMap);
 
     setLoadingReminders(false);
   };
@@ -84,7 +77,7 @@ export default function HomeScreen() {
     const date = new Date(dateString);
     return date.toLocaleDateString("pt-PT"); // formato dia/mês/ano
   }
-  
+
   function getFirstAndLastName(fullName: string) {
     const parts = fullName.trim().split(" ");
     if (parts.length === 1) return parts[0];
@@ -138,31 +131,33 @@ export default function HomeScreen() {
             </View>
           ) : (
             <>
-            {selectedDate && remindersOfSelectedDate.length === 0 && (
-              <Text style={styles.noRemindersText}>
-              Nenhum lembrete neste dia
-            </Text>
+              {selectedDate && remindersOfSelectedDate.length === 0 && (
+                <Text style={styles.noRemindersText}>
+                  Nenhum lembrete neste dia
+                </Text>
+              )}
+
+              {remindersOfSelectedDate.map((r) => (
+                <View key={r.reminderID} style={styles.reminderRow}>
+                  {/* Lado esquerdo: hora */}
+                  <View style={styles.nameBox}>
+                    <Text style={styles.nameText}>
+                      {getFirstAndLastName(
+                        r.t_injury_record?.t_athlete?.name ?? ""
+                      )}
+                    </Text>
+                  </View>
+
+                  {/* Lado direito: title */}
+                  <View style={styles.titleBox}>
+                    <Text style={styles.titleText}>{r.title}</Text>
+                  </View>
+                </View>
+              ))}
+            </>
           )}
-          
-          {remindersOfSelectedDate.map((r) => (
-            <View key={r.reminderID} style={styles.reminderRow}>
-            {/* Lado esquerdo: hora */}
-            <View style={styles.nameBox}>
-            <Text style={styles.nameText}>
-            {athletes[r.injuryRecordID] ? getFirstAndLastName(athletes[r.injuryRecordID]) : "" }
-            </Text>
-            </View>
-            
-            {/* Lado direito: title */}
-            <View style={styles.titleBox}>
-            <Text style={styles.titleText}>{r.title}</Text>
-            </View>
-            </View>
-          ))}
-        </>
-        )}
         </ScrollView>
-        </View>
-        </View>
-      );
-    }
+      </View>
+    </View>
+  );
+}
