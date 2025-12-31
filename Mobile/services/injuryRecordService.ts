@@ -10,6 +10,7 @@ export type InjuryRecord = {
   dateStart: string;
   dateEnd: string | null;
   title: string;
+  created_at: string;
   taux_status?: {
     status: string;
   };
@@ -33,7 +34,7 @@ export async function fetchInjuryRecordsByAthlete(
     `)
     .eq("athleteID", athleteID)
     .neq("statusID", 1) 
-    .order("dateStart", { ascending: false });
+    .order("created_at", { ascending: false });
     
 
   if (error) {

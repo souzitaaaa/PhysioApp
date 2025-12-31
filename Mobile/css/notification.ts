@@ -57,18 +57,19 @@ export const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 8,
   },
-loadingContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-
-loadingText: {
-  marginTop: 10,
-  fontSize: 16,
-  color: "#666",
-},
-
-
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
+  title_notification: {
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "bold",
+  },
 });

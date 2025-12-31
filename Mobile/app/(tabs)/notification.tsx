@@ -142,6 +142,11 @@ export default function NotificationScreen() {
               </View>
 
               <Text
+                style={styles.title_notification}
+              >
+                {item.title}
+              </Text>
+              <Text
                 style={styles.subject}
                 numberOfLines={expanded ? undefined : 3}
                 ellipsizeMode={expanded ? "clip" : "tail"}
