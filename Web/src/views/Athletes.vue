@@ -145,7 +145,8 @@
           </div>
         </template>
       </Column>
-      <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false"
+      <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false" :showFilterOperator="false"
+  :showAddButton="false"
         :filterMenuStyle="{ width: '8rem' }" style="width: 10%">
         <template #body="{ data }">
           {{ data.division }}

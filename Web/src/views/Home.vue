@@ -21,7 +21,7 @@
             <Column header=" Atleta" style="width: 22%">
               <template #body="{ data }">
                 <div class="flex items-center gap-2 overflow-hidden">
-                  <Avatar :image="data.athlete_pfp" class="mr-2 shrink-0" shape="circle" />
+                  <Avatar  v-if="data.status !== 'Erro' || data.errorSpecID === 1" :image="data.athlete_pfp" class="mr-2 shrink-0" shape="circle" />
                   <div class="flex flex-col overflow-hidden">
                     <span class="font-medium truncate">{{ data.athlete_name }}</span>
                     <span class="text-sm text-gray-500 truncate">
@@ -101,7 +101,9 @@
                 </span>
               </div>
             </template>
-            <Column field="division" header="Nome" style="max-width: 8rem">
+            <Column field="division" header="Nome" style="max-width: 8rem" :showFilterMatchModes="false"
+  :showFilterOperator="false"
+  :showAddButton="false">
               <template #body="{ data }">
                 <div class="flex items-center gap-2 min-w-0">
                   <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261"
