@@ -10,23 +10,49 @@
 
     <!-- Password -->
     <div class="input-container mt-6">
-      <input :type="showPassword ? 'text' : 'password'" id="password" v-model="formData.password" required />
+      <input
+        :type="showPassword ? 'text' : 'password'"
+        id="password"
+        v-model="formData.password"
+        @focus="isPasswordFocused = true"
+        @blur="isPasswordFocused = false"
+        required
+      />
       <label for="password">Palavra-Passe</label>
       <span class="underline"></span>
 
       <!-- Ícone Font Awesome -->
-      <i class="icon-password fa-solid" :class="[showPassword ? 'fa-eye-slash active' : 'fa-eye']"
-        @click="togglePassword"></i>
-
+      <button
+        type="button"
+        class="icon-password"
+        @click="togglePassword"
+        :class="{
+          focused: isPasswordFocused,
+          filled: formData.password.length > 0
+        }"
+        :aria-label="showPassword ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'">
+        <i class="fa-solid" :class="showPassword ? 'fa-eye' : 'fa-eye-slash'"></i>
+      </button>
+    </div>
+    
+    <!-- Container do Botão de Login com position relative -->
+    <div class="input-container relative mt-6 w-full flex justify-end">
+      <!-- Botão de login -->
+      <Button
+        icon="fa-solid fa-right-to-bracket"
+        label="Entrar"
+        class="btn-login"
+        size="large"
+        @click="handleLogin"
+      />
     </div>
 
-    <!-- Botão de login -->
-    <Button icon="fa-solid fa-right-to-bracket" label="Entrar" class="w-25 mt-6" size="large" @click="handleLogin" />
     <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
     <small v-if="errors.password" class="text-red-600 text-xs">{{ errors.password }}</small>
     <small v-if="apiError" class="text-red-600 text-xs mt-2">{{ apiError }}</small>
   </div>
 </template>
+
 
 <script>
 import { ref } from 'vue'
@@ -42,6 +68,7 @@ export default {
     const errors = ref({})
     const apiError = ref(null)
     const showPassword = ref(false)
+    const isPasswordFocused = ref(false)
 
     const { login } = useAuth()
 
@@ -62,7 +89,7 @@ export default {
       }
     }
 
-    return { formData, errors, apiError, showPassword, togglePassword, handleLogin }
+    return { formData, errors, apiError, showPassword, togglePassword, handleLogin, isPasswordFocused }
   }
 }
 </script>

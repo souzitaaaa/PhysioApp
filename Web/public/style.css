@@ -228,7 +228,86 @@ body,
   transition: color 0.2s ease;
 }
 
-.icon-password.active {
+.icon-password.focused,
+.icon-password.filled {
+  color: #f0f0f0; 
+}
+
+.icon-password:not(.focused):not(.filled) {
+  color: #9a9a9a; 
+}
+
+.btn-login {
+  background-color: #f0f0f0 !important; 
+  color: #22333b !important; 
+  border: none;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-login i {
+  color: #22333b; 
+  margin-right: 8px; 
+}
+
+.btn-login:hover {
+  background-color: #c2c2c2 !important;
   color: #f0f0f0;
 }
 
+.btn-login:hover i {
+  color: #f0f0f0; 
+}
+
+
+@media (max-width: 1279px) { 
+  .content-error {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('/Web/public/images/background_mobile.svg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+  }
+
+  .unsupported {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    max-width: 500px;
+    padding: 20px 10px;
+    background: #f8d7da;
+    border: 1px solid #f1a8af;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+  }
+
+  .unsupported h4 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #721c24;
+    text-align: center;
+  }
+
+  .unsupported p {
+    font-size: 1rem;
+    text-align: center;
+    color: #721c24;
+    line-height: 1.4;
+  }
+}

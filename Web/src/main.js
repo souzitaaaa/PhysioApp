@@ -13,7 +13,7 @@ import "./assets/var.css";
 
 /*Icons Font Awesome*/
 import '@fortawesome/fontawesome-free/css/all.css'
-import '@fortawesome/fontawesome-free/js/all.js'
+
 
 /* PrimeVue Components */
 import Button from 'primevue/button';
