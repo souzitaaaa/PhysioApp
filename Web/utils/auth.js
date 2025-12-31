@@ -1,68 +1,82 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import axios from 'axios'
+import api from './apiUtils'
 
 const user = ref(null)
+const profile = ref(null)
 const loading = ref(true)
+const error = ref(null)
 
-const api = axios.create({
-  baseURL: 'http://localhost:3000',
-})
-
-function setToken(token) {
-  if (token) {
-    localStorage.setItem('access_token', token)
-    api.defaults.headers.common.Authorization = `Bearer ${token}`
-  } else {
-    localStorage.removeItem('access_token')
-    delete api.defaults.headers.common.Authorization
-  }
-}
-
-// Initialize auth on app load
-async function initAuth() {
-  const token = localStorage.getItem('access_token')
-
-  if (!token) {
-    loading.value = false
-    return
-  }
-
-  setToken(token)
-
-  try {
-    const { data } = await api.get('/auth/me')
-    user.value = data
-  } catch {
-    setToken(null)
-    user.value = null
-  } finally {
-    loading.value = false
-  }
-}
-
-initAuth()
-
+// Auth component user
 export function useAuth() {
-  const signIn = async (email, password) => {
-    const { data } = await api.post('/auth/login', {
-      email,
-      password,
-    })
+  const isAuth = computed(() => !!user.value)
 
-    setToken(data.session.access_token)
-    user.value = data.user
+  // Login
+  async function login(email, password) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await api.post('/auth/login', { email, password })
+      user.value = response.data.user
+      profile.value = response.data.profile
+      return response.data
+    } catch (err) {
+      err.value = err.response?.data?.error || 'Login failed'
+      throw err
+    } finally {
+      loading.value = false;
+    }
   }
 
-  const signOut = async () => {
-    await api.post('/auth/logout')
-    setToken(null)
-    user.value = null
+  // Logout
+  async function logout() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await api.post('/auth/logout')
+      user.value = null
+      profile.value = null
+    } catch (err) {
+      err.value = err.response?.data?.error || 'Logout failed'
+      throw err
+    } finally {
+      loading.value = false;
+    }
   }
 
-  return {
-    user,
-    loading,
-    signIn,
-    signOut,
+  // Get Me Information
+  async function fecthUser() {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await api.get('/auth/me')
+      user.value = response.data.auth
+      profile.value = response.data.profile
+      return response.data
+    } catch (err) {
+      user.value = null
+      profile.value = null
+      error.value = err.response?.data?.error || 'Failed to Fetch user'
+      throw err
+    } finally {
+      loading.value = false;
+    }
   }
+
+  // Refresh the Token
+  async function refreshToken() {
+    try {
+      await api.post('/auth/refresh')
+      return await fecthUser()
+    } catch (err) {
+      user.value = null
+      profile.value = null
+      throw err
+    }
+  }
+
+  return { user, profile, loading, error, isAuth, login, logout, fecthUser, refreshToken }
 }

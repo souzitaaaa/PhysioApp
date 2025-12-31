@@ -29,6 +29,7 @@ import { supabase } from '../utils/supabase';
 import axios from 'axios';
 import { RouterView } from 'vue-router'
 import Sidebar from './views/Sidebar.vue'
+import api from '../utils/apiUtils';
 
 export default {
   components: {
@@ -55,25 +56,12 @@ export default {
   },
   methods: {
     async loadEmails() {
-      const token = localStorage.getItem('access_token');
-
-      if (!token) {
-        console.error("User not authenticated");
-        this.$router.push('/login');
-        return;
-      }
-
       try {
-        const res = await axios.get(
-          "http://localhost:3000/gmail/emails",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
+        const res = await api.get('/gmail/emails')
       } catch (err) {
-        console.error("Failed to start Gmail Emails", err);
+        if (err.response?.status === 401) {
+          console.log('🔒 [App] Authentication required')
+        }
       }
     },
   },

@@ -43,7 +43,7 @@ export default {
     const apiError = ref(null)
     const showPassword = ref(false)
 
-    const { signIn } = useAuth()
+    const { login } = useAuth()
 
     const togglePassword = () => {
       showPassword.value = !showPassword.value
@@ -54,7 +54,7 @@ export default {
       if (Object.keys(errors.value).length > 0) return
 
       try {
-        const response = await signIn(formData.value.email, formData.value.password)
+        const response = await login(formData.value.email, formData.value.password)
         router.push('/')
       } catch (err) {
         console.error('Erro no login:', err)

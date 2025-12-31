@@ -7,6 +7,7 @@ import Login from '../views/Login.vue'
 import Tests from '../views/Tests.vue'
 import Notfound from '../views/404.vue'
 import axios from 'axios'
+import api from '../../utils/apiUtils'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,31 +57,51 @@ const router = createRouter({
   ],
 })
 
+router.beforeEach(async (to, from, next) => {
+  const isLoginPage = to.name === 'Login';
+  const requiresAuth = to.meta.requiresAuth;
 
-const api = axios.create({
-  baseURL: 'http://localhost:3000',
-})
+  console.log('[Router] Navigating to:', to.path, '| Requires auth:', requiresAuth);
 
-router.beforeEach(async (to) => {
-  const token = localStorage.getItem('access_token')
-
-  if (to.name === 'Login' && token) return '/'
-
-  if (to.meta.requiresAuth) {
-    if (!token) return '/login'
-
+  // If going to login page, check if already authenticated
+  if (isLoginPage) {
     try {
-      await api.get('/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-    } catch {
-      localStorage.removeItem('access_token')
-      return '/login'
+      const response = await api.get('/auth/me');
+      console.log('[Router] Already authenticated, redirecting to home');
+      return next('/');
+    } catch (error) {
+      console.log('[Router] Not authenticated, allowing login page');
+      return next();
     }
   }
-})
+
+  // If route requires auth, verify authentication
+  if (requiresAuth) {
+    try {
+      const response = await api.get('/auth/me');
+      console.log('[Router] Authentication verified');
+      // Store user data in Pinia/Vuex if needed
+      // useAuthStore().setUser(response.data);
+      return next();
+    } catch (error) {
+      console.error('[Router] Auth check failed:', error.response?.data);
+
+      // The axios interceptor will handle token refresh automatically
+      // If we get here, it means refresh also failed
+      if (error.response?.status === 401) {
+        console.log('[Router] Unauthorized, redirecting to login');
+        return next('/login');
+      }
+
+      // Other errors - still redirect to login for safety
+      console.error('[Router] Unexpected error, redirecting to login');
+      return next('/login');
+    }
+  }
+
+  // No auth required, proceed
+  next();
+});
 
 
 export default router
