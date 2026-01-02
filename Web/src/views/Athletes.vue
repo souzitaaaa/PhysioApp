@@ -145,9 +145,8 @@
           </div>
         </template>
       </Column>
-      <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false" :showFilterOperator="false"
-  :showAddButton="false"
-        :filterMenuStyle="{ width: '8rem' }" style="width: 10%">
+      <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false"
+        :showFilterOperator="false" :showAddButton="false" :filterMenuStyle="{ width: '8rem' }" style="width: 10%">
         <template #body="{ data }">
           {{ data.division }}
         </template>
@@ -202,7 +201,7 @@ import { supabase } from '../../utils/supabase'
 import AthletesDrawer from './AthleteComponents/AthletesDrawer.vue'
 import HealthPieChart from './AthleteComponents/HealthPieChart.vue'
 import MonthlyInjuriesChart from './AthleteComponents/MonthlyInjuriesChart.vue'
-import { uploadImageToSupabase } from '../../utils/utils'
+import { uploadImageToSupabase, getStoragePathFromUrl } from '../../utils/utils'
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 import axios from 'axios';
 import { safeGet } from '../../utils/utils.js'
@@ -340,11 +339,30 @@ export default {
     async updateAthlete(formData, callback) {
       let pfpUrl = formData.pfp;
 
-      if (formData.pfp instanceof File)
-        pfpUrl = await uploadImageToSupabase(formData.pfp, "athlete-images");
+      if (formData.pfp instanceof File) {
 
-      const { data, error } = await supabase.from('t_athlete').update([
-        {
+        const { data: oldAthlete } = await supabase
+          .from('t_athlete')
+          .select('pfp')
+          .eq('athleteID', formData.athleteID)
+          .single();
+
+        if (oldAthlete?.pfp) {
+          const oldPath = getStoragePathFromUrl(oldAthlete.pfp);
+
+          if (oldPath) {
+            await supabase.storage
+              .from('athlete-images')
+              .remove([oldPath]);
+          }
+        }
+
+        pfpUrl = await uploadImageToSupabase(formData.pfp, "athlete-images");
+      }
+
+      const { data, error } = await supabase
+        .from('t_athlete')
+        .update({
           name: formData.name,
           birthdate: formData.birthdate,
           email: formData.email,
@@ -352,27 +370,18 @@ export default {
           pfp: pfpUrl,
           countryID: formData.countryID,
           divisionID: formData.divisionID,
-        },
-      ])
+        })
         .eq('athleteID', formData.athleteID)
-        .select()
+        .select();
 
       if (error) {
-        console.log(error)
-        return
+        console.error(error);
+        return;
       }
 
-      if (callback)
-        await callback();
+      if (callback) await callback();
 
-      const newAthlete = await this.getAthleteData(data[0].athleteID)
-
-      await this.getAthleteData()
-
-      this.selectedAthlete = newAthlete
-      this.drawerMode = 'view'
-      this.athleteDrawerVisible = true
-
+      await this.getAthleteData();
     },
   },
 }

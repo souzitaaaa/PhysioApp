@@ -11,6 +11,16 @@ export async function getAuxTable(auxTable) {
   return await safeGet(axios.get(`http://localhost:3000/aux/${auxTable}`), []);
 }
 
+export function getStoragePathFromUrl(url) {
+  if (!url) return null;
+
+  const parts = url.split('/object/public/');
+  if (parts.length < 2) return null;
+
+  return parts[1].split('/').slice(1).join('/');
+}
+
+
 export async function uploadImageToSupabase(file, folder) {
   if (!file) return null
 

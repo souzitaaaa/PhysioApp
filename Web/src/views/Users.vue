@@ -209,7 +209,7 @@ import { supabase } from '../../utils/supabase'
 import { uploadImageToSupabase } from '../../utils/utils'
 import UsersDrawer from './UserComponents/UsersDrawer.vue'
 import axios from 'axios';
-import { safeGet } from '../../utils/utils.js'
+import { safeGet, getStoragePathFromUrl  } from '../../utils/utils.js'
 import { Tag } from 'primevue';
 import { FilterMatchMode } from '@primevue/core/api';
 
@@ -324,42 +324,64 @@ export default {
       }
     },
     async updateUser(formData, callback) {
-      let pfpUrl = formData.pfp;
+  let pfpUrl = formData.pfp;
 
-      if (formData.pfp instanceof File)
-        pfpUrl = await uploadImageToSupabase(formData.pfp, 'user-images');
+  // 👉 Se escolheu nova imagem
+  if (formData.pfp instanceof File) {
 
-      const { data, error } = await supabase.from('t_user').update([
-        {
-          name: formData.name,
-          birthdate: formData.birthdate,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          pfp: pfpUrl,
-          countryID: formData.countryID,
-          usertypeID: formData.usertypeID,
-          notification_status: formData.notification_status ? formData.notification_status : false
-        },
-      ])
-        .eq('userID', formData.userID)
-        .select()
+    // 1️⃣ Buscar imagem antiga
+    const { data: oldUser } = await supabase
+      .from('t_user')
+      .select('pfp')
+      .eq('userID', formData.userID)
+      .single();
 
-      if (error) {
-        console.log(error)
-        return
+    // 2️⃣ Apagar imagem antiga do storage
+    if (oldUser?.pfp) {
+      const oldPath = getStoragePathFromUrl(oldUser.pfp);
+
+      if (oldPath) {
+        await supabase.storage
+          .from('user-images')
+          .remove([oldPath]);
       }
-
-      if (callback)
-        await callback();
-
-      const newUser = await this.getUserData(data[0].userID)
-
-      await this.getUserData()
-
-      this.selectedUser = newUser
-      this.drawerMode = 'view'
-      this.userDrawerVisible = true
     }
+
+    // 3️⃣ Upload da nova imagem
+    pfpUrl = await uploadImageToSupabase(formData.pfp, 'user-images');
+  }
+
+  // 4️⃣ Update do user
+  const { data, error } = await supabase
+    .from('t_user')
+    .update({
+      name: formData.name,
+      birthdate: formData.birthdate,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      pfp: pfpUrl,
+      countryID: formData.countryID,
+      usertypeID: formData.usertypeID,
+      notification_status: !!formData.notification_status
+    })
+    .eq('userID', formData.userID)
+    .select();
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  if (callback) await callback();
+
+  const newUser = await this.getUserData(data[0].userID);
+  await this.getUserData();
+
+  this.selectedUser = newUser;
+  this.drawerMode = 'view';
+  this.userDrawerVisible = true;
+},
+
   },
 }
 </script>
