@@ -126,7 +126,9 @@
       </Card>
     </div>
 
-    <DataTable ref="dt" v-model:filters="filters" :value="users" stripedRows dataKey="userID" class="style-table shadow-md!" paginator :rows="8" scrollable scrollHeight="flex" :filters="filters" :globalFilterFields="['name', 'email']">
+    <DataTable ref="dt" v-model:filters="filters" :value="users" stripedRows dataKey="userID"
+      class="style-table shadow-md!" paginator :rows="8" scrollable scrollHeight="flex" :filters="filters"
+      :globalFilterFields="['name', 'email']">
       <template #header>
         <Toolbar class="border-0!">
           <template #start>
@@ -209,7 +211,7 @@ import { supabase } from '../../utils/supabase'
 import { uploadImageToSupabase } from '../../utils/utils'
 import UsersDrawer from './UserComponents/UsersDrawer.vue'
 import axios from 'axios';
-import { safeGet, getStoragePathFromUrl  } from '../../utils/utils.js'
+import { safeGet, getStoragePathFromUrl } from '../../utils/utils.js'
 import { Tag } from 'primevue';
 import { FilterMatchMode } from '@primevue/core/api';
 
@@ -224,7 +226,8 @@ export default {
       userStatistics: [],
       userDrawerVisible: false,
       drawerMode: 'view',
-      filters: {}
+      filters: {},
+      channel: null
     }
   },
   created() {
@@ -234,8 +237,33 @@ export default {
   mounted() {
     this.getUserData()
     this.loadUsersStatistics()
+    this.subcribeUsers()
+  },
+  beforeUnmount() {
+    if (this.channel) {
+      supabase.removeChannel(this.channel)
+    }
   },
   methods: {
+    subcribeUsers() {
+      this.channel = supabase
+        .channel('users-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            shcema: 'public',
+            table: 't_user'
+          },
+          (payload) => {
+            console.log('alteraçao:', payload)
+
+            this.getUserData()
+            this.loadUsersStatistics()
+          }
+        )
+        .subscribe()
+    },
     initFilters() {
       this.filters = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -324,63 +352,63 @@ export default {
       }
     },
     async updateUser(formData, callback) {
-  let pfpUrl = formData.pfp;
+      let pfpUrl = formData.pfp;
 
-  // 👉 Se escolheu nova imagem
-  if (formData.pfp instanceof File) {
+      // 👉 Se escolheu nova imagem
+      if (formData.pfp instanceof File) {
 
-    // 1️⃣ Buscar imagem antiga
-    const { data: oldUser } = await supabase
-      .from('t_user')
-      .select('pfp')
-      .eq('userID', formData.userID)
-      .single();
+        // 1️⃣ Buscar imagem antiga
+        const { data: oldUser } = await supabase
+          .from('t_user')
+          .select('pfp')
+          .eq('userID', formData.userID)
+          .single();
 
-    // 2️⃣ Apagar imagem antiga do storage
-    if (oldUser?.pfp) {
-      const oldPath = getStoragePathFromUrl(oldUser.pfp);
+        // 2️⃣ Apagar imagem antiga do storage
+        if (oldUser?.pfp) {
+          const oldPath = getStoragePathFromUrl(oldUser.pfp);
 
-      if (oldPath) {
-        await supabase.storage
-          .from('user-images')
-          .remove([oldPath]);
+          if (oldPath) {
+            await supabase.storage
+              .from('user-images')
+              .remove([oldPath]);
+          }
+        }
+
+        // 3️⃣ Upload da nova imagem
+        pfpUrl = await uploadImageToSupabase(formData.pfp, 'user-images');
       }
-    }
 
-    // 3️⃣ Upload da nova imagem
-    pfpUrl = await uploadImageToSupabase(formData.pfp, 'user-images');
-  }
+      // 4️⃣ Update do user
+      const { data, error } = await supabase
+        .from('t_user')
+        .update({
+          name: formData.name,
+          birthdate: formData.birthdate,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          pfp: pfpUrl,
+          countryID: formData.countryID,
+          usertypeID: formData.usertypeID,
+          notification_status: !!formData.notification_status
+        })
+        .eq('userID', formData.userID)
+        .select();
 
-  // 4️⃣ Update do user
-  const { data, error } = await supabase
-    .from('t_user')
-    .update({
-      name: formData.name,
-      birthdate: formData.birthdate,
-      email: formData.email,
-      phoneNumber: formData.phoneNumber,
-      pfp: pfpUrl,
-      countryID: formData.countryID,
-      usertypeID: formData.usertypeID,
-      notification_status: !!formData.notification_status
-    })
-    .eq('userID', formData.userID)
-    .select();
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+      if (callback) await callback();
 
-  if (callback) await callback();
+      const newUser = await this.getUserData(data[0].userID);
+      await this.getUserData();
 
-  const newUser = await this.getUserData(data[0].userID);
-  await this.getUserData();
-
-  this.selectedUser = newUser;
-  this.drawerMode = 'view';
-  this.userDrawerVisible = true;
-},
+      this.selectedUser = newUser;
+      this.drawerMode = 'view';
+      this.userDrawerVisible = true;
+    },
 
   },
 }

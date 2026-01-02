@@ -1,4 +1,5 @@
 import { supabase } from "../services/supabaseService.js";
+import { USERS } from "../utils/utils.js";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -8,7 +9,7 @@ const COOKIE_OPTIONS = {
   path: '/'
 };
 
-export async function login(req, res) {
+async function performLogin(req, res, allowedRoles = null) {
   try {
     const { email, password } = req.body;
 
@@ -18,6 +19,7 @@ export async function login(req, res) {
       });
     }
 
+    // 1. Autenticar com Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -30,36 +32,44 @@ export async function login(req, res) {
       });
     }
 
-    console.log("[Login] Session info:", {
-      hasAccessToken: !!data.session.access_token,
-      hasRefreshToken: !!data.session.refresh_token,
-      accessTokenLength: data.session.access_token?.length,
-      refreshTokenLength: data.session.refresh_token?.length
-    });
-
-    // Set HTTP-only cookie with access token
-    res.cookie('access_token', data.session.access_token, COOKIE_OPTIONS);
-
-    // Optionally set refresh token (if you want to handle refresh on backend)
-    if (data.session.refresh_token) {
-      res.cookie('refresh_token', data.session.refresh_token, {
-        ...COOKIE_OPTIONS,
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days for refresh token
-      });
-      console.log("[Login] Refresh token cookie set");
-    } else {
-      console.warn("[Login] No refresh token in session!");
-    }
-
-    // Fetch user profile
-    const { data: userData } = await supabase
+    // 2. Buscar perfil do utilizador (incluindo role)
+    const { data: userData, error: userError } = await supabase
       .from('t_user')
       .select('*')
       .eq('auth_userID', data.user.id)
       .single();
 
-    console.log("[Login] Login successful for user:", data.user.email);
+    if (userError || !userData) {
+      return res.status(401).json({
+        error: "User profile not found",
+        code: "NO_PROFILE"
+      });
+    }
 
+    if (allowedRoles && !allowedRoles.includes(userData.usertypeID)) {
+      console.warn(`[Login] Access denied: ${userData.usertypeID} not in [${allowedRoles}]`);
+      return res.status(403).json({
+        error: "Access denied for this platform",
+        code: "INSUFFICIENT_PERMISSIONS",
+        message: `This login is restricted to ${allowedRoles.join(' or ')} users only`,
+        userRole: userData.usertypeID,
+        requiredRoles: allowedRoles
+      });
+    }
+
+    console.log(`[Login] Successful: ${userData.email} (${userData.usertypeID})`);
+
+    // 4. Definir cookies
+    res.cookie('access_token', data.session.access_token, COOKIE_OPTIONS);
+
+    if (data.session.refresh_token) {
+      res.cookie('refresh_token', data.session.refresh_token, {
+        ...COOKIE_OPTIONS,
+        maxAge: 30 * 24 * 60 * 60 * 1000
+      });
+    }
+
+    // 5. Retornar dados
     return res.json({
       user: data.user,
       profile: userData,
@@ -72,6 +82,16 @@ export async function login(req, res) {
       code: "SERVER_ERROR"
     });
   }
+}
+
+export async function loginWeb(req, res) {
+  console.log("[Login Web] Attempt from:", req.body.email);
+  return performLogin(req, res, [USERS.BOSS]);
+}
+
+export async function loginMobile(req, res) {
+  console.log("[Login Mobile] Attempt from:", req.body.email);
+  return performLogin(req, res, [USERS.PHYSIO]);
 }
 
 export async function logout(req, res) {

@@ -83,6 +83,7 @@
 <script>
 import { safeGet } from '../../utils/utils.js'
 import axios from 'axios';
+import api from '../../utils/apiUtils.js';
 
 export default {
   data() {
@@ -142,16 +143,9 @@ export default {
     },
     async loadCurrentUser() {
       try {
-        const token = localStorage.getItem('access_token')
-        if (!token) return
-
-        const response = await axios.get('http://localhost:3000/auth/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        this.currentUser = response.data
+        const res = await api.get('/auth/me')
+        console.log("loadCurrentUser: ", res.data);
+        this.currentUser = res.data
       } catch (err) {
         console.error('Erro ao carregar user', err)
         this.currentUser = null
@@ -159,14 +153,7 @@ export default {
     },
     async handleLogout() {
       try {
-        const token = localStorage.getItem('access_token')
-        if (!token) return
-
-        await axios.post('http://localhost:3000/auth/logout', {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
-        localStorage.removeItem('access_token')
+        await api.post('/auth/logout')
         this.currentUser = null
         this.$router.push('/login')
       } catch (err) {

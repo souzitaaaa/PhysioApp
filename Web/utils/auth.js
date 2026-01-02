@@ -17,7 +17,7 @@ export function useAuth() {
     error.value = null;
 
     try {
-      const response = await api.post('/auth/login', { email, password })
+      const response = await api.post('/auth/login/web', { email, password })
       user.value = response.data.user
       profile.value = response.data.profile
       return response.data

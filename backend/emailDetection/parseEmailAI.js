@@ -83,7 +83,7 @@ export async function parseEmailAI(email) {
 
         if (parsedData === null) {
             console.warn("⚠️ [parseEmailAI] AI determined this email is NOT an injury report");
-            return null;
+            return { isPhysioBit: false, data: null };
         }
 
         console.log("✅ [parseEmailAI] Successfully parsed JSON:");
@@ -94,7 +94,7 @@ export async function parseEmailAI(email) {
         console.log("   - resume length:", parsedData.resume?.length || 0);
         console.log("🤖 ===== AI PARSING END (SUCCESS) =====\n");
 
-        return parsedData;
+        return { isPhysioBit: true, data: parsedData };
 
     } catch (error) {
         console.error("\n❌ ===== AI PARSING ERROR =====");
@@ -113,7 +113,7 @@ export async function parseEmailAI(email) {
         console.error("❌ [parseEmailAI] Stack trace:", error.stack);
         console.error("❌ ===== AI PARSING END (FAILED) =====\n");
 
-        return null;
+        return { isPhysioBit: false, data: null };
     }
 }
 

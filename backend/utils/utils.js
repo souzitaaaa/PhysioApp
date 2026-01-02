@@ -60,3 +60,17 @@ export function getMatchingAthletes(senderExists, athleteNameInput) {
         isAthleteMatch(athleteNameInput, record.athlete_name)
     );
 }
+
+//? System Users
+export const USERS = {
+    BOSS: 1,
+    PHYSIO: 2
+}
+
+//? Role Permissions (Future implementation)
+/*
+export const USERS_PERMISSIONS = {
+    [USERS.BOSS]: ['all'],
+    [USERS:PHYSIO]: ['home', 'atletas']
+}
+*/
