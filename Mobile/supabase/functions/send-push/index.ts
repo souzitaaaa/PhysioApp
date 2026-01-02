@@ -14,7 +14,7 @@ serve(async (req) => {
     const { data: tokens } = await supabase
       .from("t_notification_token")
       .select("expo_push_token")
-      .eq("user_id", "1");
+      .eq("user_id", userId);
 
     if (!tokens || tokens.length === 0) {
       return new Response("No tokens", { status: 200 });

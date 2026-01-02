@@ -10,7 +10,6 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     paddingTop: 40,
     paddingLeft: 16,
-    marginBottom: 12,
   },
   card: {
     backgroundColor: "#FFFFFF",
@@ -96,5 +95,17 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 12,
     alignItems: "stretch",
+  },
+  titleName: {
+    fontSize: 24,
+    fontWeight: "bold",
+    paddingLeft: 16,
+    marginBottom: 20,
+  },
+  headerRow: {
+    flexDirection: "row",
+    marginBottom: 20,
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 });

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Button } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 
@@ -19,7 +19,42 @@ type NotificationItem = InjuryRecord & {
 export default function HomeScreen() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Reminder[]>([]);
+  const [userName, setUserName] = useState<string | null>(null);
+
   const router = useRouter();
+
+  // Pega o usuário logado e busca o nome
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) return;
+
+      const authUserID = user.id;
+
+      const { data, error: userError } = await supabase
+        .from("t_user")
+        .select("name") // ajuste se sua coluna tiver outro nome
+        .eq("auth_userID", authUserID)
+        .single();
+
+      if (userError || !data) return;
+
+      setUserName(data.name);
+    };
+
+    fetchUserName();
+  }, []);
+
+  // Função de logout
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.log("Erro ao sair:", error);
+    } else {
+      setUserName(null);
+      router.replace("/login"); // redireciona para login se tiver tela
+    }
+  };
 
   useEffect(() => {
     loadNotifications();
@@ -55,22 +90,9 @@ export default function HomeScreen() {
 
   function formatDateShort(dateString: string) {
     const [year, month, day] = dateString.split("-").map(Number);
-
     const months = [
-      "Jan",
-      "Fev",
-      "Mar",
-      "Abr",
-      "Mai",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Set",
-      "Out",
-      "Nov",
-      "Dez",
+      "Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez",
     ];
-
     return `${day} ${months[month - 1]}`;
   }
 
@@ -97,7 +119,6 @@ export default function HomeScreen() {
 
   async function loadUpcomingEvents() {
     const allReminders = await fetchAllReminders();
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -110,11 +131,7 @@ export default function HomeScreen() {
     const sorted = futureEvents.sort((a, b) => {
       const [y1, m1, d1] = a.date.split("-").map(Number);
       const [y2, m2, d2] = b.date.split("-").map(Number);
-
-      const dateA = new Date(y1, m1 - 1, d1);
-      const dateB = new Date(y2, m2 - 1, d2);
-
-      return dateA.getTime() - dateB.getTime();
+      return new Date(y1, m1 - 1, d1).getTime() - new Date(y2, m2 - 1, d2).getTime();
     });
 
     setUpcomingEvents(sorted.slice(0, 4));
@@ -122,7 +139,18 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Início</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Início</Text>
+
+        <TouchableOpacity onPress={handleLogout}>
+          <Text style={{ color: "red", fontSize: 18, paddingTop: 40,paddingRight: 16,}}>Sair</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.titleName}>
+        {userName ? `Olá, ${userName}` : "A carregar..."}
+      </Text>
+
 
       <TouchableOpacity
         style={styles.card}
@@ -152,14 +180,12 @@ export default function HomeScreen() {
 
         {upcomingEvents.map((event) => (
           <View key={event.reminderID} style={styles.reminderRow}>
-            {/* Caixa azul (data) */}
             <View style={styles.timeBox}>
               <Text style={styles.timeText}>
                 {formatDateShort(event.date)}
               </Text>
             </View>
 
-            {/* Caixa branca (título) */}
             <View style={styles.titleBox}>
               <Text style={styles.titleText} numberOfLines={1}>
                 {event.title}

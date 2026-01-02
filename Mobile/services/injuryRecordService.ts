@@ -107,10 +107,27 @@ export async function closeInjuryRecord(
 }
 
 export async function setInjuryRecordWithNote(injuryRecordID: number) {
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("Nenhum usuário logado.");
+
+  const authUserID = user.id; 
+
+  const { data: users, error: userError } = await supabase
+    .from("t_user")
+    .select("userID")
+    .eq("auth_userID", authUserID)
+    .single(); 
+
+  if (userError || !users) throw new Error("Usuário interno não encontrado.");
+
+  const userID = users.userID; 
+
   const { error } = await supabase
     .from("t_injury_record")
     .update({
-      statusID: 3, // com nota
+      statusID: 3,
+      userID: userID, 
     })
     .eq("injuryRecordID", injuryRecordID);
 
@@ -118,4 +135,7 @@ export async function setInjuryRecordWithNote(injuryRecordID: number) {
     console.log("Erro ao mudar status para 3:", error);
     throw error;
   }
+
+  console.log("Registro atualizado com sucesso!");
 }
+
