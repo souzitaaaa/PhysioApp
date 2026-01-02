@@ -102,15 +102,17 @@ export async function deleteEmail(req, res) {
 export async function getEmailExists(emailID) {
 	const { data, error } = await supabase
 		.from("t_email")
-		.select("realEmailID")
+		.select("realEmailID, isPhysioBit")
 		.eq("realEmailID", emailID)
 		.limit(1)
 		.maybeSingle();
 
 	if (error) throw error;
 
-	// If null = false | If {} = true
-	return !!data;
+	return {
+		exists: !!data,							// If null = false | If {} = true
+		isPhysioBit: data?.isPhysioBit ?? true // default to true if null
+	}
 }
 
 // GET | Existing Email have injuryRecord created

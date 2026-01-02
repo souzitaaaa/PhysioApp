@@ -1,5 +1,5 @@
 import express from 'express'
-import { me, login, logout, refresh } from "../controllers/authController.js"
+import { me, loginWeb, loginMobile, logout, refresh } from "../controllers/authController.js"
 import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router()
@@ -11,7 +11,8 @@ const router = express.Router()
 router.get('/me', requireAuth, me)
 
 // POST | Public
-router.post('/login', login)
+router.post('/login/web', loginWeb)
+router.post('/login/mobile', loginMobile)
 router.post('/refresh', refresh)
 
 // POST | Protected

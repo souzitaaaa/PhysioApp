@@ -18,7 +18,9 @@
             <Button class="mr-8" severity="danger" size="small" icon="fa-solid fa-triangle-exclamation"
               :outlined="!showOnlyErrors" :label="`Emails com erro [${errorCount}]`" @click="toggleErrorFilter" />
 
-            <Button icon="fa-solid fa-gear" class="mr-2" severity="secondary" size="small" @click="connectGmail" />
+            <Button icon="fa-brands fa-google" class="mr-2" :severity="gmailConnected ? 'success' : 'danger'"
+              size="small" :label="gmailConnected ? 'Gmail Conectado' : 'Conectar Gmail'" :disabled="gmailConnected"
+              @click="connectGmail" />
           </template>
         </Toolbar>
       </template>
@@ -106,6 +108,7 @@
 <script>
 import EmailDrawer from './EmailComponents/EmailDrawer.vue'
 import api from '../../utils/apiUtils'
+import { supabase } from '../../utils/supabase';
 
 export default {
   components: { EmailDrawer },
@@ -119,16 +122,51 @@ export default {
       drawerMode: 'view',
       errorCount: 0,
       selectedEmail: null,
-      searchTerm: ''
+      searchTerm: '',
+      channel: null,
+      gmailConnected: false
     }
   },
-
   mounted() {
     this.getEmailData()
     this.getEmailErrorCount()
+    this.checkGmailToken()
+    this.subcribeEmails()
   },
-
+  beforeUnmount() {
+    if (this.channel) {
+      supabase.removeChannel(this.channel)
+    }
+  },
   methods: {
+    subcribeEmails() {
+      this.channel = supabase
+        .channel('emails-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            shcema: 'public',
+            table: 't_email'
+          },
+          (payload) => {
+            console.log('alteraçao:', payload)
+
+            this.getEmailData()
+            this.getEmailErrorCount()
+          }
+        )
+        .subscribe()
+    },
+    async checkGmailToken() {
+      try {
+        const response = await api.get('/gmail/check-token')
+        this.gmailConnected = response.data.connected && !response.data.expired
+      } catch (error) {
+        console.error('Error checking Gmail token:', error)
+        this.gmailConnected = false
+      }
+    },
     async getEmailData() {
       try {
         const response = await api.get('/emails')

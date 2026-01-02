@@ -4,6 +4,7 @@ import router from './router';
 
 /* PrimeVue */
 import PrimeVue from 'primevue/config';
+import ToastService from 'primevue/toastservice';
 import Aura from '@primeuix/themes/aura';
 import 'primeicons/primeicons.css';
 
@@ -53,7 +54,7 @@ import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import DataView from 'primevue/dataview';
-
+import Toast from 'primevue/toast';
 
 import { myPreset } from './theme'
 
@@ -70,6 +71,9 @@ app.use(PrimeVue, {
   },
 });
 
+app.use(ToastService);
+
+app.component('Toast', Toast);
 app.component('DataView', DataView);
 app.component('Tabs', Tabs);
 app.component('TabList', TabList);

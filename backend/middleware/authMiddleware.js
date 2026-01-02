@@ -1,4 +1,5 @@
 import { supabase } from "../services/supabaseService.js";
+import { USERS } from "../utils/utils.js";
 
 // Verify authentication using cookies
 // Attach authUser and user to req
@@ -51,5 +52,34 @@ export async function requireAuth(req, res, next) {
       error: "Authentication failed",
       code: "AUTH_ERROR"
     });
+  }
+}
+
+// Verify specific roles
+export async function requireRole(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      console.error('[requireRole] No user in request');
+      return res.status(401).json({
+        error: "Authentication required",
+        code: "NO_AUTH"
+      });
+    }
+
+    const userRole = req.user.user_type
+    console.log(`[requireRole] Checking: User role="${userRole}", Required=${allowedRoles}`);
+
+    if (!allowedRoles.includes(userRole)) {
+      console.warn(`[requireRole] Access denied: ${userRole} not in [${allowedRoles}]`);
+      return res.status(403).json({
+        error: "Insufficient permissions",
+        code: "FORBIDDEN",
+        required: allowedRoles,
+        current: userRole
+      });
+    }
+
+    console.log(`[requireRole] Access granted: ${userRole}`);
+    next();
   }
 }

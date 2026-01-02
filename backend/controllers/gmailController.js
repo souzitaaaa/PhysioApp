@@ -4,6 +4,7 @@ import { getEmailExists, getExistingEmailHasRecord, createEmail, updateEmailWith
 import { getVerifyAccountable, getVerifyAthlete } from "../functions/athletesFunctions.js";
 import { createInjuryRecord } from "./injuriesController.js";
 import { getMatchingAthletes } from "../utils/utils.js"
+import { getGmailTokenByUser } from "../functions/gmailFunctions.js";
 
 // AUTH | Get Auth URL
 export async function auth(req, res) {
@@ -21,13 +22,33 @@ export async function oauthCallback(req, res) {
     try {
         const tokens = await gmailService.saveToken(code, userID);
 
-        res.redirect('http://localhost:5173/gmail-connected?success=true');
+        res.redirect('http://localhost:5173/email');
     } catch (error) {
         console.error("Gmail OAuth error:", error);
-        res.redirect('http://localhost:5173/gmail-connected?success=false&error=' + encodeURIComponent(error.message));
+        res.redirect('http://localhost:5173/login' + encodeURIComponent(error.message));
     }
 }
 
+export async function checkToken(req, res) {
+    try {
+        const userID = req.user.userID;
+        const row = await getGmailTokenByUser(userID);
+
+        if (!row) {
+            return res.json({ connected: false });
+        }
+
+        const isExpired = row.expiry_date && new Date(row.expiry_date) < new Date();
+
+        res.json({
+            connected: true,
+            expired: isExpired,
+        });
+    } catch (error) {
+        console.error("Token check error:", error);
+        res.json({ connected: false });
+    }
+}
 
 // GET | Get Gmail Labels
 export async function getLabels(req, res) {
@@ -38,77 +59,6 @@ export async function getLabels(req, res) {
         res.status(400).send(error.message)
     }
 }
-
-// GET | Get Gmail Inbox
-// export async function getEmails(req, res) {
-//     try {
-//         const emails = await gmailService.listEmails(req.user.userID, 10);
-
-//         for (const e of emails) {
-//             const exists = await getEmailExists(e.id);
-//             if (!exists)
-//                 await createEmail(e);
-//             else {
-//                 const hasRecord = await getExistingEmailHasRecord(e.id)
-//                 if (hasRecord)
-//                     continue
-//             }
-//             const injuryRecordID = await prepareCreationInjuryRecordID(e);
-//             if (injuryRecordID)
-//                 await updateEmailWithRecord(e.id, injuryRecordID);
-//         }
-//         res.json(emails);
-//     } catch (error) {
-//         res.status(400).send(error.message)
-//     }
-// }
-
-// async function prepareCreationInjuryRecordID(emailData) {
-//     //! parsed = { athleteName, senderEmail, title, resume, startDate }
-//     const injuryRecordData = await parseEmailAI(emailData);
-//     if (!injuryRecordData)
-//         return;
-//     console.log("injuryRecordData: ", injuryRecordData)
-//     const {
-//         athleteName = null,
-//         senderEmail = null,
-//     } = injuryRecordData || {};
-//     let errorSpecID = null;
-//     let athleteID = null;
-
-//     let accountableExists = await getVerifyAccountable(senderEmail);
-
-//     //? if -    No Accountable found (Try verify athlete to attribute)
-//     //? else -  Athlete Verifications
-//     if (!accountableExists) {
-//         errorSpecID = 1;
-
-//         const athleteExists = await getVerifyAthlete(athleteName);
-
-//         //? if          No matching athlete
-//         //? else if -   More than one athlete
-//         if (!athleteExists)
-//             errorSpecID = 4;
-//         else if (athleteExists.length > 1)
-//             errorSpecID = 3;
-//         else
-//             athleteID = athleteExists[0].athleteID
-//     } else {
-//         const matchingAthletes = getMatchingAthletes(accountableExists, athleteName);
-
-//         //? if          No matching athlete
-//         //? else if -   More than one athlete
-//         //?             All good
-//         if (matchingAthletes.length === 0)
-//             errorSpecID = 2;
-//         else if (matchingAthletes.length > 1)
-//             errorSpecID = 3;
-//         else
-//             athleteID = matchingAthletes[0].athleteID
-//     }
-//     const injuryRecordID = await createInjuryRecord(injuryRecordData, athleteID, errorSpecID);
-//     return injuryRecordID;
-// }
 
 // GET | Get Gmail Inbox
 export async function getEmails(req, res) {
@@ -124,14 +74,21 @@ export async function getEmails(req, res) {
             console.log(`📬 [getEmails] Subject: ${e.subject}`);
             console.log(`📬 [getEmails] From: ${e.from}`);
 
-            const exists = await getEmailExists(e.id);
-            console.log(`📬 [getEmails] Email exists in DB: ${exists}`);
+            const emailCheck = await getEmailExists(e.id);
+            console.log(`📬 [getEmails] Email exists in DB: ${emailCheck.exists}`);
+            console.log(`📬 [getEmails] Email isPhysioBit: ${emailCheck.isPhysioBit}`);
 
-            if (!exists) {
+            if (!emailCheck.exists) {
                 console.log(`📬 [getEmails] Creating new email in DB...`);
                 await createEmail(e);
                 console.log(`✅ [getEmails] Email created successfully`);
             } else {
+                // Check if email is not physio-related
+                if (!emailCheck.isPhysioBit) {
+                    console.log(`⏭️  [getEmails] Skipping - email is not physio-related`);
+                    continue;
+                }
+
                 const hasRecord = await getExistingEmailHasRecord(e.id);
                 console.log(`📬 [getEmails] Email has injury record: ${hasRecord}`);
 
@@ -174,7 +131,17 @@ async function prepareCreationInjuryRecordID(emailData) {
 
     // Parse email with AI
     console.log("🤖 [prepareCreation] Calling parseEmailAI...");
-    const injuryRecordData = await parseEmailAI(emailData);
+    const aiResult = await parseEmailAI(emailData);
+
+    // Check if email is physio-related
+    if (!aiResult.isPhysioBit) {
+        console.log("⚠️  [prepareCreation] Email is NOT physio-related - updating database");
+        await updateEmailIsPhysioBit(emailData.id, false);
+        console.log("✅ [prepareCreation] Email marked as non-physio - stopping");
+        return null;
+    }
+
+    const injuryRecordData = aiResult.data;
 
     if (!injuryRecordData) {
         console.log("⚠️  [prepareCreation] parseEmailAI returned null - stopping");
@@ -305,3 +272,15 @@ async function prepareCreationInjuryRecordID(emailData) {
 
     return injuryRecordID;
 }
+
+// UPDATE | Update email isPhysioBit status
+async function updateEmailIsPhysioBit(emailID, isPhysioBit) {
+    const { error } = await supabase
+        .from("t_email")
+        .update({ isPhysioBit })
+        .eq("realEmailID", emailID);
+
+    if (error) throw error;
+}
+
+

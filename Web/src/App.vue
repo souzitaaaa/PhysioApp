@@ -1,5 +1,6 @@
 <template>
   <div class="w-full h-full">
+    <Toast />
     <!-- Error Message for Mobile Devices -->
     <div v-if="isMobile" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
       <div
@@ -51,45 +52,154 @@ export default {
     return {
       sidebarOpen: true,
       isLoading: true,
-      isMobile: false, // Controla a visibilidade do erro para mobile
+      isMobile: false,
+      emailPollingInterval: null,
+      isCheckingEmails: false,
+      gmailConnected: false,
+      POLLING_INTERVAL: 5 * 60 * 1000, // 5 minutes
     };
   },
-  watch: {},
+  watch: {
+    // Watch for route changes to start/stop polling
+    '$route'(to, from) {
+      if (to.meta.showSidebar && !from.meta.showSidebar) {
+        // Navigated from public to authenticated route
+        this.checkGmailConnection().then(() => {
+          if (this.gmailConnected) {
+            this.startEmailPolling();
+          }
+        });
+      } else if (!to.meta.showSidebar && from.meta.showSidebar) {
+        // Navigated from authenticated to public route
+        this.stopEmailPolling();
+      }
+    }
+  },
   computed: {
     showSidebar() {
       return this.$route.meta.showSidebar;
     },
+    isAuthenticatedRoute() {
+      return this.$route.meta.showSidebar !== false;
+    }
   },
   mounted() {
-    // Inicializa a verificação da largura da tela
     this.checkMobile();
-
-    // Adiciona um event listener para atualizar o estado do dispositivo móvel ao redimensionar a janela
     window.addEventListener('resize', this.checkMobile);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       this.isLoading = false;
-      this.loadEmails();
+      if (this.isAuthenticatedRoute) {
+        await this.checkGmailConnection();
+        if (this.gmailConnected) {
+          this.startEmailPolling();
+        }
+      }
     }, 300);
   },
   beforeDestroy() {
-    // Remova o event listener quando o componente for destruído
     window.removeEventListener('resize', this.checkMobile);
+    this.stopEmailPolling();
   },
   methods: {
-    // Método que verifica a largura da tela e define isMobile
     checkMobile() {
       this.isMobile = window.innerWidth <= 1279;
     },
-    async loadEmails() {
+
+    async checkGmailConnection() {
       try {
-        const res = await api.get('/gmail/emails')
-      } catch (err) {
-        if (err.response?.status === 401) {
-          console.log('🔒 [App] Authentication required')
+        const response = await api.get('/gmail/check-token');
+        this.gmailConnected = response.data.connected && !response.data.expired;
+        console.log('📧 [App] Gmail connection status:', this.gmailConnected);
+
+        if (!this.gmailConnected) {
+          this.$toast.add({
+            severity: 'error',
+            summary: 'Gmail Desconectado',
+            detail: 'Por favor, conecte sua conta Gmail para receber emails automaticamente.',
+            life: 5000
+          });
         }
+      } catch (error) {
+        console.error('❌ [App] Error checking Gmail connection:', error);
+        this.gmailConnected = false;
+        this.$toast.add({
+          severity: 'error',
+          summary: 'Erro de Conexão',
+          detail: 'Não foi possível verificar a conexão com o Gmail.',
+          life: 5000
+        });
       }
     },
+
+    startEmailPolling() {
+      if (this.emailPollingInterval) {
+        console.warn('⚠️ [App] Email polling already started');
+        return;
+      }
+
+      console.log('🔄 [App] Starting email polling...');
+
+      this.checkForNewEmails();
+
+      this.emailPollingInterval = setInterval(() => {
+        this.checkForNewEmails();
+      }, this.POLLING_INTERVAL);
+    },
+
+    stopEmailPolling() {
+      if (this.emailPollingInterval) {
+        console.log('🛑 [App] Stopping email polling');
+        clearInterval(this.emailPollingInterval);
+        this.emailPollingInterval = null;
+      }
+    },
+
+    async checkForNewEmails() {
+      if (this.isCheckingEmails) {
+        console.log('⏳ [App] Email check already in progress, skipping...');
+        return;
+      }
+
+      if (!this.gmailConnected) {
+        console.log('🔒 [App] Gmail not connected, skipping email check');
+        return;
+      }
+
+      this.isCheckingEmails = true;
+
+      try {
+        console.log('📬 [App] Checking for new emails...');
+        const response = await api.get('/gmail/emails');
+
+        console.log('✅ [App] Email check completed');
+
+      } catch (err) {
+        if (err.response?.status === 401) {
+          console.log('🔒 [App] Authentication expired, stopping polling');
+          this.gmailConnected = false;
+          this.stopEmailPolling();
+        } else {
+          console.error('❌ [App] Error checking emails:', err);
+        }
+      } finally {
+        this.isCheckingEmails = false;
+      }
+    },
+    async forceEmailCheck() {
+      await this.checkGmailConnection();
+      if (this.gmailConnected) {
+        await this.checkForNewEmails();
+      }
+    },
+    restartEmailPolling() {
+      this.stopEmailPolling();
+      this.checkGmailConnection().then(() => {
+        if (this.gmailConnected) {
+          this.startEmailPolling();
+        }
+      });
+    }
   },
 };
 </script>

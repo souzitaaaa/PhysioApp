@@ -26,14 +26,26 @@ export function getAuthUrl(userID) {
 // Exchange code and saves token
 export async function saveToken(code, userID) {
     const oauth2Client = createOAuthClient();
-
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    await upsertGmailToken(userID, tokens);
+    // Check if token already exists for this user
+    const existingToken = await getGmailTokenByUser(userID);
+
+    if (existingToken) {
+        // Update existing token
+        console.log(`[Gmail] Updating existing token for user ${userID}`);
+        await upsertGmailToken(userID, {
+            ...tokens,
+            refresh_token: tokens.refresh_token || existingToken.refresh_token // Preserve old refresh_token if new one isn't provided
+        });
+    } else {
+        // Insert new token
+        console.log(`[Gmail] Creating new token for user ${userID}`);
+        await upsertGmailToken(userID, tokens);
+    }
 
     console.log(`[Gmail] Saved token for user ${userID}:`, JSON.stringify(tokens, null, 2));
-
     return tokens;
 }
 

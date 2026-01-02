@@ -220,6 +220,7 @@ export default {
       athleteDrawerVisible: false,
       filters: {},
       drawerMode: 'view',
+      channel: null
     }
   },
   computed: {
@@ -246,8 +247,34 @@ export default {
   mounted() {
     this.getAthleteData()
     this.loadAthletesStatistics()
+    this.subcribeAthletes()
   },
+  beforeUnmount() {
+    if (this.channel) {
+      supabase.removeChannel(this.channel)
+    }
+  },
+
   methods: {
+    subcribeAthletes() {
+      this.channel = supabase
+        .channel('athletes-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            shcema: 'public',
+            table: 't_athlete'
+          },
+          (payload) => {
+            console.log('alteraçao:', payload)
+
+            this.getAthleteData()
+            this.loadAthletesStatistics()
+          }
+        )
+        .subscribe()
+    },
     async getAthleteData(athleteID) {
       const endpoint = athleteID
         ? `http://localhost:3000/athletes/${athleteID}`
