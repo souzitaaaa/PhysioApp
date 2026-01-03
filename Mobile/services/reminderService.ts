@@ -8,9 +8,26 @@ export type Reminder = {
   created_at?: string;
 };
 
+async function getLoggedUserID(): Promise<number | null> {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return null;
 
-// Buscar todos (já tens)
+  const { data: internalUser, error: userError } = await supabase
+    .from("t_user")
+    .select("userID")
+    .eq("auth_userID", user.id)
+    .single();
+
+  if (userError || !internalUser) return null;
+
+  return internalUser.userID;
+}
+
+
 export async function fetchAllReminders() {
+  const userID = await getLoggedUserID();
+  if (!userID) return []; 
+
   const { data, error } = await supabase
     .from("t_reminder")
     .select(`
@@ -19,12 +36,15 @@ export async function fetchAllReminders() {
       date,
       injuryRecordID,
       t_injury_record (
+        userID,
         athleteID,
         t_athlete (
           name
         )
       )
     `)
+    .eq("t_injury_record.userID", userID)  
+    .not("t_injury_record", "is", null)  
     .order("date", { ascending: true });
 
   if (error) {
@@ -32,15 +52,16 @@ export async function fetchAllReminders() {
     return [];
   }
 
-  return data;
+  return data || [];
 }
+
 
 
 export async function createReminder(reminder: Reminder) {
   const { data, error } = await supabase
     .from("t_reminder")
     .insert([reminder])
-    .select(); // retorna o dado inserido
+    .select();
 
   if (error) {
     console.log("Erro ao criar reminder:", error);

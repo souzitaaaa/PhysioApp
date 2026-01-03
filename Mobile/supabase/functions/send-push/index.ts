@@ -5,16 +5,30 @@ serve(async (req) => {
   try {
     const { userId, title, body } = await req.json();
 
+    if (!title || !body) {
+      return new Response("Dados incompletos", { status: 400 });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
-    // Buscar tokens do user
-    const { data: tokens } = await supabase
+    let query = supabase
       .from("t_notification_token")
-      .select("expo_push_token")
-      .eq("user_id", userId);
+      .select("expo_push_token");
+
+    // 👉 Se vier userId, filtra
+    if (userId) {
+      query = query.eq("userId", userId);
+    }
+
+    const { data: tokens, error } = await query;
+
+    if (error) {
+      console.log("Erro ao buscar tokens:", error);
+      return new Response("Erro ao buscar tokens", { status: 500 });
+    }
 
     if (!tokens || tokens.length === 0) {
       return new Response("No tokens", { status: 200 });
@@ -27,17 +41,20 @@ serve(async (req) => {
       body,
     }));
 
-    // Enviar para o servidor da Expo
-    await fetch("https://exp.host/--/api/v2/push/send", {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(messages),
     });
 
-    return new Response(JSON.stringify({ success: true }));
+    const respData = await response.json();
+
+    return new Response(
+      JSON.stringify({ success: true, respData }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-    });
+    console.log("Erro no send-push:", e);
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 });
