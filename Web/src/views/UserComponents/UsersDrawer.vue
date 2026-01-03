@@ -60,12 +60,7 @@
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Email:</span>
             <div class="col-span-5">
-              <span v-if="mode === 'view'" class="text-form-value">{{ formData.email }}</span>
-
-              <div v-else>
-                <InputText v-model="formData.email" size="small" type="email" :invalid="!!errors.email" fluid />
-                <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
-              </div>
+              <span v-if="mode === 'view' || mode === 'edit'" class="text-form-value">{{ formData.email }}</span>
             </div>
             </p>
             <!-- Telefone -->

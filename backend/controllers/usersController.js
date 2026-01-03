@@ -24,7 +24,7 @@ export async function getUserByID(req, res) {
 	return res.json(data);
 }
 
-// POST |
+// POST | 
 export async function createUser(req, res) {
 	try {
 		const {
@@ -33,25 +33,23 @@ export async function createUser(req, res) {
 			email,
 			phoneNumber,
 			pfp,
-			nationality,
+			countryID,
 			usertypeID,
 			notification_status,
+			password,
 		} = req.body
 
-		if (!email || !name || !usertypeID) {
+		if (!email || !name || !usertypeID || !password) {
 			return res.status(400).json({
 				error: 'Missing required fields',
 			})
 		}
 
-		// 🔐 Temporary password (user will reset it)
-		const tempPassword = crypto.randomUUID().slice(0, 12)
-
-		// 1️⃣ Create Supabase Auth user (ADMIN)
+		// 1️⃣ Create Supabase Auth user with provided password
 		const { data: authData, error: authError } =
 			await supabaseAdmin.auth.admin.createUser({
 				email,
-				password: tempPassword,
+				password,
 				email_confirm: true,
 			})
 
@@ -61,17 +59,17 @@ export async function createUser(req, res) {
 
 		const authUserId = authData.user.id
 
-		// 2️⃣ Create your internal user
+		// 2️⃣ Create internal user record
 		const { data: userData, error: dbError } = await supabaseAdmin
 			.from('t_user')
 			.insert({
-				auth_userID: authUserId, // ⚠️ make sure this column exists
+				auth_userID: authUserId,
 				name,
 				birthdate,
 				email,
 				phoneNumber,
 				pfp,
-				nationality,
+				countryID,
 				usertypeID,
 				notification_status: !!notification_status,
 			})
@@ -79,23 +77,16 @@ export async function createUser(req, res) {
 			.single()
 
 		if (dbError) {
-			// rollback auth user
 			await supabaseAdmin.auth.admin.deleteUser(authUserId)
 			return res.status(400).json({ error: dbError.message })
 		}
-
-		// 3️⃣ Force user to set their own password
-		await supabaseAdmin.auth.admin.generateLink({
-			type: 'recovery',
-			email,
-		})
 
 		return res.status(201).json({
 			message: 'User created successfully',
 			userId: userData.userID,
 		})
 	} catch (err) {
-		console.error(err)
+		console.error('Error creating user:', err)
 		return res.status(500).json({
 			error: 'Internal server error',
 		})
@@ -109,7 +100,7 @@ export async function deleteUser(req, res) {
 	if (isNaN(userID))
 		return res.status(400).json({ error: "Invalid user ID" });
 
-	const { password } = req.body
+	const { password } = req.body;
 
 	if (!password)
 		return res.status(400).json({ error: "Password is required" });
@@ -117,17 +108,49 @@ export async function deleteUser(req, res) {
 	if (password !== process.env.DELETE_PASSWORD)
 		return res.status(401).json({ error: "Invalid password" });
 
-	const { data, error } = await supabase
-		.from('t_user')
-		.delete()
-		.eq('userID', userID)
-		.select('*');
+	try {
+		const { data: userData, error: fetchError } = await supabase
+			.from('t_user')
+			.select('auth_userID')
+			.eq('userID', userID)
+			.single();
 
-	if (error)
-		return res.status(500).json({ error });
+		if (fetchError || !userData) {
+			return res.status(404).json({ error: "User not found" });
+		}
 
-	if (!data || data.length === 0)
-		return res.status(404).json({ error: "Aser not found" });
+		const authUserId = userData.auth_userID;
 
-	return res.json({ message: "User deleted successfully", data });
+		const { data: deletedUser, error: deleteError } = await supabase
+			.from('t_user')
+			.delete()
+			.eq('userID', userID)
+			.select('*')
+			.single();
+
+		if (deleteError) {
+			return res.status(500).json({ error: deleteError });
+		}
+
+		if (authUserId) {
+			const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(
+				authUserId
+			);
+
+			if (authDeleteError) {
+				console.error('Failed to delete auth user:', authDeleteError);
+			}
+		}
+
+		return res.json({
+			message: "User deleted successfully",
+			data: deletedUser
+		});
+
+	} catch (err) {
+		console.error('Error deleting user:', err);
+		return res.status(500).json({
+			error: 'Internal server error'
+		});
+	}
 }

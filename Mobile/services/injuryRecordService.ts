@@ -46,16 +46,43 @@ export async function fetchInjuryRecordsByAthlete(
 }
 
 
-
 export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return [];
+  }
+
+  const { data: internalUser, error: userError } = await supabase
+    .from("t_user")
+    .select("userID")
+    .eq("auth_userID", user.id)
+    .single();
+
+  if (userError || !internalUser) {
+    console.log("Utilizador interno não encontrado");
+    return [];
+  }
+
+  const userID = internalUser.userID;
+
   const { data, error } = await supabase
     .from("t_injury_record")
-    .select("*")
-    .neq("statusID", 1) 
-    .order("dateStart", { ascending: false });
+    .select(`
+      *,
+      taux_status (
+        status
+      )
+    `)
+    .or(`userID.eq.${userID},userID.is.null`)
+    .neq("statusID", 1)
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.log("Erro ao carregar todos os registos de lesão:", error);
+    console.log("Erro ao carregar registos:", error);
     return [];
   }
 
