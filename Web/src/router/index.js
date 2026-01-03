@@ -6,7 +6,6 @@ import Users from '../views/Users.vue'
 import Login from '../views/Login.vue'
 import Tests from '../views/Tests.vue'
 import Notfound from '../views/404.vue'
-import axios from 'axios'
 import api from '../../utils/apiUtils'
 
 const router = createRouter({
@@ -61,7 +60,11 @@ router.beforeEach(async (to, from, next) => {
   const isLoginPage = to.name === 'Login';
   const requiresAuth = to.meta.requiresAuth;
 
-  console.log('[Router] Navigating to:', to.path, '| Requires auth:', requiresAuth);
+  console.log('[Router] Navigating:', from.path, '→', to.path, '| Auth required:', requiresAuth);
+
+  if (!requiresAuth && !isLoginPage) {
+    return next();
+  }
 
   // If going to login page, check if already authenticated
   if (isLoginPage) {
@@ -75,32 +78,31 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // If route requires auth, verify authentication
-  if (requiresAuth) {
-    try {
-      const response = await api.get('/auth/me');
-      console.log('[Router] Authentication verified');
-      // Store user data in Pinia/Vuex if needed
-      // useAuthStore().setUser(response.data);
+  try {
+    const response = await api.get('/auth/me');
+    console.log('[Router] User authenticated:', response.data.profile?.email);
+
+    if (isLoginPage) {
+      console.log('[Router] Already logged in, redirecting to home');
+      return next('/');
+    }
+
+    return next();
+
+  } catch (error) {
+    const errorCode = error.response?.data?.code;
+
+    console.log('[Router] Auth check failed:', errorCode);
+
+    if (isLoginPage)
       return next();
-    } catch (error) {
-      console.error('[Router] Auth check failed:', error.response?.data);
 
-      // The axios interceptor will handle token refresh automatically
-      // If we get here, it means refresh also failed
-      if (error.response?.status === 401) {
-        console.log('[Router] Unauthorized, redirecting to login');
-        return next('/login');
-      }
-
-      // Other errors - still redirect to login for safety
-      console.error('[Router] Unexpected error, redirecting to login');
+    if (requiresAuth) {
+      console.log('[Router] Not authenticated, redirecting to login');
       return next('/login');
     }
+    return next();
   }
-
-  // No auth required, proceed
-  next();
 });
 
 

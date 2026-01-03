@@ -13,11 +13,26 @@ import bodyParser from 'body-parser'
 const app = express()
 const PORT = process.env.PORT || 3000
 
+app.use(cookieParser())
+
 // Debug middleware
 app.use((req, res, next) => {
-  console.log('📥 Request:', req.method, req.url)
+  const now = new Date()
+  const timestamp = now.toLocaleTimeString('pt-PT', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
+
+  console.log(`[${timestamp}] 📥 Request:`, req.method, req.url)
+  console.log(`[${timestamp}] 🍪 Cookies:`, {
+    access_token: req.cookies.access_token ? 'present' : 'missing',
+    refresh_token: req.cookies.refresh_token ? 'present' : 'missing'
+  })
   next()
 })
+
 
 const corsOptions = {
   origin: 'http://localhost:5173',
@@ -32,7 +47,6 @@ app.use(cors(corsOptions))
 
 // Body parsers
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cookieParser())
 app.use(express.json())
 
 // Routes

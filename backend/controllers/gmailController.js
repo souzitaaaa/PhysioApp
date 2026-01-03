@@ -63,37 +63,23 @@ export async function getLabels(req, res) {
 // GET | Get Gmail Inbox
 export async function getEmails(req, res) {
     try {
-        console.log("📧 [getEmails] Starting to fetch emails for user:", req.user.userID);
-
-        const emails = await gmailService.listEmails(req.user.userID, 10);
-        console.log(`📧 [getEmails] Found ${emails.length} emails from Gmail`);
+        const emails = await gmailService.listEmails(req.user.userID, 5);
 
         for (const [index, e] of emails.entries()) {
-            console.log(`\n--- 📬 [getEmails] Processing email ${index + 1}/${emails.length} ---`);
-            console.log(`📬 [getEmails] Email ID: ${e.id}`);
-            console.log(`📬 [getEmails] Subject: ${e.subject}`);
-            console.log(`📬 [getEmails] From: ${e.from}`);
+            console.log(`--- 📬 [getEmails] Processing email ${index + 1}/${emails.length} ---`);
 
             const emailCheck = await getEmailExists(e.id);
-            console.log(`📬 [getEmails] Email exists in DB: ${emailCheck.exists}`);
-            console.log(`📬 [getEmails] Email isPhysioBit: ${emailCheck.isPhysioBit}`);
 
             if (!emailCheck.exists) {
-                console.log(`📬 [getEmails] Creating new email in DB...`);
                 await createEmail(e);
-                console.log(`✅ [getEmails] Email created successfully`);
             } else {
-                // Check if email is not physio-related
                 if (!emailCheck.isPhysioBit) {
-                    console.log(`⏭️  [getEmails] Skipping - email is not physio-related`);
                     continue;
                 }
 
                 const hasRecord = await getExistingEmailHasRecord(e.id);
-                console.log(`📬 [getEmails] Email has injury record: ${hasRecord}`);
 
                 if (hasRecord) {
-                    console.log(`⏭️  [getEmails] Skipping - already has record`);
                     continue;
                 }
             }
@@ -110,7 +96,7 @@ export async function getEmails(req, res) {
             }
         }
 
-        console.log(`\n✅ [getEmails] Finished processing all emails\n`);
+        console.log(`\n✅ [getEmails] Finished processing all emails`);
         res.json(emails);
     } catch (error) {
         console.error("❌ [getEmails] Error:", error);
@@ -121,14 +107,6 @@ export async function getEmails(req, res) {
 
 async function prepareCreationInjuryRecordID(emailData) {
     console.log("\n🔍 [prepareCreation] ===== Starting injury record preparation =====");
-    console.log("🔍 [prepareCreation] Email data:", {
-        id: emailData.id,
-        subject: emailData.subject,
-        from: emailData.from,
-        body: emailData.body,
-        date: emailData.date
-    });
-
     // Parse email with AI
     console.log("🤖 [prepareCreation] Calling parseEmailAI...");
     const aiResult = await parseEmailAI(emailData);
@@ -137,25 +115,21 @@ async function prepareCreationInjuryRecordID(emailData) {
     if (!aiResult.isPhysioBit) {
         console.log("⚠️  [prepareCreation] Email is NOT physio-related - updating database");
         await updateEmailIsPhysioBit(emailData.id, false);
-        console.log("✅ [prepareCreation] Email marked as non-physio - stopping");
         return null;
     }
 
     const injuryRecordData = aiResult.data;
 
     if (!injuryRecordData) {
-        console.log("⚠️  [prepareCreation] parseEmailAI returned null - stopping");
         return;
     }
 
-    console.log("🤖 [prepareCreation] AI parsed data:", injuryRecordData);
 
     const {
         athleteName = null,
         senderEmail = null,
     } = injuryRecordData || {};
 
-    console.log("🔍 [prepareCreation] Extracted:", { athleteName, senderEmail });
 
     let errorSpecID = null;
     let athleteID = null;
