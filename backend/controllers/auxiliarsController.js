@@ -26,7 +26,7 @@ export async function getUserType(req, res) {
 
 // GET | User Type
 export async function getCountry(req, res) {
-	const { data, error } = await supabase.from("taux_country").select("*");
+	const { data, error } = await supabase.from("taux_country").select("*").order("name", { ascending: true });
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);

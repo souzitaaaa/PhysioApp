@@ -5,6 +5,7 @@ import { getVerifyAccountable, getVerifyAthlete } from "../functions/athletesFun
 import { createInjuryRecord } from "./injuriesController.js";
 import { getMatchingAthletes } from "../utils/utils.js"
 import { getGmailTokenByUser } from "../functions/gmailFunctions.js";
+import { supabase } from "../services/supabaseService.js";
 
 // AUTH | Get Auth URL
 export async function auth(req, res) {
@@ -73,6 +74,10 @@ export async function getEmails(req, res) {
             if (!emailCheck.exists) {
                 await createEmail(e);
             } else {
+                if (emailCheck.isDeletedBit) {
+                    continue;
+                }
+
                 if (!emailCheck.isPhysioBit) {
                     continue;
                 }

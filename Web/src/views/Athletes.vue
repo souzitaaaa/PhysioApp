@@ -138,7 +138,7 @@
       <Column field="name" header="Nome" style="width: 30%">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
+            <Avatar :image="data.pfp" class="mr-2 avatar-circle" shape="circle" />
             <span>{{ data.name }}</span>
             <i v-if="data.injuredBit" class="fa-solid fa-truck-medical text-red-600 font-medium"
               style="font-size: 0.8rem"></i>
@@ -408,7 +408,12 @@ export default {
 
       if (callback) await callback();
 
-      await this.getAthleteData();
+      const newAthlete = await this.getAthleteData(data[0].athleteID)
+      await this.getAthleteData()
+
+      this.selectedAthlete = newAthlete
+      this.drawerMode = 'view'
+      this.athleteDrawerVisible = true
     },
   },
 }

@@ -2,11 +2,17 @@ import { supabase } from "../services/supabaseService.js";
 
 // GET | All Emails
 export async function getAllEmails(req, res) {
-	const { data, error } = await supabase.from("v_email").select("*").not('injuryRecordID', 'is', null).order("emailID", { ascending: false });
+	const { data, error } = await supabase
+		.from("v_email")
+		.select("*")
+		.eq("isDeletedBit", false)
+		.not("injuryRecordID", "is", null)
+		.order("emailID", { ascending: false });
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);
 }
+
 
 // GET | Email by ID
 export async function getEmailByID(req, res) {
@@ -16,11 +22,13 @@ export async function getEmailByID(req, res) {
 		.from("v_email")
 		.select("*")
 		.eq("emailID", emailID)
+		.eq("isDeletedBit", false)
 		.single();
 
 	if (error) return res.status(500).json({ error });
 	return res.json(data);
 }
+
 
 // GET | Email Count with StatusID = 1 (Error)
 export async function getEmailErrorCount(req, res) {
@@ -60,14 +68,14 @@ export async function updateEmail(req, res) {
 	return res.json(data);
 }
 
-// DELETE | Email by ID
+// DELETE | Email by ID + delete associated injury record
 export async function deleteEmail(req, res) {
 	const emailID = parseInt(req.params.id, 10);
 
 	if (isNaN(emailID))
 		return res.status(400).json({ error: "Invalid email ID" });
 
-	const { password } = req.body
+	const { password } = req.body;
 
 	if (!password)
 		return res.status(400).json({ error: "Password is required" });
@@ -75,21 +83,49 @@ export async function deleteEmail(req, res) {
 	if (password !== process.env.DELETE_PASSWORD)
 		return res.status(401).json({ error: "Invalid password" });
 
-	const { data, error } = await supabase
-		.from('t_email')
-		.delete()
-		.eq('emailID', emailID)
-		.select('*');
+	// 1️⃣ Get the email first
+	const { data: emailData, error: emailError } = await supabase
+		.from("t_email")
+		.select("emailID, injuryRecordID")
+		.eq("emailID", emailID)
+		.eq("isDeletedBit", false)
+		.single();
 
-	if (error)
-		return res.status(500).json({ error });
+	if (emailError) return res.status(500).json({ error: emailError });
+	if (!emailData) return res.status(404).json({ error: "Email not found or already deleted" });
 
-	if (!data || data.length === 0)
-		return res.status(404).json({ error: "Email not found" });
+	const { injuryRecordID } = emailData;
 
-	return res.json({ message: "Email deleted successfully", data });
+	// 2️⃣ Soft-delete email and set injuryRecordID to null
+	const { data: updatedEmail, error: updateError } = await supabase
+		.from("t_email")
+		.update({
+			isDeletedBit: true,
+			injuryRecordID: null
+		})
+		.eq("emailID", emailID)
+		.select("*");
 
+	if (updateError) return res.status(500).json({ error: updateError });
+
+	// 3️⃣ Now delete the injury record safely
+	if (injuryRecordID) {
+		const { error: recordError } = await supabase
+			.from("t_injury_record")
+			.delete()
+			.eq("injuryRecordID", injuryRecordID);
+
+		if (recordError) return res.status(500).json({ error: recordError });
+	}
+
+	return res.json({
+		message: "Email soft-deleted and associated injury record deleted successfully",
+		data: updatedEmail,
+	});
 }
+
+
+
 
 
 
@@ -102,7 +138,7 @@ export async function deleteEmail(req, res) {
 export async function getEmailExists(emailID) {
 	const { data, error } = await supabase
 		.from("t_email")
-		.select("realEmailID, isPhysioBit")
+		.select("realEmailID, isPhysioBit, isDeletedBit")
 		.eq("realEmailID", emailID)
 		.limit(1)
 		.maybeSingle();
@@ -111,7 +147,8 @@ export async function getEmailExists(emailID) {
 
 	return {
 		exists: !!data,							// If null = false | If {} = true
-		isPhysioBit: data?.isPhysioBit ?? true // default to true if null
+		isPhysioBit: data?.isPhysioBit ?? true, // default to true if null
+		isDeletedBit: data?.isDeletedBit ?? false
 	}
 }
 

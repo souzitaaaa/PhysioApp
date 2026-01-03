@@ -63,7 +63,7 @@
                             <InputText v-model="formData.injury_title" size="small" type="text"
                                 :invalid="!!errors.injury_title" fluid />
                             <small v-if="errors.injury_title" class="text-red-600 text-xs">{{ errors.injury_title
-                            }}</small>
+                                }}</small>
                         </div>
                         </p>
                         <p class="grid grid-cols-12 items-start gap-2">
@@ -75,7 +75,7 @@
                             <InputText v-model="formData.injury_resume" size="small" type="text"
                                 :invalid="!!errors.injury_resume" fluid />
                             <small v-if="errors.injury_resume" class="text-red-600 text-xs">{{ errors.injury_resume
-                            }}</small>
+                                }}</small>
                         </div>
                         </p>
                         <p class="grid grid-cols-12 items-start gap-2">
@@ -105,7 +105,7 @@
                                 </template>
                             </Select>
                             <small v-if="errors.athleteID" class="text-red-600 text-xs">{{ errors.athleteID
-                            }}</small>
+                                }}</small>
                         </div>
                         </p>
                         <p class="grid grid-cols-12 items-start gap-2">
@@ -113,29 +113,7 @@
                             <span v-if="mode === 'view'" class="text-form-value col-span-10 whitespace-pre-wrap">
                                 {{ formData.physioName }} ({{ formData.physio_phone }})
                             </span>
-                        <div v-else class="text-form-value col-span-5 whitespace-pre-wrap">
-                            <Select v-model="formData.userID" :options="physios" optionLabel="name" optionValue="userID"
-                                size="small" :invalid="!!errors.userID" fluid placeholder="Selecionar" filter>
-                                <template #value="slotProps">
-                                    <div v-if="slotProps.value" class="flex items-center gap-2">
-                                        <!-- find the country object by ID -->
-                                        <Avatar :image="physios.find(a => a.userID === slotProps.value)?.pfp"
-                                            shape="circle" />
-                                        <span>{{physios.find(a => a.userID === slotProps.value)?.name}}</span>
-                                    </div>
-                                    <span v-else>{{ slotProps.placeholder }}</span>
-                                </template>
-                                <!-- Dropdown options with flag -->
-                                <template #option="slotProps">
-                                    <div class="flex items-center gap-2">
-                                        <Avatar :image="slotProps.option.pfp" shape="circle" />
-                                        <span>{{ slotProps.option.name }}</span>
-                                    </div>
-                                </template>
-                            </Select>
-                            <small v-if="errors.userID" class="text-red-600 text-xs">{{ errors.userID
-                            }}</small>
-                        </div>
+
                         </p>
                         <p v-if="formData.errorSpecID === 1 && mode === 'edit'"
                             class="grid grid-cols-12 items-start gap-2">
@@ -147,7 +125,7 @@
                                 :invalid="!!errors.correctInformation" fluid />
                             <small v-if="errors.correctInformation" class="text-red-600 text-xs ml-4">{{
                                 errors.correctInformation
-                            }}</small>
+                                }}</small>
                         </div>
                         </p>
                     </div>
@@ -256,8 +234,8 @@ export default {
             this.emailDeleteModalVisible = false;
         },
         handleEmailDeleted() {
-            this.emailDeleteModalVisible = false;-
-            this.$emit('close');
+            this.emailDeleteModalVisible = false; -
+                this.$emit('close');
         },
         showDeleteConfirmation() {
             this.emailDeleteModalVisible = true;

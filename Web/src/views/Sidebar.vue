@@ -59,7 +59,9 @@
       <div class="flex items-center shrink-0" :class="isCollapsed ? 'justify-center' : 'justify-between'">
         <!-- Avatar + Username (hidden when collapsed) -->
         <template v-if="!isCollapsed" class="flex items-center">
-          <Avatar :image="currentUser?.profile?.pfp || '/images/ado.jpg'" alt="UserPfp" shape="circle"></Avatar>
+          <Avatar :image="currentUser?.profile?.pfp || '/images/unknown_user.jpg'" alt="UserPfp" shape="circle"
+            class="avatar-circle">
+          </Avatar>
           <p :class="isCollapsed ? 'ml-0' : 'ml-2'" class="text-base font-base text-white truncate max-w-[85px]">
             {{ currentUser?.profile?.name || 'User' }}
           </p>
@@ -84,6 +86,7 @@
 import { safeGet } from '../../utils/utils.js'
 import axios from 'axios';
 import api from '../../utils/apiUtils.js';
+import { supabase } from '../../utils/supabase.js';
 
 export default {
   data() {
@@ -120,26 +123,55 @@ export default {
     window.addEventListener('resize', this.handleResize);
     this.loadEmailErrorCount()
     this.loadCurrentUser()
+    this.subcribeEmails()
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
+    subcribeEmails() {
+      this.channel = supabase
+        .channel('emails-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            shcema: 'public',
+            table: 't_email'
+          },
+          (payload) => {
+            console.log('alteraçao:', payload)
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 't_injury_record'
+          },
+          (payload) => {
+            this.loadEmailErrorCount()
+          }
+        )
+        .subscribe()
+    },
     async loadEmailErrorCount() {
       const response = await safeGet(
         axios.get('http://localhost:3000/emails/error_count'),
         { count: 0 }
       );
 
+      console.log("getEmailErrorCount: ", response.count)
       this.emailErrorCount = response.count;
 
-      this.menus.forEach(menu => {
-        menu.items.forEach(item => {
-          if (item.label === 'Emails') {
-            item.badge = this.emailErrorCount > 0 ? this.emailErrorCount : '';
-          }
-        });
-      });
+      // this.menus.forEach(menu => {
+      //   menu.items.forEach(item => {
+      //     if (item.label === 'Emails') {
+      //       item.badge = this.emailErrorCount > 0 ? this.emailErrorCount : '';
+      //     }
+      //   });
+      // });
     },
     async loadCurrentUser() {
       try {

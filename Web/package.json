@@ -20,6 +20,7 @@
     "@tailwindcss/vite": "^4.1.15",
     "apexcharts": "^5.3.6",
     "axios": "^1.13.2",
+    "mitt": "^3.0.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
     "tailwindcss": "^4.1.15",

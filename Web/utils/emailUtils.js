@@ -8,9 +8,6 @@ export function validateEmailForm(formData, correctInformation) {
     if (!formData.athleteID)
         errors.athleteID = 'O Atleta é obrigatório.'
 
-    if (!formData.userID)
-        errors.userID = 'O Fisioterapeuta é obrigatório.'
-
     if (formData.errorSpecID === 1)
         if (!correctInformation)
             errors.correctInformation = 'É preciso confirmar a informação.'

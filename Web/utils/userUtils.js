@@ -1,4 +1,4 @@
-export function validateUserForm(formData) {
+export function validateUserForm(formData, mode) {
     const errors = {}
 
     if (!formData.name?.trim()) errors.name = 'O nome é obrigatório'
@@ -19,6 +19,10 @@ export function validateUserForm(formData) {
 
     if (!formData.usertypeID)
         errors.usertypeID = 'A divisão é obrigatória.'
+
+    if (mode === 'add')
+        if (!formData.password)
+            errors.password = 'A Palavra-Passe é obrigatória'
 
     return errors
 }

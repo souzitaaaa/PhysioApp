@@ -22,7 +22,7 @@
         <div class="flex-1 overflow-y-auto px-8">
           <!-- Secção 1 -->
           <div class="flex items-center gap-4">
-            <img v-if="mode === 'view'" :src="formData.pfp" alt="Foto de Perfil" class="w-32 h-32 rounded-3xl" />
+            <img v-if="mode === 'view'" :src="formData.pfp" alt="Foto de Perfil" class="h-32 rounded-3xl" />
             <FileUpload v-else ref="pfpUpload" mode="basic" size="small" customUpload accept="image/*"
               :maxFileSize="1000000" @upload="onUpload" chooseLabel="Foto" severity="contrast" class="p-button-outlined"
               @select="onFileSelect" />
@@ -61,6 +61,10 @@
               <span class="text-form-title text-sm col-span-3">Email:</span>
             <div class="col-span-5">
               <span v-if="mode === 'view' || mode === 'edit'" class="text-form-value">{{ formData.email }}</span>
+              <div v-else-if="mode === 'add'">
+                <InputText v-model="formData.email" size="small" type="email" :invalid="!!errors.email" fluid />
+                <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
+              </div>
             </div>
             </p>
             <!-- Telefone -->
@@ -83,8 +87,8 @@
               <span v-if="mode === 'view'" class="text-form-value">{{ formData.birthdate }}</span>
 
               <div v-else>
-                <DatePicker v-model="formData.birthdate" dateFormat="yy-mm-dd" size="small"
-                  :invalid="!!errors.birthdate" fluid />
+                <DatePicker v-model="formData.birthdate" dateFormat="yy-mm-dd" size="small" :maxDate="today"
+                  :manualInput="false" :invalid="!!errors.birthdate" fluid />
                 <small v-if="errors.birthdate" class="text-red-600 text-xs">{{ errors.birthdate }}</small>
               </div>
             </div>
@@ -97,7 +101,8 @@
 
               <div v-else>
                 <Select v-model="formData.countryID" :options="countries" optionLabel="name" optionValue="countryID"
-                  size="small" :invalid="!!errors.countryID" fluid placeholder="Selecionar">
+                  size="small" :invalid="!!errors.countryID" fluid placeholder="Selecionar" filter filterBy="name"
+                  showClear>
                   <!-- Selected value with flag -->
                   <template #value="slotProps">
                     <div v-if="slotProps.value" class="flex items-center gap-2">
@@ -138,8 +143,15 @@
               </div>
             </div>
             </p>
+            <!-- Email -->
+            <p v-if="mode === 'add'" class="grid grid-cols-12 items-center gap-2">
+              <span class="text-form-title text-sm col-span-3">Palavra-Passe:</span>
+            <div class="col-span-5">
+              <InputText v-model="formData.password" size="small" type="password" :invalid="!!errors.password" fluid />
+              <small v-if="errors.password" class="text-red-600 text-xs">{{ errors.password }}</small>
+            </div>
+            </p>
           </div>
-
         </div>
 
         <!-- Footer -->
@@ -198,6 +210,7 @@ export default {
       formData: null,
       // Helpers
       errors: {},
+      today: new Date(),
     }
   },
   watch: {
@@ -259,7 +272,7 @@ export default {
       }
     },
     async save() {
-      this.errors = validateUserForm(this.formData)
+      this.errors = validateUserForm(this.formData, this.mode)
       if (Object.keys(this.errors).length > 0) return
 
       const birthdateObj = this.formData.birthdate instanceof Date

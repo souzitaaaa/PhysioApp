@@ -35,7 +35,7 @@
         <div class="flex-1 overflow-y-auto px-8">
           <!-- Secção 1 -->
           <div class="flex items-center gap-4">
-            <img v-if="mode === 'view'" :src="formData.pfp" alt="Foto de Perfil" class="w-32 h-32 rounded-3xl" />
+            <img v-if="mode === 'view'" :src="formData.pfp" alt="Foto de Perfil" class="h-32 rounded-3xl" />
             <FileUpload v-else ref="pfpUpload" mode="basic" size="small" customUpload accept="image/*"
               :maxFileSize="1000000" @upload="onUpload" chooseLabel="Foto" severity="contrast" class="p-button-outlined"
               @select="onFileSelect" />
@@ -93,8 +93,8 @@
                 <span v-if="mode === 'view'" class="text-form-value">{{ formData.birthdate }}</span>
 
                 <div v-else>
-                  <DatePicker v-model="formData.birthdate" dateFormat="yy-mm-dd" size="small"
-                    :invalid="!!errors.birthdate" fluid />
+                  <DatePicker v-model="formData.birthdate" dateFormat="yy-mm-dd" size="small" :maxDate="today"
+                    :manualInput="false" :invalid="!!errors.birthdate" fluid />
                   <small v-if="errors.birthdate" class="text-red-600 text-xs">{{ errors.birthdate }}</small>
                 </div>
               </div>
@@ -107,7 +107,8 @@
 
                 <div v-else>
                   <Select v-model="formData.countryID" :options="countries" optionLabel="name" optionValue="countryID"
-                    size="small" :invalid="!!errors.countryID" fluid placeholder="Selecionar">
+                    size="small" :invalid="!!errors.countryID" fluid placeholder="Selecionar" filter filterBy="name"
+                    showClear>
                     <!-- Selected value with flag -->
                     <template #value="slotProps">
                       <div v-if="slotProps.value" class="flex items-center gap-2">
@@ -338,7 +339,8 @@ export default {
       // Helpers
       selectedPage: 0,
       errors: {},
-      errorsAccountables: {}
+      errorsAccountables: {},
+      today: new Date(),
     }
   },
   watch: {

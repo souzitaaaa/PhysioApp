@@ -33,7 +33,7 @@
             <!-- HEADER EMAIL -->
             <div class="flex justify-between items-start mb-3">
               <div class="flex items-center gap-3 flex-1">
-                <Avatar v-if="item.athlete_pfp" :image="item.athlete_pfp" shape="circle" />
+                <Avatar v-if="item.athlete_pfp" :image="item.athlete_pfp" shape="circle" class="mr-2 avatar-circle" />
                 <Avatar v-else :label="item.athlete_name?.charAt(0) || '?'" shape="circle"
                   style="background-color: var(--color-primary); color: white;" class="font-bold text-sm" />
 
@@ -156,6 +156,19 @@ export default {
             this.getEmailErrorCount()
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 't_injury_record'
+          },
+          (payload) => {
+            console.log('Injury Record alterado:', payload)
+            this.getEmailData() // ou alguma função específica de injury record
+            this.getEmailErrorCount()
+          }
+        )
         .subscribe()
     },
     async checkGmailToken() {
@@ -181,6 +194,7 @@ export default {
     async getEmailErrorCount() {
       try {
         const response = await api.get('/emails/error_count')
+        console.log("getEmailErrorCount: ", response.data.count)
         this.errorCount = response.data.count
       } catch {
         this.errorCount = 0

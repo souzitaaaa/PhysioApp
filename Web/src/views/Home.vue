@@ -20,7 +20,7 @@
               <template #body="{ data }">
                 <div class="flex items-center gap-2 overflow-hidden">
                   <Avatar v-if="data.status !== 'Erro' || data.errorSpecID === 1" :image="data.athlete_pfp"
-                    class="mr-2 shrink-0" shape="circle" />
+                    class="mr-2 shrink-0 avatar-circle" shape="circle" />
                   <div class="flex flex-col overflow-hidden">
                     <span class="font-medium truncate">{{ data.athlete_name }}</span>
                     <span class="text-sm text-gray-500 truncate">
@@ -74,6 +74,15 @@
                 </div>
               </template>
             </Column>
+
+            <template #empty>
+              <div class="flex flex-col items-center justify-center gap-3 p-6 h-full">
+                <i class="fa-solid fa-laptop-medical text-4xl text-gray-400"></i>
+                <span class="text-base text-gray-600">
+                  Nenhum Registo de Lesão encontrado
+                </span>
+              </div>
+            </template>
           </DataTable>
         </div>
       </div>
@@ -95,8 +104,7 @@
               :showFilterOperator="false" :showAddButton="false">
               <template #body="{ data }">
                 <div class="flex items-center gap-2 min-w-0">
-                  <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261"
-                    shape="circle" />
+                  <Avatar :image="data.pfp" class="mr-2 avatar-circle" shape="circle" />
                   <div class="flex flex-col min-w-0">
                     <div class="flex items-center gap-1 min-w-0">
                       <span class="truncate max-w-auto font-medium">

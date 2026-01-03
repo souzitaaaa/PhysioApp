@@ -43,22 +43,6 @@
             <span class="text-2xl font-bold text-gray-800">
               {{ userStatistics?.cases_closed_this_month ?? '-' }}
             </span>
-            <Tag v-if="userStatistics?.cases_closed_percent_change !== null &&
-              userStatistics?.cases_closed_percent_change !== undefined &&
-              !isNaN(userStatistics?.cases_closed_percent_change)"
-              :severity="userStatistics.cases_closed_percent_change >= 0 ? 'success' : 'danger'"
-              :icon="userStatistics.cases_closed_percent_change >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
-              v-tooltip.bottom="{
-                value: userStatistics.cases_closed_percent_change >= 0
-                  ? `Aumento de ${Math.abs(userStatistics.cases_closed_percent_change).toFixed(1)}% em casos fechados comparado ao mês passado (${userStatistics.cases_closed_last_month} → ${userStatistics.cases_closed_this_month})`
-                  : `Diminuição de ${Math.abs(userStatistics.cases_closed_percent_change).toFixed(1)}% em casos fechados comparado ao mês passado (${userStatistics.cases_closed_last_month} → ${userStatistics.cases_closed_this_month})`,
-                showDelay: 300,
-                hideDelay: 200,
-                class: 'text-xs'
-              }">
-              {{ Math.abs(userStatistics.cases_closed_percent_change).toFixed(1) }}%
-            </Tag>
-            <span v-else class="text-xs text-gray-400">-</span>
           </div>
         </template>
       </Card>
@@ -148,7 +132,7 @@
       <Column field="name" header="Nome" style="min-width: 16rem">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <Avatar :image="data.pfp" class="mr-2" style="background-color: #ece9fc; color: #2a1261" shape="circle" />
+            <Avatar :image="data.pfp" class="mr-2 avatar-circle" shape="circle" />
             <span>{{ data.name }}</span>
             <i :class="[
               'fa-solid',
@@ -330,6 +314,7 @@ export default {
           countryID: formData.countryID,
           usertypeID: formData.usertypeID,
           notification_status: formData.notification_status,
+          password: formData.password,
           pfp: pfpUrl,
         }
 
