@@ -5,7 +5,7 @@ import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { supabase } from "../scripts/supabase";
 
-// Configurar notificações quando o app está aberta
+// Configure notifications while app is open
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -19,24 +19,26 @@ export default function RootLayout() {
   const segments = useSegments();
   const [loading, setLoading] = useState(true);
 
-  // Verifica sessão inicial
+  // Check auth session on app start
   useEffect(() => {
     checkSession();
 
-    // Listener para registrar token sempre que o usuário logar
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_IN") {
-          console.log("Usuário logado, registrando token...");
+          console.log("user login");
           await registerForPush();
         }
       }
     );
 
+    // Remove listener on unmount
     return () => listener.subscription.unsubscribe();
   }, []);
 
   async function checkSession() {
+    // Get current session
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -55,7 +57,6 @@ export default function RootLayout() {
       return;
     }
 
-    // Se houver sessão já ativa, registra token
     if (session) {
       await registerForPush();
     }
@@ -66,13 +67,14 @@ export default function RootLayout() {
   async function registerForPush() {
     try {
       if (!Device.isDevice) {
-        console.log("Push notifications só funcionam em dispositivos reais");
+        console.log("Push notifications real phone");
         return;
       }
 
+      // Request notification permission
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
-        console.log("Permissão de notificação não concedida");
+        console.log("Push notifications only work on real devices");
         return;
       }
 
@@ -82,18 +84,18 @@ export default function RootLayout() {
       if (!projectId) return;
 
       const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      console.log("Token do dispositivo:", token);
+      console.log("Device token:", token);
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) {
-        console.log("Nenhum usuário logado, não é possível salvar token");
+        console.log("No logged user, cannot save token");
         return;
       }
 
-      // Tenta inserir o token para este usuário
+      // Insert push token
       const { error: insertError } = await supabase
         .from("t_notification_token")
         .insert({
@@ -102,7 +104,7 @@ export default function RootLayout() {
           platform: Device.osName,
         });
 
-      // Se já existir um registro para este userId, atualiza só ele
+      // Update token if already exists
       if (insertError && insertError.code === "23505") {
         const { error: updateError } = await supabase
           .from("t_notification_token")
@@ -110,12 +112,12 @@ export default function RootLayout() {
             expo_push_token: token,
             platform: Device.osName,
           })
-          .eq("userId", user.id); // ✅ atualiza só o userId atual
+          .eq("userId", user.id); // Update current user only
 
-        if (updateError) console.log("Erro ao atualizar token:", updateError.message);
-        else console.log("Token atualizado com sucesso!");
+        if (updateError) console.log("Error updating token:", updateError.message);
+        else console.log("Token updated successfully");
       } else if (!insertError) {
-        console.log("Token inserido com sucesso!");
+        console.log("Token inserted successfully");
       }
     } catch (e) {
       console.log("Push registration error:", e);

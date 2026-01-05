@@ -93,15 +93,15 @@ export async function getEmails(req, res) {
             const injuryRecordID = await prepareCreationInjuryRecordID(e);
 
             if (injuryRecordID) {
-                console.log(`✅ [getEmails] Injury record created with ID: ${injuryRecordID}`);
+                console.log(` [getEmails] Injury record created with ID: ${injuryRecordID}`);
                 await updateEmailWithRecord(e.id, injuryRecordID);
-                console.log(`✅ [getEmails] Email updated with record ID`);
+                console.log(` [getEmails] Email updated with record ID`);
             } else {
-                console.log(`⚠️  [getEmails] No injury record created (parseEmailAI returned null)`);
+                console.log(`  [getEmails] No injury record created (parseEmailAI returned null)`);
             }
         }
 
-        console.log(`\n✅ [getEmails] Finished processing all emails`);
+        console.log(`\n [getEmails] Finished processing all emails`);
         res.json(emails);
     } catch (error) {
         console.error("❌ [getEmails] Error:", error);
@@ -118,7 +118,7 @@ async function prepareCreationInjuryRecordID(emailData) {
 
     // Check if email is physio-related
     if (!aiResult.isPhysioBit) {
-        console.log("⚠️  [prepareCreation] Email is NOT physio-related - updating database");
+        console.log("  [prepareCreation] Email is NOT physio-related - updating database");
         await updateEmailIsPhysioBit(emailData.id, false);
         return null;
     }
@@ -154,7 +154,7 @@ async function prepareCreationInjuryRecordID(emailData) {
     // 2. Accountable DOES NOT exist
     // =====================================================
     if (!accountableExists) {
-        console.log("⚠️  [prepareCreation] No accountable found - starting global athlete search");
+        console.log("  [prepareCreation] No accountable found - starting global athlete search");
         errorSpecID = 1; // Responsável não encontrado
 
         const athleteExists = await getVerifyAthlete(athleteName);
@@ -165,12 +165,12 @@ async function prepareCreationInjuryRecordID(emailData) {
             errorSpecID = 3; // Geral
         }
         else if (athleteExists.length > 1) {
-            console.log("⚠️  [prepareCreation] Multiple athletes found - errorSpecID = 3");
+            console.log("  [prepareCreation] Multiple athletes found - errorSpecID = 3");
             errorSpecID = 3; // Geral (ambiguous)
         }
         else {
             athleteID = athleteExists[0].athleteID;
-            console.log("✅ [prepareCreation] Single athlete matched globally - athleteID:", athleteID);
+            console.log(" [prepareCreation] Single athlete matched globally - athleteID:", athleteID);
         }
     }
 
@@ -178,7 +178,7 @@ async function prepareCreationInjuryRecordID(emailData) {
     // 3. Accountable EXISTS
     // =====================================================
     else {
-        console.log("✅ [prepareCreation] Accountable exists - checking athlete under accountable...");
+        console.log(" [prepareCreation] Accountable exists - checking athlete under accountable...");
 
         const matchingAthletes = getMatchingAthletes(accountableExists, athleteName);
         console.log("🏃 [prepareCreation] Matching athletes count:", matchingAthletes.length);
@@ -195,14 +195,14 @@ async function prepareCreationInjuryRecordID(emailData) {
         // -------------------------------------------------
         if (matchingAthletes.length === 1) {
             athleteID = matchingAthletes[0].athleteID;
-            console.log("✅ [prepareCreation] Perfect match - athleteID:", athleteID);
+            console.log(" [prepareCreation] Perfect match - athleteID:", athleteID);
         }
 
         // -------------------------------------------------
         // 3.2 Multiple matches under accountable
         // -------------------------------------------------
         else if (matchingAthletes.length > 1) {
-            console.log("⚠️  [prepareCreation] Multiple matching athletes - errorSpecID = 3");
+            console.log("  [prepareCreation] Multiple matching athletes - errorSpecID = 3");
             errorSpecID = 3; // Geral
         }
 
@@ -210,7 +210,7 @@ async function prepareCreationInjuryRecordID(emailData) {
         // 3.3 No match under accountable → fallback
         // -------------------------------------------------
         else {
-            console.log("⚠️  [prepareCreation] Athlete not under accountable - trying global search");
+            console.log("  [prepareCreation] Athlete not under accountable - trying global search");
             errorSpecID = 2; // intermediate state (DO NOT persist)
 
             const athleteExists = await getVerifyAthlete(athleteName);
@@ -219,11 +219,11 @@ async function prepareCreationInjuryRecordID(emailData) {
             if (athleteExists && athleteExists.length === 1) {
                 athleteID = athleteExists[0].athleteID;
                 errorSpecID = 1; // Responsável não encontrado
-                console.log("⚠️  [prepareCreation] Athlete found globally but not under accountable - errorSpecID = 1");
+                console.log("  [prepareCreation] Athlete found globally but not under accountable - errorSpecID = 1");
             }
             else if (athleteExists && athleteExists.length > 1) {
                 errorSpecID = 3; // Geral
-                console.log("⚠️  [prepareCreation] Multiple global athletes found - errorSpecID = 3");
+                console.log("  [prepareCreation] Multiple global athletes found - errorSpecID = 3");
             }
             else {
                 errorSpecID = 3; // Geral
@@ -246,7 +246,7 @@ async function prepareCreationInjuryRecordID(emailData) {
         errorSpecID
     );
 
-    console.log("✅ [prepareCreation] Injury record created with ID:", injuryRecordID);
+    console.log(" [prepareCreation] Injury record created with ID:", injuryRecordID);
     console.log("🔍 [prepareCreation] ===== Finished injury record preparation =====\n");
 
     return injuryRecordID;

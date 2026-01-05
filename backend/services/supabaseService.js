@@ -11,14 +11,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables!')
 }
 
-// ✅ CRITICAL: Server-side configuration
+//  CRITICAL: Server-side configuration
 // This is the key to making setSession() work properly
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         autoRefreshToken: false,
         persistSession: false,
         detectSessionInUrl: false,
-        // ⚠️ IMPORTANT: This tells Supabase we're on the server
+        //  IMPORTANT: This tells Supabase we're on the server
         storageKey: 'supabase-auth-token',
         storage: null // Explicitly no storage on server
     },
@@ -41,4 +41,4 @@ export const supabaseAdmin = createClient(
     }
 )
 
-console.log('✅ Supabase clients initialized for server-side use')
+console.log(' Supabase clients initialized for server-side use')

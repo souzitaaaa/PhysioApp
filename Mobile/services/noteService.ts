@@ -1,5 +1,6 @@
 import { supabase } from "../scripts/supabase";
 
+// Type representing a Note
 export type Note = {
   noteID: number;
   text: string;
@@ -8,6 +9,7 @@ export type Note = {
   created_at: string;
 };
 
+//Fetch all notes associated with a specific injury record
 export async function fetchNotesByRecord(injuryRecordID: number): Promise<Note[]> {
   const { data, error } = await supabase
     .from("t_note")
@@ -23,6 +25,7 @@ export async function fetchNotesByRecord(injuryRecordID: number): Promise<Note[]
   return data || [];
 }
 
+// Create a new note for a specific injury record / Automatically sets the date to today
 export async function createNote(injuryRecordID: number, text: string) {
   const { error } = await supabase.from("t_note").insert({
     injuryRecordID,

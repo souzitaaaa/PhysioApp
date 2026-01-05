@@ -1,5 +1,6 @@
 import { supabase } from "../scripts/supabase";
 
+// Type representing an injury record
 export type InjuryRecord = {
   injuryRecordID: number;
   athleteID: number;
@@ -17,25 +18,25 @@ export type InjuryRecord = {
   t_user?: {
     name: string;
   };
-
 };
 
-
+// Fetch all injury records for a specific athlete (excluding statusID 1)
 export async function fetchInjuryRecordsByAthlete(
   athleteID: number
 ): Promise<InjuryRecord[]> {
   const { data, error } = await supabase
     .from("t_injury_record")
-    .select(`
+    .select(
+      `
       *,
       taux_status (
         status
       )
-    `)
+    `
+    )
     .eq("athleteID", athleteID)
-    .neq("statusID", 1) 
+    .neq("statusID", 1)
     .order("created_at", { ascending: false });
-    
 
   if (error) {
     console.log("Erro ao carregar histórico do atleta:", error);
@@ -45,8 +46,9 @@ export async function fetchInjuryRecordsByAthlete(
   return data || [];
 }
 
-
+// Fetch all injury records the current logged-in user can see
 export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
+  // Get logged-in user from Supabase auth
   const {
     data: { user },
     error: authError,
@@ -56,6 +58,7 @@ export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
     return [];
   }
 
+  // Find internal user ID linked to auth user
   const { data: internalUser, error: userError } = await supabase
     .from("t_user")
     .select("userID")
@@ -69,14 +72,17 @@ export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
 
   const userID = internalUser.userID;
 
+  // Fetch records either assigned to this user or unassigned
   const { data, error } = await supabase
     .from("t_injury_record")
-    .select(`
+    .select(
+      `
       *,
       taux_status (
         status
       )
-    `)
+    `
+    )
     .or(`userID.eq.${userID},userID.is.null`)
     .neq("statusID", 1)
     .order("created_at", { ascending: false });
@@ -89,19 +95,20 @@ export async function fetchAllInjuryRecords(): Promise<InjuryRecord[]> {
   return data || [];
 }
 
-
-
+// Fetch a single injury record by its ID (includes user info)
 export async function fetchInjuryRecordById(
   injuryRecordID: number
 ): Promise<InjuryRecord | null> {
   const { data, error } = await supabase
     .from("t_injury_record")
-    .select(`
+    .select(
+      `
       *,
       t_user (
         name
       )
-    `)
+    `
+    )
     .eq("injuryRecordID", injuryRecordID)
     .single();
 
@@ -113,8 +120,7 @@ export async function fetchInjuryRecordById(
   return data;
 }
 
-
-
+// Close an injury record (set statusID to 2 and update end date)
 export async function closeInjuryRecord(
   injuryRecordID: number,
   dateEnd: string
@@ -133,28 +139,31 @@ export async function closeInjuryRecord(
   }
 }
 
+// Set a record as "with note" (statusID 3) and assign the current user
 export async function setInjuryRecordWithNote(injuryRecordID: number) {
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) throw new Error("Nenhum usuário logado.");
 
-  const authUserID = user.id; 
+  const authUserID = user.id;
 
   const { data: users, error: userError } = await supabase
     .from("t_user")
     .select("userID")
     .eq("auth_userID", authUserID)
-    .single(); 
+    .single();
 
   if (userError || !users) throw new Error("Usuário interno não encontrado.");
 
-  const userID = users.userID; 
+  const userID = users.userID;
 
   const { error } = await supabase
     .from("t_injury_record")
     .update({
       statusID: 3,
-      userID: userID, 
+      userID: userID,
     })
     .eq("injuryRecordID", injuryRecordID);
 
@@ -165,4 +174,3 @@ export async function setInjuryRecordWithNote(injuryRecordID: number) {
 
   console.log("Registro atualizado com sucesso!");
 }
-

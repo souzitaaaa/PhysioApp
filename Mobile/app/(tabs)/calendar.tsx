@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchAllReminders, Reminder } from "../../services/reminderService";
 
-import "../../config/calendarLocale";
+import "../../config/calendarLocale"; // Calendar locale settings
 
 import { styles } from "../../css/calendar";
 import { supabase } from "../../scripts/supabase";
@@ -18,6 +18,7 @@ export default function HomeScreen() {
   const [loadingReminders, setLoadingReminders] = useState(true);
   const [athletes, setAthletes] = useState<Record<number, string>>({});
 
+  // Load reminders and subscribe to realtime updates
   useEffect(() => {
     loadReminders();
 
@@ -41,19 +42,21 @@ export default function HomeScreen() {
     };
   }, []);
 
-  // Redefinir para hoje sempre que a tela ganhar foco
+  // Reset selected date when screen is focused
   useFocusEffect(
     useCallback(() => {
       setSelectedDate(today);
     }, [today])
   );
 
+  // Load reminders and mark dates
   const loadReminders = async () => {
     setLoadingReminders(true);
 
     const allReminders = await fetchAllReminders();
     setReminders(allReminders);
 
+    // Prepare marked dates
     const marks = allReminders.reduce((acc, reminder) => {
       acc[reminder.date] = {
         marked: true,
@@ -63,21 +66,22 @@ export default function HomeScreen() {
     }, {} as Record<string, any>);
     setMarkedDates(marks);
 
-    // Fetch atletas
-
     setLoadingReminders(false);
   };
 
+  // Filter reminders for selected date
   const remindersOfSelectedDate = reminders.filter(
     (r) => r.date === selectedDate
   );
 
+  // Format date (DD/MM/YYYY)
   function formatDate(dateString: string | Date | null) {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString("pt-PT"); // formato dia/mês/ano
+    return date.toLocaleDateString("pt-PT"); 
   }
 
+  // Get first and last name from full name
   function getFirstAndLastName(fullName: string) {
     const parts = fullName.trim().split(" ");
     if (parts.length === 1) return parts[0];
@@ -86,7 +90,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* CALENDAR */}
+      {/* Calendar */}
       <View style={styles.rectangleWrapper}>
         <View style={styles.rectangle}>
           <Text style={styles.title}>Calendário</Text>
@@ -116,7 +120,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* REMINDERS FOR SELECTED DAY */}
+      {/* Reminders for selected day */}
       <View style={styles.remindersContainer}>
         <Text style={styles.remindersTitle}>
           {selectedDate
@@ -139,7 +143,7 @@ export default function HomeScreen() {
 
               {remindersOfSelectedDate.map((r) => (
                 <View key={r.reminderID} style={styles.reminderRow}>
-                  {/* Lado esquerdo: hora */}
+                  {/* Left side athlete name */}
                   <View style={styles.nameBox}>
                     <Text style={styles.nameText}>
                       {getFirstAndLastName(
@@ -148,7 +152,7 @@ export default function HomeScreen() {
                     </Text>
                   </View>
 
-                  {/* Lado direito: title */}
+                  {/* Right side reminder title */}
                   <View style={styles.titleBox}>
                     <Text style={styles.titleText}>{r.title}</Text>
                   </View>

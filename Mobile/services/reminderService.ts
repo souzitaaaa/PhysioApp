@@ -1,13 +1,15 @@
 import { supabase } from "../scripts/supabase";
 
+// Type representing a reminder
 export type Reminder = {
   reminderID?: number;
   title: string;
   date: string;
-  injuryRecordID: number; // ou injury_id conforme tabela
+  injuryRecordID: number;
   created_at?: string;
 };
 
+// Get current logged-in user ID
 async function getLoggedUserID(): Promise<number | null> {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return null;
@@ -23,7 +25,7 @@ async function getLoggedUserID(): Promise<number | null> {
   return internalUser.userID;
 }
 
-
+// Fetch all reminders for logged-in user
 export async function fetchAllReminders() {
   const userID = await getLoggedUserID();
   if (!userID) return []; 
@@ -55,8 +57,7 @@ export async function fetchAllReminders() {
   return data || [];
 }
 
-
-
+// Create a new reminder
 export async function createReminder(reminder: Reminder) {
   const { data, error } = await supabase
     .from("t_reminder")

@@ -30,7 +30,7 @@ body:
   - type: textarea
     id: acceptance_criteria
     attributes:
-      label: ✅ Acceptance Criteria
+      label:  Acceptance Criteria
       placeholder: |
         - Returns 200 OK when login succeeds
         - Follows security guidelines

@@ -22,6 +22,7 @@ import { supabase } from "../../scripts/supabase";
 import { styles } from "../../css/historical";
 
 export default function HistoricalScreen() {
+  // Route params
   const { athleteID, athleteName } = useLocalSearchParams<{
     athleteID: string;
     athleteName: string;
@@ -34,6 +35,7 @@ export default function HistoricalScreen() {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [notes, setNotes] = useState<Record<number, any[]>>({});
 
+  // Reset state on screen blur
   useFocusEffect( 
     useCallback(() => {
   
@@ -45,12 +47,14 @@ export default function HistoricalScreen() {
     }, [])
   );
 
+  // Load history and subscribe to updates
   useEffect(() => {
 
     if (!athleteID) return;
 
     loadHistory();
 
+    // Realtime history channel
     const channel = supabase
       .channel(`injury-history-${athleteID}`)
       .on(
@@ -73,7 +77,7 @@ export default function HistoricalScreen() {
           table: "t_note",
         },
         async (payload) => {
-          // Se uma nota for adicionada ao record aberto, recarrega só as notas
+          // Reload notes for open record
           if (expanded) {
             const n = await fetchNotesByRecord(expanded);
             setNotes((prev) => ({ ...prev, [expanded]: n }));
@@ -95,23 +99,27 @@ export default function HistoricalScreen() {
   }
 
   async function toggleExpand(id: number) {
+    // Toggle expanded record
     const newValue = expanded === id ? null : id;
     setExpanded(newValue);
 
+    // Load notes when expanded
     if (newValue) {
       const n = await fetchNotesByRecord(id);
       setNotes((prev) => ({ ...prev, [id]: n }));
     }
   }
 
+  // Format date (DD/MM/YYYY)
   function formatDate(dateString: string | Date | null) {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString("pt-PT"); // formato dia/mês/ano
+    return date.toLocaleDateString("pt-PT");
   }
 
   return (
     <ScrollView style={styles.container}>
+      {/* Screen title */}
       <Text style={styles.title}>Histórico do Atleta</Text>
 
       <View style={styles.card}>
@@ -121,6 +129,7 @@ export default function HistoricalScreen() {
             <Text style={styles.Text}>Histórico do Atleta</Text>
             <Text>{athleteName}</Text>
           </View>
+          {/* Back button */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
@@ -133,7 +142,7 @@ export default function HistoricalScreen() {
         {/* Loading */}
         {loading && <ActivityIndicator size="small" color="#000" />}
 
-        {/* Registos */}
+        {/* Records list */}
         {!loading &&
           records.map((item) => {
             const isOpen = expanded === item.injuryRecordID;
@@ -146,7 +155,7 @@ export default function HistoricalScreen() {
                 onPress={() => toggleExpand(item.injuryRecordID)}
                 activeOpacity={0.7}
               >
-                {/* Linha: Nome à esquerda, datas à direita */}
+                {/* Title and date row */}
                 <View style={styles.rowBetween}>
                   <View style={styles.leftColumn}>
                     <Text
@@ -169,7 +178,7 @@ export default function HistoricalScreen() {
                   </View>
                 </View>
 
-                {/* Conteúdo expandido */}
+                {/* Expanded content */}
                 {isOpen && (
                   <View style={{ marginTop: 10 }}>
                     <Text style={{ fontWeight: "600" }}>Resumo:</Text>
@@ -202,8 +211,10 @@ export default function HistoricalScreen() {
                       </View>
                     )}
 
+                    {/* Action buttons */}
                     {hasButtons && (
                       <View style={styles.buttonsRow}>
+                        {/* Add note */}
                         <TouchableOpacity
                           style={styles.btn}
                           onPress={() =>
@@ -220,7 +231,7 @@ export default function HistoricalScreen() {
                           <Text style={styles.btnText}>Adicionar Nota</Text>
                           <Ionicons name="add" size={20} color="#000" />
                         </TouchableOpacity>
-
+                        {/* End record */}
                         <TouchableOpacity
                           style={styles.btn}
                           onPress={() =>

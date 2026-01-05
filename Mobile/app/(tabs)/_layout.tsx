@@ -18,7 +18,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#22333b",
       }}
     >
-      {/* Notificações */}
+      {/* Notifications tab */}
       <Tabs.Screen
         name="notification"
         options={{
@@ -55,7 +55,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Início */}
+      {/* Home tab */}
       <Tabs.Screen
         name="index"
         options={{
@@ -70,7 +70,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Calendário */}
+      {/* Calendar tab */}
       <Tabs.Screen
         name="calendar"
         options={{
@@ -85,6 +85,7 @@ export default function TabLayout() {
         }}
       />
 
+      {/* Hidden tabs (no direct access from tab bar) */}
       <Tabs.Screen name="historical" options={{ href: null }} />
       <Tabs.Screen name="add-note" options={{ href: null }} />
       <Tabs.Screen name="end-note" options={{ href: null }} />

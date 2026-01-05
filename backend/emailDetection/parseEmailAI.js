@@ -82,11 +82,11 @@ export async function parseEmailAI(email) {
         const parsedData = JSON.parse(cleanedOutput);
 
         if (parsedData === null) {
-            console.warn("⚠️ [parseEmailAI] AI determined this email is NOT an injury report");
+            console.warn(" [parseEmailAI] AI determined this email is NOT an injury report");
             return { isPhysioBit: false, data: null };
         }
 
-        console.log("✅ [parseEmailAI] Successfully parsed JSON:");
+        console.log(" [parseEmailAI] Successfully parsed JSON:");
         console.log("   - athleteName:", parsedData.athleteName);
         console.log("   - senderEmail:", parsedData.senderEmail);
         console.log("   - title:", parsedData.title);

@@ -31,7 +31,7 @@
   "startDate": "2025-12-31"
 }
 🤖 [parseEmailAI] Parsing JSON...
-✅ [parseEmailAI] Successfully parsed JSON:
+ [parseEmailAI] Successfully parsed JSON:
    - athleteName: Chinatsu
    - senderEmail: rodrigo.pintoff04@gmail.com
    - title: Lesão do Pé
@@ -58,7 +58,7 @@
     athlete_name: 'Diogo Nogueira Sousav2'
   }
 ]
-✅ [prepareCreation] Accountable exists - matching with athlete...
+ [prepareCreation] Accountable exists - matching with athlete...
 🏃 [prepareCreation] Matching athletes count: 0
 ❌ [prepareCreation] No matching athlete - errorSpecID = 2
 
@@ -72,8 +72,8 @@
   resume: 'Chinatsu sofreu uma lesão no pé e, por essa razão, não poderá comparecer ao jogo de amanhã. Prevê-se que esteja apta a regressar na terça-feira.',
   startDate: '2025-12-31'
 }
-✅ [prepareCreation] Injury record created with ID: 33
+ [prepareCreation] Injury record created with ID: 33
 🔍 [prepareCreation] ===== Finished injury record preparation =====
 
-✅ [getEmails] Injury record created with ID: 33
-✅ [getEmails] Email updated with record ID
+ [getEmails] Injury record created with ID: 33
+ [getEmails] Email updated with record ID

@@ -22,6 +22,7 @@ import { createReminder } from "../../services/reminderService";
 import { styles } from "../../css/add-note";
 
 export default function AddNoteScreen() {
+  // Route parameters
   const { injuryRecordID, athleteID, athleteName } = useLocalSearchParams<{
     injuryRecordID: string;
     athleteID: string;
@@ -33,16 +34,14 @@ export default function AddNoteScreen() {
   const [loading, setLoading] = useState(true);
   const [injury, setInjury] = useState<InjuryRecord | null>(null);
 
-  // Nota
   const [text, setText] = useState("");
 
-  // Reminder
   const [reminderTitle, setReminderTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
 
-  // Picker
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // Reset all form fields
   const resetForm = useCallback(() => {
     setText("");
     setReminderTitle("");
@@ -50,6 +49,7 @@ export default function AddNoteScreen() {
     setShowDatePicker(false);
   }, []);
 
+  // Reset form when leaving screen
   useFocusEffect(
     useCallback(() => {
       return () => {
@@ -58,6 +58,7 @@ export default function AddNoteScreen() {
     }, [resetForm])
   );
 
+  // Load injury record
   useEffect(() => {
     async function loadInjury() {
       if (!injuryRecordID) return;
@@ -68,12 +69,14 @@ export default function AddNoteScreen() {
     loadInjury();
   }, [injuryRecordID]);
 
+  // Format date (DD/MM/YYYY)
   function formatDate(date: Date | string | null) {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString("pt-PT");
 }
 
+// Format date for database
 function formatDateForDB(date: Date) {
   return date.toISOString().split("T")[0];
 }
@@ -82,6 +85,7 @@ function formatDateForDB(date: Date) {
   async function handleSave() {
     if (!injuryRecordID) return;
 
+    // Validate note text
     if (text.trim() === "") {
       alert("A nota é obrigatória.");
       return;
@@ -99,6 +103,7 @@ function formatDateForDB(date: Date) {
     try {
       await createNote(Number(injuryRecordID), text);
 
+      // Create reminder if needed
       if (reminderTouched) {
         const reminderPayload = {
           title: reminderTitle,
@@ -110,9 +115,11 @@ function formatDateForDB(date: Date) {
         await createReminder(reminderPayload);
       }
 
+      // Close injury record
       await setInjuryRecordWithNote(Number(injuryRecordID));
-      resetForm();
 
+      // Cancel and go back
+      resetForm();
       router.replace({
         pathname: "/historical",
         params: { athleteID, athleteName },
@@ -145,9 +152,11 @@ function formatDateForDB(date: Date) {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Screen title */}
       <Text style={styles.title}>Adicionar Nota</Text>
 
       <View style={styles.card}>
+        {/* Injury info */}
         <Text style={styles.titleHistorical}>Histórico</Text>
 
         <Text style={styles.label}>Tipo de Lesão:</Text>
@@ -159,7 +168,7 @@ function formatDateForDB(date: Date) {
         <Text style={styles.label}>Data de começo:</Text>
         <Text style={styles.infoText}>{formatDate(injury?.dateStart)}</Text>
 
-
+        {/* Note input */}
         <Text style={styles.label}>Nota:</Text>
         <TextInput
           style={styles.input}
@@ -169,6 +178,7 @@ function formatDateForDB(date: Date) {
           onChangeText={setText}
         />
 
+        {/* Reminder header */}
         <View
           style={{
             flexDirection: "row",
@@ -179,6 +189,7 @@ function formatDateForDB(date: Date) {
         >
           <Text style={styles.titleReminder}>Lembrete</Text>
 
+          {/* Clear reminder */}
           {(reminderTitle || date) && (
             <TouchableOpacity
               onPress={() => {
@@ -212,6 +223,7 @@ function formatDateForDB(date: Date) {
 
         </TouchableOpacity>
 
+        {/* Date picker */}
         {showDatePicker && (
           <DateTimePicker
             value={date || new Date()}
@@ -226,6 +238,7 @@ function formatDateForDB(date: Date) {
         <View style={{ flex: 1 }} />
 
         <View style={styles.buttonRow}>
+          {/* Cancel button */}
           <TouchableOpacity
             style={styles.btncancel}
             onPress={handleGoBack}
@@ -233,7 +246,8 @@ function formatDateForDB(date: Date) {
             <Text style={styles.btnText}>Cancelar</Text>
             <Ionicons name="arrow-back" size={20} />
           </TouchableOpacity>
-
+          
+          {/* Save button */}
           <TouchableOpacity style={styles.btn} onPress={handleSave}>
             <Text style={styles.btnText}>Guardar Nota</Text>
             <Ionicons name="document-outline" size={20} />

@@ -9,16 +9,17 @@ serve(async (req) => {
       return new Response("Dados incompletos", { status: 400 });
     }
 
+    // Connect to Supabase
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
+    // Query push tokens
     let query = supabase
       .from("t_notification_token")
       .select("expo_push_token");
 
-    // 👉 Se vier userId, filtra
     if (userId) {
       query = query.eq("userId", userId);
     }
@@ -34,6 +35,7 @@ serve(async (req) => {
       return new Response("No tokens", { status: 200 });
     }
 
+    // Prepare push messages
     const messages = tokens.map((t) => ({
       to: t.expo_push_token,
       sound: "default",
@@ -41,6 +43,7 @@ serve(async (req) => {
       body,
     }));
 
+    // Send notifications via Expo
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

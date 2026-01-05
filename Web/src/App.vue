@@ -134,7 +134,7 @@ export default {
 
     startEmailPolling() {
       if (this.emailPollingInterval) {
-        console.warn('⚠️ [App] Email polling already started');
+        console.warn(' [App] Email polling already started');
         return;
       }
 
@@ -172,7 +172,7 @@ export default {
         console.log('📬 [App] Checking for new emails...');
         const response = await api.get('/gmail/emails');
 
-        console.log('✅ [App] Email check completed');
+        console.log(' [App] Email check completed');
 
       } catch (err) {
         if (err.response?.status === 401) {

@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import { USERS } from "../utils/utils.js";
 
-// ✅ Load environment variables
+//  Load environment variables
 dotenv.config()
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL
@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_KEY in environment variables')
 }
 
-// ✅ KEY FIX: Create client with session for each request
+//  KEY FIX: Create client with session for each request
 function getSupabaseWithSession(accessToken, refreshToken) {
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {

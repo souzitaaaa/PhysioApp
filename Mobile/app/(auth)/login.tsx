@@ -10,21 +10,22 @@ import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { supabase } from "../../scripts/supabase";
 import { styles } from "../../css/login";
-import { FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6 } from "@expo/vector-icons";
 
 export default function Login() {
+  // State for email input
   const [email, setEmail] = useState("");
+  // State for password input
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  // label animações
   const emailAnim = useRef(new Animated.Value(0)).current;
   const passAnim = useRef(new Animated.Value(0)).current;
 
-  // barra animações
   const emailBarAnim = useRef(new Animated.Value(0)).current;
   const passBarAnim = useRef(new Animated.Value(0)).current;
 
+  // Animation for inputs
   function animateUp(anim) {
     Animated.timing(anim, {
       toValue: 1,
@@ -61,17 +62,20 @@ export default function Login() {
     }
   }
 
+  // Handle user login
   async function handleLogin() {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    // Show error message
     if (error) {
       alert("Login inválido");
       return;
     }
 
+    // Redirect to main app
     router.replace("/(tabs)");
   }
 
@@ -97,7 +101,7 @@ export default function Login() {
       resizeMode="cover"
     >
       <View style={styles.containerLogin}>
-        {/* EMAIL */}
+        {/* Email input */}
         <View style={styles.group}>
           <TextInput
             value={email}
@@ -114,6 +118,7 @@ export default function Login() {
             }}
           />
 
+          {/* Email label */}
           <Animated.Text style={[styles.label, getLabelStyle(emailAnim)]}>
             Email
           </Animated.Text>
@@ -129,7 +134,7 @@ export default function Login() {
           </View>
         </View>
 
-        {/* PASSWORD */}
+        {/* Password input */}
         <View style={styles.group}>
           <TextInput
             value={password}
@@ -146,6 +151,7 @@ export default function Login() {
             }}
           />
 
+          {/* Password label */}
           <Animated.Text style={[styles.label, getLabelStyle(passAnim)]}>
             Password
           </Animated.Text>
@@ -161,14 +167,18 @@ export default function Login() {
           </View>
         </View>
 
-
+        {/* Login button */}
         <TouchableOpacity onPress={handleLogin} style={styles.buttonLogin}>
           <View style={styles.content}>
             <Text style={styles.buttonTextLogin}>Entrar</Text>
-            <FontAwesome6 style={styles.iconLogin} name="arrow-right-long" size={18} color="#fff" />
+            <FontAwesome6
+              style={styles.iconLogin}
+              name="arrow-right-long"
+              size={18}
+              color="#fff"
+            />
           </View>
         </TouchableOpacity>
-
       </View>
     </ImageBackground>
   );

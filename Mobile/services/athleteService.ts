@@ -1,11 +1,15 @@
 import { supabase } from "../scripts/supabase";
 
+// Athlete type
 export type Athlete = {
   athleteID: number;
   name: string;
 };
 
-export async function fetchAthleteByID(athleteID: number): Promise<Athlete | null> {
+// Fetch athlete by ID
+export async function fetchAthleteByID(
+  athleteID: number
+): Promise<Athlete | null> {
   const { data, error } = await supabase
     .from("t_athlete")
     .select("name")

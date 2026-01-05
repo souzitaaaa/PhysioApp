@@ -21,6 +21,7 @@ import { supabase } from "../../scripts/supabase";
 import { styles } from "../../css/notification";
 
 export default function NotificationScreen() {
+  // Injury record with athlete name
   type InjuryRecordWithAthlete = InjuryRecord & {
     athleteName: string;
   };
@@ -30,6 +31,7 @@ export default function NotificationScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+  // Load records and subscribe to realtime updates
   useEffect(() => {
     loadRecords();
 
@@ -53,6 +55,7 @@ export default function NotificationScreen() {
     };
   }, []);
 
+  // Reset expanded card on screen blur
   useFocusEffect(
     React.useCallback(() => {
       return () => {
@@ -64,12 +67,14 @@ export default function NotificationScreen() {
   async function loadRecords() {
     const records = await fetchAllInjuryRecords();
 
+    // Sort by newest first
     const sortedRecords = records.sort(
       (a, b) => b.injuryRecordID - a.injuryRecordID
     );
 
     const withNames: InjuryRecordWithAthlete[] = [];
 
+    // Attach athlete names
     for (const record of sortedRecords) {
       const athlete = await fetchAthleteByID(record.athleteID);
       withNames.push({
@@ -82,10 +87,12 @@ export default function NotificationScreen() {
     setLoading(false);
   }
 
+  // Toggle card expansion
   function toggleExpand(id: number) {
     setExpandedID(expandedID === id ? null : id);
   }
 
+  // Get color by status
   function getStatusColor(statusID: number) {
     switch (statusID) {
       case 1:
@@ -99,7 +106,7 @@ export default function NotificationScreen() {
     }
   }
 
-
+  // Format date (DD/MM/YYYY)
   function formatDate(dateString: string | Date | null) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -108,6 +115,7 @@ export default function NotificationScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      {/* Screen title */}
       <Text style={styles.title}>Notificações</Text>
 
       {loading ? (
@@ -127,6 +135,7 @@ export default function NotificationScreen() {
               activeOpacity={0.8}
               onPress={() => toggleExpand(item.injuryRecordID)}
             >
+              {/* Header row */}
               <View style={styles.row}>
                 <View style={styles.senderRow}>
                   <View
@@ -135,17 +144,21 @@ export default function NotificationScreen() {
                       { backgroundColor: getStatusColor(item.statusID) },
                     ]}
                   />
+                  {/* Athlete name */}
                   <Text style={styles.sender}>{athleteName}</Text>
                 </View>
 
+                {/* Start date */}
                 <Text style={styles.date}>{formatDate(item.dateStart)}</Text>
               </View>
 
               <Text
+              {/* Notification title */}
                 style={styles.title_notification}
               >
                 {item.title}
               </Text>
+              {/* Notification summary */}
               <Text
                 style={styles.subject}
                 numberOfLines={expanded ? undefined : 3}
@@ -154,6 +167,7 @@ export default function NotificationScreen() {
                 {item.resume}
               </Text>
 
+              {/* Expanded action */}
               {expanded && (
                 <TouchableOpacity
                   style={styles.customButton}

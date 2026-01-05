@@ -22,6 +22,7 @@ import { createReminder } from "../../services/reminderService";
 import { styles } from "../../css/end_note";
 
 export default function EndNoteScreen() {
+  // Route params
   const { injuryRecordID, athleteID, athleteName } = useLocalSearchParams<{
     injuryRecordID: string;
     athleteID: string;
@@ -33,19 +34,17 @@ export default function EndNoteScreen() {
   const [loading, setLoading] = useState(true);
   const [injury, setInjury] = useState<InjuryRecord | null>(null);
 
-  // Nota final
   const [text, setText] = useState("");
 
-  // Reminder (SEM HORAS)
   const [reminderTitle, setReminderTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
 
-  // Picker
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const nowISO = new Date().toISOString();
   const nowDate = nowISO.split("T")[0];
 
+  // Reset form fields
   const resetForm = useCallback(() => {
     setText("");
     setReminderTitle("");
@@ -53,12 +52,14 @@ export default function EndNoteScreen() {
     setShowDatePicker(false);
   }, []);
 
+  // Reset on screen blur
   useFocusEffect(
     useCallback(() => {
       return () => resetForm();
     }, [resetForm])
   );
 
+  // Load injury record
   useEffect(() => {
     async function loadInjury() {
       if (!injuryRecordID) return;
@@ -69,19 +70,22 @@ export default function EndNoteScreen() {
     loadInjury();
   }, [injuryRecordID]);
 
+  // Format date (DD/MM/YYYY)
   function formatDate(date: Date | string | null) {
-  if (!date) return "";
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("pt-PT");
-}
+    if (!date) return "";
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleDateString("pt-PT");
+  }
 
-function formatDateForDB(date: Date) {
-  return date.toISOString().split("T")[0];
-}
+  // Format date for database
+  function formatDateForDB(date: Date) {
+    return date.toISOString().split("T")[0];
+  }
 
   async function handleSave() {
     if (!injuryRecordID) return;
 
+    // Validate final note
     if (text.trim() === "") {
       alert("A nota final é obrigatória.");
       return;
@@ -99,6 +103,7 @@ function formatDateForDB(date: Date) {
     try {
       await createNote(Number(injuryRecordID), text);
 
+      // Create reminder if needed
       if (reminderTouched) {
         const reminderPayload = {
           title: reminderTitle,
@@ -110,15 +115,17 @@ function formatDateForDB(date: Date) {
         await createReminder(reminderPayload);
       }
 
+      // Close injury record
       await closeInjuryRecord(Number(injuryRecordID), nowISO);
 
+      // Cancel and go back
       resetForm();
       router.replace({
         pathname: "/historical",
         params: { athleteID, athleteName },
       });
     } catch (error) {
-      console.log("Erro ao guardar nota final:", error);
+      console.log("erro guardar nota final", error);
       alert("Erro ao guardar a nota final.");
     }
   }
@@ -141,9 +148,11 @@ function formatDateForDB(date: Date) {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Screen title */}
       <Text style={styles.title}>Adicionar Nota Final</Text>
 
       <View style={styles.card}>
+        {/* Injury info */}
         <Text style={styles.titleHistorical}>Histórico</Text>
 
         <Text style={styles.label}>Tipo de Lesão:</Text>
@@ -152,6 +161,7 @@ function formatDateForDB(date: Date) {
         <Text style={styles.label}>Nome do Fisio:</Text>
         <Text style={styles.infoText}>{injury?.userID}</Text>
 
+        {/* Dates row */}
         <View
           style={{
             flexDirection: "row",
@@ -167,12 +177,14 @@ function formatDateForDB(date: Date) {
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Data de fim:</Text>
             <Text style={styles.infoText}>
-              {injury?.dateEnd ? formatDate(injury.dateEnd) : formatDate(nowDate)}
+              {injury?.dateEnd
+                ? formatDate(injury.dateEnd)
+                : formatDate(nowDate)}
             </Text>
-
           </View>
         </View>
-
+        
+        {/* Final note input */}
         <Text style={styles.label}>Nota:</Text>
         <TextInput
           style={styles.input}
@@ -182,7 +194,7 @@ function formatDateForDB(date: Date) {
           onChangeText={setText}
         />
 
-        {/* Lembrete */}
+        {/* Reminder section */}
         <View
           style={{
             flexDirection: "row",
@@ -193,6 +205,7 @@ function formatDateForDB(date: Date) {
         >
           <Text style={styles.titleReminder}>Lembrete</Text>
 
+          {/* Clear reminder */}
           {(reminderTitle || date) && (
             <TouchableOpacity
               onPress={() => {
@@ -220,11 +233,10 @@ function formatDateForDB(date: Date) {
           style={styles.pickerButton}
           onPress={() => setShowDatePicker(true)}
         >
-          <Text>
-            {date ? formatDate(date) : "Selecionar data"}
-          </Text>
+          <Text>{date ? formatDate(date) : "Selecionar data"}</Text>
         </TouchableOpacity>
 
+        {/* Date picker */}
         {showDatePicker && (
           <DateTimePicker
             value={date || new Date()}
@@ -235,15 +247,17 @@ function formatDateForDB(date: Date) {
             }}
           />
         )}
-        
+
         <View style={{ flex: 1 }} />
 
         <View style={styles.buttonRow}>
+          {/* Cancel button */}
           <TouchableOpacity style={styles.btncancel} onPress={handleGoBack}>
             <Text style={styles.btnText}>Cancelar</Text>
             <Ionicons name="arrow-back" size={20} color="#000" />
           </TouchableOpacity>
 
+          {/* Save button */}
           <TouchableOpacity style={styles.btn} onPress={handleSave}>
             <Text style={styles.btnText}>Guardar Nota Final</Text>
             <Ionicons name="document-outline" size={20} color="#000" />

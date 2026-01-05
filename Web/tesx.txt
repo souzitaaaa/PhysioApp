@@ -15,7 +15,7 @@ async function initFormSupabase() {
     window.supabase = createClient(supabaseUrl, supabaseKey);
     const itemForm = document.getElementById("itemForm");
     if (!itemForm) {
-        console.error("⚠️ Formulário #itemForm não encontrado.");
+        console.error(" Formulário #itemForm não encontrado.");
         return;
     }
 
@@ -98,7 +98,7 @@ async function initFormSupabase() {
             return;
         }
 
-        showMessage("✅ Produto cadastrado com sucesso!", "success");
+        showMessage(" Produto cadastrado com sucesso!", "success");
         itemForm.reset();
     });
 }

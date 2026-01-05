@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import { USERS } from "../utils/utils.js";
 
-// ✅ Load environment variables first
+// Load environment variables first
 dotenv.config()
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL
@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_KEY in environment variables')
 }
 
-// ✅ Create a fresh Supabase client (stateless for server)
+// Create a fresh Supabase client (stateless for server)
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: false,
@@ -21,7 +21,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// ⚠️ IMPORTANT: Make sure your supabaseService.js is configured for server-side
+//  IMPORTANT: Make sure your supabaseService.js is configured for server-side
 // It should have: auth: { autoRefreshToken: false, persistSession: false }
 
 const COOKIE_OPTIONS = {
@@ -234,7 +234,7 @@ export async function me(req, res) {
 }
 
 /**
- * ✅ CORRECT SERVER-SIDE TOKEN REFRESH
+ *  CORRECT SERVER-SIDE TOKEN REFRESH
  * Creates a new client instance with the session to refresh it
  */
 export async function refresh(req, res) {
@@ -258,7 +258,7 @@ export async function refresh(req, res) {
 
     console.log("[Refresh] Creating fresh Supabase client with session...");
 
-    // ✅ KEY FIX: Create a NEW client instance for this refresh
+    //  KEY FIX: Create a NEW client instance for this refresh
     const refreshClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: false,
@@ -302,7 +302,7 @@ export async function refresh(req, res) {
       });
     }
 
-    console.log("[Refresh] ✅ Session refreshed successfully");
+    console.log("[Refresh]  Session refreshed successfully");
     console.log("[Refresh] User:", data.user?.email);
 
     // Set new tokens in cookies

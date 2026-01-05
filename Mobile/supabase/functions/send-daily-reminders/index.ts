@@ -3,28 +3,27 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
 serve(async (req) => {
   try {
-    // Conectar com o Supabase
+    // Connect to Supabase
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
-    // Obter a data e hora exata para 1:45 AM do dia de hoje
+    // Set target time for reminders (2:00 AM)
     const currentDate = new Date();
-    currentDate.setHours(2, 1, 0, 0); // Define para 1:55 AM
+    currentDate.setHours(2, 0, 0, 0); 
 
-    // Verificando a data e hora formatada
-    console.log("Data e Hora formatada:", currentDate.toISOString());
+    console.log("Data e Hora formatada", currentDate.toISOString());
 
-    // Formatar a data para o formato correto (YYYY-MM-DD)
-    const formattedDate = currentDate.toISOString().split("T")[0]; // Pega a data no formato YYYY-MM-DD
-    console.log("Data formatada:", formattedDate);
+    // Format date YYYY-MM-DD
+    const formattedDate = currentDate.toISOString().split("T")[0];
+    console.log("Data formatada", formattedDate);
 
-    // Buscar lembretes para o dia específico
+    // Fetch reminders for today
     const { data: reminders, error: reminderError } = await supabase
-      .from("v_reminder") // A view que você criou para pegar os lembretes
+      .from("v_reminder") 
       .select("*")
-      .eq("date", formattedDate);  // Filtra os lembretes pela data
+      .eq("date", formattedDate); 
 
     if (reminderError) {
       console.log("Erro ao buscar lembretes:", reminderError);
@@ -35,12 +34,12 @@ serve(async (req) => {
       return new Response("Nenhum lembrete para enviar", { status: 200 });
     }
 
-    // Agora buscamos os tokens de notificação para cada lembrete
-    const userIds = reminders.map((r) => r.auth_userID); // Extrair userId dos lembretes
+    // Fetch Expo push tokens for users
+    const userIds = reminders.map((r) => r.auth_userID); 
 
     const { data: tokens, error: tokenError } = await supabase
       .from("t_notification_token")
-      .select("expo_push_token, userId") // Inclui o userId para associar com os lembretes
+      .select("expo_push_token, userId") 
       .in("userId", userIds);
 
     if (tokenError) {
@@ -52,7 +51,7 @@ serve(async (req) => {
       return new Response("Nenhum token encontrado", { status: 200 });
     }
 
-    // Cria uma lista de mensagens para enviar
+    // Prepare messages
     const messages: any[] = [];
 
     reminders.forEach((reminder) => {
@@ -71,7 +70,7 @@ serve(async (req) => {
       return new Response("Nenhuma mensagem para enviar", { status: 200 });
     }
 
-    // Enviar as notificações
+    // Send push notifications
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

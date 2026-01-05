@@ -12,6 +12,7 @@ import { fetchAllReminders, Reminder } from "../../services/reminderService";
 import { styles } from "../../css/index";
 import { supabase } from "../../scripts/supabase";
 
+// Notification item type
 type NotificationItem = InjuryRecord & {
   athleteName: string;
 };
@@ -23,7 +24,7 @@ export default function HomeScreen() {
 
   const router = useRouter();
 
-  // Pega o usuário logado e busca o nome
+  // Get logged user name
   useEffect(() => {
     const fetchUserName = async () => {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -31,9 +32,10 @@ export default function HomeScreen() {
 
       const authUserID = user.id;
 
+      // Fetch user data
       const { data, error: userError } = await supabase
         .from("t_user")
-        .select("name") // ajuste se sua coluna tiver outro nome
+        .select("name") 
         .eq("auth_userID", authUserID)
         .single();
 
@@ -45,21 +47,23 @@ export default function HomeScreen() {
     fetchUserName();
   }, []);
 
-  // Função de logout
+  // Handle logout
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.log("Erro ao sair:", error);
     } else {
       setUserName(null);
-      router.replace("/login"); // redireciona para login se tiver tela
+      router.replace("/login"); 
     }
   };
 
+  // Load notifications and reminders
   useEffect(() => {
     loadNotifications();
     loadUpcomingEvents();
 
+    // Realtime injuries listener
     const injuryChannel = supabase
       .channel("injuries-realtime")
       .on(
@@ -71,6 +75,7 @@ export default function HomeScreen() {
       )
       .subscribe();
 
+    // Realtime reminders listener
     const remindersChannel = supabase
       .channel("reminders-realtime")
       .on(
@@ -88,6 +93,7 @@ export default function HomeScreen() {
     };
   }, []);
 
+  // Format short date
   function formatDateShort(dateString: string) {
     const [year, month, day] = dateString.split("-").map(Number);
     const months = [
@@ -103,9 +109,11 @@ export default function HomeScreen() {
       (a, b) => b.injuryRecordID - a.injuryRecordID
     );
 
+    // Get latest four
     const latest = sortedRecords.slice(0, 4);
     const withNames: NotificationItem[] = [];
 
+    // Attach athlete names
     for (const record of latest) {
       const athlete = await fetchAthleteByID(record.athleteID);
       withNames.push({
@@ -122,12 +130,14 @@ export default function HomeScreen() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Filter future events
     const futureEvents = allReminders.filter((event) => {
       const [year, month, day] = event.date.split("-").map(Number);
       const eventDate = new Date(year, month - 1, day);
       return eventDate >= today;
     });
 
+    // Sort by nearest date
     const sorted = futureEvents.sort((a, b) => {
       const [y1, m1, d1] = a.date.split("-").map(Number);
       const [y2, m2, d2] = b.date.split("-").map(Number);
@@ -140,18 +150,21 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
+        {/* Header title */}
         <Text style={styles.title}>Início</Text>
 
+        {/* Logout button */}
         <TouchableOpacity onPress={handleLogout}>
           <Text style={{ color: "red", fontSize: 18, paddingTop: 40,paddingRight: 16,}}>Sair</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Greeting */}
       <Text style={styles.titleName}>
         {userName ? `Olá, ${userName}` : "A carregar..."}
       </Text>
 
-
+      {/* Notifications card */}
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.8}
@@ -171,6 +184,7 @@ export default function HomeScreen() {
         ))}
       </TouchableOpacity>
 
+      {/* Eevents card */}
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.8}
