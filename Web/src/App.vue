@@ -121,7 +121,7 @@ export default {
           });
         }
       } catch (error) {
-        console.error('❌ [App] Error checking Gmail connection:', error);
+        console.error(' [App] Error checking Gmail connection:', error);
         this.gmailConnected = false;
         this.$toast.add({
           severity: 'error',
@@ -138,7 +138,7 @@ export default {
         return;
       }
 
-      console.log('🔄 [App] Starting email polling...');
+      console.log(' [App] Starting email polling...');
 
       this.checkForNewEmails();
 
@@ -149,7 +149,7 @@ export default {
 
     stopEmailPolling() {
       if (this.emailPollingInterval) {
-        console.log('🛑 [App] Stopping email polling');
+        console.log(' [App] Stopping email polling');
         clearInterval(this.emailPollingInterval);
         this.emailPollingInterval = null;
       }
@@ -157,30 +157,30 @@ export default {
 
     async checkForNewEmails() {
       if (this.isCheckingEmails) {
-        console.log('⏳ [App] Email check already in progress, skipping...');
+        console.log(' [App] Email check already in progress, skipping...');
         return;
       }
 
       if (!this.gmailConnected) {
-        console.log('🔒 [App] Gmail not connected, skipping email check');
+        console.log('[App] Gmail not connected, skipping email check');
         return;
       }
 
       this.isCheckingEmails = true;
 
       try {
-        console.log('📬 [App] Checking for new emails...');
+        console.log('[App] Checking for new emails...');
         const response = await api.get('/gmail/emails');
 
         console.log(' [App] Email check completed');
 
       } catch (err) {
         if (err.response?.status === 401) {
-          console.log('🔒 [App] Authentication expired, stopping polling');
+          console.log('[App] Authentication expired, stopping polling');
           this.gmailConnected = false;
           this.stopEmailPolling();
         } else {
-          console.error('❌ [App] Error checking emails:', err);
+          console.error(' [App] Error checking emails:', err);
         }
       } finally {
         this.isCheckingEmails = false;

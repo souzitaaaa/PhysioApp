@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import axios from 'axios';
 import { safeGet } from './utils.js'
 
+// Validate athlete form fields
 export function validateAthleteForm(formData) {
   const errors = {}
 
@@ -27,6 +28,7 @@ export function validateAthleteForm(formData) {
   return errors
 }
 
+// Validate accountable/responsible persons form
 export function validateAccountableForm(accountableFormData = []) {
   if (!Array.isArray(accountableFormData)) {
     console.error('Expected an array for accountableFormData', accountableFormData)
@@ -35,6 +37,7 @@ export function validateAccountableForm(accountableFormData = []) {
 
   const errors = {}
 
+    // Check if at least one accountable has data
   const hasAtLeastOneFilled = accountableFormData.some(element =>
     element.name?.trim() ||
     element.email?.trim() ||
@@ -52,6 +55,7 @@ export function validateAccountableForm(accountableFormData = []) {
     return errors
   }
 
+  // Validate each accountable individually
   accountableFormData.forEach((element, index) => {
     const itemErrors = {}
     const name = element.name?.trim()
@@ -76,6 +80,7 @@ export function validateAccountableForm(accountableFormData = []) {
   return errors
 }
 
+// Return empty athlete object
 export function getEmptyAthlete() {
   return {
     name: '',
@@ -88,6 +93,7 @@ export function getEmptyAthlete() {
   }
 }
 
+// Return two empty accountable objects
 export function getEmptyAccountable(athleteID) {
   return [
     {

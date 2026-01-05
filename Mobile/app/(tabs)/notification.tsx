@@ -152,8 +152,8 @@ export default function NotificationScreen() {
                 <Text style={styles.date}>{formatDate(item.dateStart)}</Text>
               </View>
 
-              <Text
               {/* Notification title */}
+              <Text
                 style={styles.title_notification}
               >
                 {item.title}

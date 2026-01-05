@@ -1,11 +1,14 @@
 <template>
+    <!-- Main drawer component -->
     <Drawer :visible="visible" position="right" class="w-1/2!" @update:visible="$emit('close')">
         <template #container="{ closeCallback }">
             <div class="flex flex-col h-full">
-                <!-- Header -->
+                <!-- Header with buttons and menu -->
                 <div class="flex justify-end items-center gap-2 px-2 pt-2">
+                    <!-- Options button for emails in view mode -->
                     <Button v-if="mode === 'view' && formData.statusID === 1" icon="fa-solid fa-ellipsis-vertical"
                         severity="contrast" text @click="toggle" aria-haspopup="true" aria-controls="actions_menu" />
+                    <!-- Dropdown menu for actions -->
                     <Menu ref="menu_email" id="actions_menu" :model="actions" :popup="true">
                         <template #item="{ item, props }">
                             <a v-ripple class="flex items-center justify-between w-full px-2 py-1" v-bind="props.item"
@@ -15,32 +18,42 @@
                             </a>
                         </template>
                     </Menu>
+
+                    <!-- Close button -->
                     <Button v-if="mode === 'view'" icon="fa-solid fa-xmark" severity="contrast" text
                         @click="closeCallback" v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
                 </div>
 
+                <!-- Email content section -->
                 <div class="flex-1 overflow-y-auto px-8">
                     <span class="text-form-value text-lg font-medium!">Conteúdo Original</span>
 
                     <div class="space-y-1 mt-2">
+                        <!-- Email from -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">De:</span>
                             <span class="text-form-value col-span-10 whitespace-pre-wrap">
                                 {{ formData.from }}
                             </span>
                         </p>
+
+                        <!-- Email date -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Dia:</span>
                             <span class="text-form-value col-span-10 whitespace-pre-wrap">
                                 {{ formData.date }}
                             </span>
                         </p>
+
+                        <!-- Email subject -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Assunto:</span>
                             <span class="text-form-value col-span-10 whitespace-pre-wrap">
                                 {{ formData.subject }}
                             </span>
                         </p>
+
+                        <!-- Email body -->
                         <div class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Conteúdo:</span>
                             <span class="text-form-value col-span-10 whitespace-pre-wrap">
@@ -50,10 +63,13 @@
                     </div>
                     <hr class="h-px my-4 line-hr" />
 
+                    <!-- Extracted data section -->
                     <span class="text-form-value text-lg font-medium! mr-4">Extração Feita</span>
                     <span class="text-form-value text-sm font-semibold! text-red-500!"> {{ formData.error }}</span>
 
                     <div class="space-y-1 mt-2">
+
+                        <!-- Injury title -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Título:</span>
                             <span v-if="mode === 'view'" class="text-form-value col-span-10 whitespace-pre-wrap">
@@ -66,6 +82,8 @@
                                 }}</small>
                         </div>
                         </p>
+
+                        <!-- Injury summary -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Resumo:</span>
                             <span v-if="mode === 'view'" class="text-form-value col-span-10 whitespace-pre-wrap">
@@ -78,6 +96,8 @@
                                 }}</small>
                         </div>
                         </p>
+
+                        <!-- Athlete information -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Atleta:</span>
                             <span v-if="mode === 'view'" class="text-form-value col-span-10 whitespace-pre-wrap">
@@ -108,6 +128,8 @@
                                 }}</small>
                         </div>
                         </p>
+
+                        <!-- Physio information -->
                         <p class="grid grid-cols-12 items-start gap-2">
                             <span class="text-form-title text-sm col-span-2">Fisioterapeuta:</span>
                             <span v-if="mode === 'view'" class="text-form-value col-span-10 whitespace-pre-wrap">
@@ -115,6 +137,8 @@
                             </span>
 
                         </p>
+
+                        <!-- Validation toggle for missing responsible -->
                         <p v-if="formData.errorSpecID === 1 && mode === 'edit'"
                             class="grid grid-cols-12 items-start gap-2">
                             <span class="mt-2 text-form-title text-sm col-span-12">Apesar da não identificação do
@@ -134,15 +158,15 @@
                 <!-- Footer -->
                 <div class="flex justify-end gap-3 px-4 pb-4 sticky">
 
-                    <!-- Cancelar -->
+                    <!-- Cancel button -->
                     <Button v-if="mode === 'edit'" icon="fa-solid fa-xmark" label="Cancelar" class="px-5" size="small"
                         severity="secondary" @click="cancelAction" />
 
-                    <!-- Guardar -->
+                    <!-- Save button -->
                     <Button v-if="mode === 'edit'" icon="fa-solid fa-floppy-disk" label="Guardar" class="px-5"
                         size="small" @click="save" />
 
-                    <!-- Corrigir Erros -->
+                    <!-- Correct errors button -->
                     <Button v-if="mode === 'view' && email.statusID === 1" icon="fa-solid fa-triangle-exclamation"
                         label="Corrigir Erros" class="px-5" size="small" severity="danger" @click="correctError" />
 
@@ -195,6 +219,7 @@ export default {
         }
     },
     watch: {
+        // Reset drawer when opened
         visible(val) {
             if (val)
                 this.resetDrawer()
@@ -211,12 +236,18 @@ export default {
         this.loadPhysios();
     },
     methods: {
+
+        // Fetch athletes from API
         async loadAthletes() {
             this.athletes = await safeGet(axios.get(`http://localhost:3000/athletes`), []);
         },
+
+        // Fetch physios from API
         async loadPhysios() {
             this.physios = await safeGet(axios.get(`http://localhost:3000/users`), []);
         },
+
+        // Save form data
         async save() {
             this.errors = validateEmailForm(this.formData, this.correctInformation)
             if (Object.keys(this.errors).length > 0) return
@@ -225,24 +256,36 @@ export default {
                 this.$emit('update:mode', 'view')
             });
         },
+
+        // Toggle dropdown menu
         toggle(event) {
             if (this.$refs.menu_email) {
                 this.$refs.menu_email.toggle(event)
             }
         },
+
+        // Close delete modal
         closeDeleteModal() {
             this.emailDeleteModalVisible = false;
         },
+
+        // Handle email deleted
         handleEmailDeleted() {
             this.emailDeleteModalVisible = false; -
                 this.$emit('close');
         },
+
+        // Show delete confirmation modal
         showDeleteConfirmation() {
             this.emailDeleteModalVisible = true;
         },
+
+        // Switch to edit mode
         correctError() {
             this.$emit('update:mode', 'edit')
         },
+
+        // Cancel edit and reset data
         cancelAction() {
             if (this.mode === 'edit') {
                 this.formData = this.email
@@ -252,6 +295,7 @@ export default {
                 this.$emit('update:mode', 'view')
             }
         },
+        // Reset drawer state
         resetDrawer() {
             this.formData = this.email
             this.emailDeleteModalVisible = false

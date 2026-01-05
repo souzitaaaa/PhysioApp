@@ -1,11 +1,15 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
+
+    <!-- Scrollable content area -->
     <div class="flex-1 overflow-y-auto overscroll-contain flex flex-col gap-4">
       <div class="flex h-1/2">
         <div class="w-full">
           <DataTable ref="dt" :value="injuryRecords" dataKey="injuryRecordID" class="style-table h-full" paginator
             :rows="5" scrollable scrollHeight="flex" tableStyle="table-layout: fixed; width: 100%;"
             :rowClass="rowClass">
+
+            <!-- Table header -->
             <template #header>
               <div class="flex justify-between items-center w-full">
                 <span class="text-xl font-semibold">Registos de Lesão</span>
@@ -16,6 +20,7 @@
               </div>
             </template>
 
+            <!-- Columns -->
             <Column header=" Atleta" style="width: 22%">
               <template #body="{ data }">
                 <div class="flex items-center gap-2 overflow-hidden">
@@ -75,6 +80,7 @@
               </template>
             </Column>
 
+            <!-- Empty table placeholder -->
             <template #empty>
               <div class="flex flex-col items-center justify-center gap-3 p-6 h-full">
                 <i class="fa-solid fa-laptop-medical text-4xl text-gray-400"></i>
@@ -87,7 +93,7 @@
         </div>
       </div>
       <div class="flex h-1/2 gap-4">
-        <!-- Atletas -->
+        <!-- Athletes Table -->
         <div class="flex-1">
           <DataTable ref="dt" v-model:filters="filters" :filters="filters" :value="athletes" dataKey="athleteID"
             class="style-table h-full" paginator :rows="5" scrollable scrollHeight="flex" filterDisplay="menu">
@@ -120,6 +126,7 @@
                 </div>
               </template>
 
+              <!-- Division filter -->
               <template #filter="{ filterModel, filterCallback }">
                 <MultiSelect v-model="filterModel.value" :options="uniqueDivisions" placeholder="Selecionar" showClear
                   filter="false" @change="filterCallback()" class="p-column-filter" size="small">
@@ -150,7 +157,7 @@
           </DataTable>
         </div>
 
-        <!-- Gestão -->
+        <!-- General Stats Table with Chart -->
         <div class="flex-1">
           <DataTable ref="dt" :value="athletes" dataKey="athletesID" class="style-table h-full" scrollable
             scrollHeight="flex">
@@ -205,6 +212,8 @@ export default {
   },
 
   methods: {
+
+    // Subscribe to injury table changes
     subscribeInjuryRecords() {
       this.channelInjuries = supabase
         .channel('injury-realtime')
@@ -219,6 +228,7 @@ export default {
         .subscribe()
     },
 
+    // Subscribe to athlete table changes
     subscribeAthletes() {
       this.channelAthletes = supabase
         .channel('athletes-realtime')
@@ -233,14 +243,18 @@ export default {
         .subscribe()
     },
 
-
+    // Navigate to route
     goToRoute(target) {
       this.$router.push(target)
     },
+
+    // Highlight row if status = 'Erro'
     rowClass(rowData) {
       const status = rowData && rowData.status ? String(rowData.status).trim() : ''
       return status === 'Erro' ? 'bg-red-100!' : ''
     },
+
+    // Fetch chart data
     async getDivisionData() {
       const response = await safeGet(
         axios.get('http://localhost:3000/aux/stats/athleteInjurySummary'),
@@ -248,16 +262,21 @@ export default {
       )
       this.divisionData = response
     },
+
+    // Fetch injury records
     async getInjuryRecords() {
       const data = await safeGet(axios.get('http://localhost:3000/records/'), [])
       this.injuryRecords = data
     },
+
+    // Fetch athletes
     async getAthleteData() {
       const data = await safeGet(axios.get('http://localhost:3000/athletes/'), [])
       this.athletes = data
     },
   },
   computed: {
+    // Get unique divisions for filter
     uniqueDivisions() {
       const divisions = this.athletes.map((a) => a.division).filter(Boolean)
       return [...new Set(divisions)].sort()

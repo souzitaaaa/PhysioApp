@@ -1,4 +1,6 @@
 <template>
+
+    <!-- Modal dialog to confirm athlete deletion -->
     <Dialog :visible="visible" modal @update:visible="$emit('close')">
         <template #container="{ closeCallback }">
             <div class="p-6 max-w-md mx-auto"> <!-- Limit modal width and center -->
@@ -26,8 +28,12 @@
 
                 <!-- Buttons -->
                 <div class="flex justify-end gap-2 mt-4">
+
+                    <!-- Cancel button -->
                     <Button label="Cancelar" icon="fa-solid fa-arrow-left" severity="secondary" @click="$emit('close')"
                         size="small" />
+
+                    <!-- Delete button -->
                     <Button label="Apagar" icon="fa-solid fa-trash" severity="danger" @click="confirmDelete"
                         size="small" />
                 </div>
@@ -62,10 +68,14 @@ export default {
         }
     },
     methods: {
+
+        // Clear inputs and errors
         resetModal() {
             this.password = ''
             this.passwordError = ''
         },
+
+        // Confirm athlete deletion
         async confirmDelete() {
             this.passwordError = '';
 
@@ -74,6 +84,7 @@ export default {
                 return
             }
 
+            // Send DELETE request with password for confirmation
             await axios.delete(`http://localhost:3000/athletes/${this.athlete.athleteID}`, {
                 data: { password: this.password }
             })

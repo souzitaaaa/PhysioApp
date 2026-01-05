@@ -1,14 +1,14 @@
 <template>
   <div class="w-full h-full flex flex-col items-center justify-center bg-no-repeat bg-cover bg-center"
     style="background-image: url('/images/background.svg')">
-    <!-- Email -->
+    <!-- Email input -->
     <div class="input-container">
       <input type="text" id="email" v-model="formData.email" required />
       <label for="email">Email</label>
       <span class="underline"></span>
     </div>
 
-    <!-- Password -->
+    <!-- Password input -->
     <div class="input-container mt-6">
       <input
         :type="showPassword ? 'text' : 'password'"
@@ -35,9 +35,8 @@
       </button>
     </div>
     
-    <!-- Container do Botão de Login com position relative -->
+    <!-- Login button container -->
     <div class="input-container relative mt-6 w-full flex justify-end">
-      <!-- Botão de login -->
       <Button
         icon="fa-solid fa-right-to-bracket"
         label="Entrar"
@@ -46,9 +45,11 @@
         @click="handleLogin"
       />
     </div>
-
+    <!-- Display form validation errors -->
     <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
     <small v-if="errors.password" class="text-red-600 text-xs">{{ errors.password }}</small>
+
+    <!-- Display API error -->
     <small v-if="apiError" class="text-red-600 text-xs mt-2">{{ apiError }}</small>
   </div>
 </template>
@@ -64,18 +65,24 @@ export default {
   name: 'Auth',
   setup() {
     const router = useRouter()
+
+    // Form data and validation state
     const formData = ref({ email: '', password: '' })
     const errors = ref({})
     const apiError = ref(null)
+
+    // Password toggle and focus state
     const showPassword = ref(false)
     const isPasswordFocused = ref(false)
 
     const { login } = useAuth()
 
+    // Toggle password visibility
     const togglePassword = () => {
       showPassword.value = !showPassword.value
     }
 
+    // Handle login button click
     const handleLogin = async () => {
       errors.value = validateAuthForm(formData.value)
       if (Object.keys(errors.value).length > 0) return

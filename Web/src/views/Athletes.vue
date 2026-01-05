@@ -2,6 +2,7 @@
   <div class="flex flex-col h-full overflow-hidden">
     <span class="text-xs font-medium text-gray-600 px-1 pb-1">Estatísticas mensais</span>
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+      
       <!-- Health Overview Card -->
       <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
         <template #content>
@@ -111,9 +112,12 @@
       </Card>
     </div>
 
+    <!-- Athletes table -->
     <DataTable ref="dt" v-model:filters="filters" :value="athletes" stripedRows dataKey="athleteID"
       class="style-table shadow-md!" paginator :rows="9" scrollable scrollHeight="flex" :filters="filters"
       filterDisplay="menu" :globalFilterFields="['name', 'email']">
+      
+      <!-- Table header -->
       <template #header>
         <Toolbar class="border-0!">
           <template #start>
@@ -135,6 +139,8 @@
         </Toolbar>
 
       </template>
+
+      <!-- Table columns -->
       <Column field="name" header="Nome" style="width: 30%">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
@@ -147,6 +153,7 @@
       </Column>
       <Column field="division" header="Escalão" filterField="division" :showFilterMatchModes="false"
         :showFilterOperator="false" :showAddButton="false" :filterMenuStyle="{ width: '8rem' }" style="width: 10%">
+        <!-- Division display -->
         <template #body="{ data }">
           {{ data.division }}
         </template>
@@ -192,6 +199,8 @@
       </Column>
     </DataTable>
   </div>
+
+  <!-- Athletes drawer component -->
   <AthletesDrawer :visible="athleteDrawerVisible" :athlete="selectedAthlete" :mode="drawerMode" @close="closeDrawer"
     @add-athlete="handleAddAthlete" @update-athlete="updateAthlete" @update:mode="drawerMode = $event"></AthletesDrawer>
 </template>
@@ -256,6 +265,7 @@ export default {
   },
 
   methods: {
+    // subscribe to athlete table changes
     subcribeAthletes() {
       this.channel = supabase
         .channel('athletes-realtime')
@@ -275,6 +285,8 @@ export default {
         )
         .subscribe()
     },
+
+    // fetch athletes (all or single)
     async getAthleteData(athleteID) {
       const endpoint = athleteID
         ? `http://localhost:3000/athletes/${athleteID}`
@@ -286,6 +298,8 @@ export default {
 
       this.athletes = data;
     },
+
+    // fetch monthly stats
     async loadAthletesStatistics() {
       const response = await safeGet(
         axios.get('http://localhost:3000/aux/stats/athletes/statistics'),
@@ -293,6 +307,8 @@ export default {
       );
       this.athleteStatistics = response[0];
     },
+
+    // initialize table filters
     initFilters() {
       this.filters = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -307,26 +323,36 @@ export default {
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
+
+    // close drawer
     async closeDrawer() {
       this.selectedAthlete = null
       this.drawerMode = 'view'
       this.athleteDrawerVisible = false
       await this.getAthleteData();
     },
+
+    // open drawer to add new athlete
     createAthleteDrawer() {
       this.selectedAthlete = null
       this.drawerMode = 'add'
       this.athleteDrawerVisible = true
     },
+
+    // open drawer to view/edit athlete
     editAthlete(athleteData) {
       this.selectedAthlete = athleteData
       this.drawerMode = 'view'
       this.athleteDrawerVisible = true
     },
+
+    // add new athlete
     async handleAddAthlete(payload, callback) {
       const athleteID = await this.addAthlete(payload);
       if (callback) callback(athleteID);
     },
+
+    // insert athlete into supabase
     async addAthlete(formData) {
       const pfpUrl =
         formData.pfp instanceof File
@@ -350,7 +376,6 @@ export default {
 
       if (error) {
         console.log(error)
-        //! NAO ESQUECER TOASTER
         return
       }
 
@@ -363,6 +388,8 @@ export default {
 
       return data[0].athleteID
     },
+
+    // update athlete data
     async updateAthlete(formData, callback) {
       let pfpUrl = formData.pfp;
 

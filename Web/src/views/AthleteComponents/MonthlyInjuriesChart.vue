@@ -1,8 +1,12 @@
 <template>
     <div class="w-full flex justify-center">
         <div class="w-full">
+
+            <!-- Render chart if data exists -->
             <apexchart v-if="chartData && series.length > 0" type="line" :height="'100%'" :options="chartOptions"
                 :series="series" />
+
+            <!-- Loading state -->
             <div v-else class="flex items-center justify-center h-full text-gray-400">
                 <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
             </div>
@@ -22,6 +26,8 @@ export default {
         height: { type: Number, default: 300 },
     },
     computed: {
+
+        // Prepare series data for the char
         series() {
             if (!this.chartData || this.chartData.length === 0) return [];
             return [
@@ -31,9 +37,13 @@ export default {
                 },
             ];
         },
+
+        // Extract month names for x-axis
         categories() {
             return this.chartData.map((item) => item.month_name.trim());
         },
+
+        // Chart configuration options
         chartOptions() {
             return {
                 chart: {

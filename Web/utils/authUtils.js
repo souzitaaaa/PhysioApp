@@ -1,3 +1,4 @@
+// Validate authentication form login
 export function validateAuthForm(formData) {
     const errors = {}
 

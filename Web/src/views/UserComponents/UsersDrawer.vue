@@ -1,12 +1,14 @@
 <template>
+  <!-- Side drawer for user details -->
   <Drawer :visible="visible" :closeOnEscape="!userDeleteModalVisible" position="right" class="w-1/2!"
     @update:visible="$emit('close')">
     <template #container="{ closeCallback }">
       <div class="flex flex-col h-full">
-        <!-- Header -->
+        <!-- Header with actions -->
         <div class="flex justify-end items-center gap-2 px-2 pt-2">
           <Button v-if="mode === 'view'" icon="fa-solid fa-ellipsis-vertical" severity="contrast" text @click="toggle"
             aria-haspopup="true" aria-controls="actions_menu" />
+            <!-- Action menu -->
           <Menu ref="menu_user" id="actions_menu" :model="actions" :popup="true">
             <template #item="{ item, props }">
               <a v-ripple class="flex items-center justify-between w-full px-2 py-1" v-bind="props.item"
@@ -16,11 +18,14 @@
               </a>
             </template>
           </Menu>
+          <!-- Close drawer button -->
           <Button v-if="mode === 'view'" icon="fa-solid fa-xmark" severity="contrast" text @click="closeCallback"
             v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
         </div>
+
+        <!-- Main content area -->
         <div class="flex-1 overflow-y-auto px-8">
-          <!-- Secção 1 -->
+          <!-- Profile section -->
           <div class="flex items-center gap-4">
             <img v-if="mode === 'view'" :src="formData.pfp" alt="Foto de Perfil" class="h-32 rounded-3xl" />
             <FileUpload v-else ref="pfpUpload" mode="basic" size="small" customUpload accept="image/*"
@@ -42,7 +47,7 @@
           <span class="text-form-value text-lg font-medium!">Detalhes Pessoais</span>
 
           <div class="space-y-1 mt-2">
-            <!-- UserType -->
+            <!-- User type field -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Cargo:</span>
             <div class="col-span-5">
@@ -56,7 +61,8 @@
               </div>
             </div>
             </p>
-            <!-- Email -->
+
+            <!-- Email field -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Email:</span>
             <div class="col-span-5">
@@ -67,7 +73,8 @@
               </div>
             </div>
             </p>
-            <!-- Telefone -->
+
+            <!-- Phone field -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Telefone:</span>
             <div class="col-span-5">
@@ -80,7 +87,8 @@
               </div>
             </div>
             </p>
-            <!-- Data de Nascimento -->
+
+            <!-- Birthdate field -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Data de Nascimento:</span>
             <div class="col-span-5">
@@ -93,7 +101,8 @@
               </div>
             </div>
             </p>
-            <!-- País -->
+
+            <!-- Country field -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">País:</span>
             <div class="col-span-5">
@@ -126,7 +135,8 @@
               </div>
             </div>
             </p>
-            <!-- Notificações -->
+
+            <!-- Notification toggle -->
             <p class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Notificações:</span>
             <div class="col-span-5">
@@ -143,7 +153,8 @@
               </div>
             </div>
             </p>
-            <!-- Email -->
+            
+            <!-- Password field (add mode only) -->
             <p v-if="mode === 'add'" class="grid grid-cols-12 items-center gap-2">
               <span class="text-form-title text-sm col-span-3">Palavra-Passe:</span>
             <div class="col-span-5">
@@ -156,11 +167,11 @@
 
         <!-- Footer -->
         <div class="flex justify-end gap-3 px-4 pb-4 sticky">
-          <!-- Cancelar -->
+          <!-- Cancel button -->
           <Button v-if="mode !== 'view'" icon="fa-solid fa-xmark" label="Cancelar" class="px-5" size="small"
             severity="secondary" @click="cancelAction" />
 
-          <!-- Guardar -->
+          <!-- Save button -->
           <Button v-if="mode === 'edit' || mode === 'add'" icon="fa-solid fa-floppy-disk" label="Guardar" class="px-5"
             size="small" @click="save" />
         </div>
@@ -168,7 +179,8 @@
       </div>
     </template>
   </Drawer>
-
+  
+   <!-- User delete confirmation modal -->
   <UsersModal :visible="userDeleteModalVisible" :user="formData" @deleted="handleUserDeleted" @close="closeDeleteModal">
   </UsersModal>
 
@@ -214,6 +226,7 @@ export default {
     }
   },
   watch: {
+    // Reset drawer when visible
     visible(val) {
       if (val)
         this.resetDrawer()
@@ -238,6 +251,8 @@ export default {
     async loadCountries() {
       this.countries = await getAuxTable('country')
     },
+
+    // Delete modal handlers
     closeDeleteModal() {
       this.userDeleteModalVisible = false;
     },
@@ -245,6 +260,8 @@ export default {
       this.userDeleteModalVisible = false;
       this.$emit('close');
     },
+
+    // Action menu toggle
     toggle(event) {
       if (this.$refs.menu_user) {
         this.$refs.menu_user.toggle(event)
@@ -256,13 +273,19 @@ export default {
     showDeleteConfirmation() {
       this.userDeleteModalVisible = true;
     },
+
+    // Reset drawer to initial state
     resetDrawer() {
       this.formData = this.user ? { ...this.user } : getEmptyUser()
       this.errors = {}
     },
+
+    // Handle file selection
     onFileSelect(event) {
       this.formData.pfp = event.files[0] || null
     },
+
+    // Cancel action depending on mode
     cancelAction() {
       if (this.mode === 'add') this.$emit('close')
       else if (this.mode === 'edit') {
@@ -271,6 +294,8 @@ export default {
         this.$emit('update:mode', 'view')
       }
     },
+
+    // Save form (add or edit)
     async save() {
       this.errors = validateUserForm(this.formData, this.mode)
       if (Object.keys(this.errors).length > 0) return

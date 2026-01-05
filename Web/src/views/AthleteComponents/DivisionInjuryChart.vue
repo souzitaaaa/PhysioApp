@@ -1,5 +1,6 @@
 <template>
     <div class="chart-container">
+         <!-- Render stacked horizontal bar chart -->
         <apexchart type="bar" :height="height" :options="options" :series="series"></apexchart>
     </div>
 </template>
@@ -24,6 +25,8 @@ export default {
         }
     },
     computed: {
+
+        // Prepare series for stacked bar chart
         series() {
             return [
                 {
@@ -40,6 +43,8 @@ export default {
                 }
             ]
         },
+
+        // Chart configuration options
         options() {
             return {
                 chart: {

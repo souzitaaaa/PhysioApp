@@ -1,3 +1,4 @@
+// Validate user form fields
 export function validateUserForm(formData, mode) {
     const errors = {}
 
@@ -27,6 +28,7 @@ export function validateUserForm(formData, mode) {
     return errors
 }
 
+// Return an empty user object
 export function getEmptyUser() {
     return {
         name: '',

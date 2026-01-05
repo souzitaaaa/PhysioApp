@@ -67,7 +67,7 @@ export async function getEmails(req, res) {
         const emails = await gmailService.listEmails(req.user.userID, 5);
 
         for (const [index, e] of emails.entries()) {
-            console.log(`--- 📬 [getEmails] Processing email ${index + 1}/${emails.length} ---`);
+            console.log(`--- [getEmails] Processing email ${index + 1}/${emails.length} ---`);
 
             const emailCheck = await getEmailExists(e.id);
 
@@ -89,7 +89,7 @@ export async function getEmails(req, res) {
                 }
             }
 
-            console.log(`🤖 [getEmails] Preparing to create injury record...`);
+            console.log(` [getEmails] Preparing to create injury record...`);
             const injuryRecordID = await prepareCreationInjuryRecordID(e);
 
             if (injuryRecordID) {
@@ -104,8 +104,8 @@ export async function getEmails(req, res) {
         console.log(`\n [getEmails] Finished processing all emails`);
         res.json(emails);
     } catch (error) {
-        console.error("❌ [getEmails] Error:", error);
-        console.error("❌ [getEmails] Stack:", error.stack);
+        console.error(" [getEmails] Error:", error);
+        console.error(" [getEmails] Stack:", error.stack);
         res.status(400).send(error.message);
     }
 }
@@ -113,7 +113,7 @@ export async function getEmails(req, res) {
 async function prepareCreationInjuryRecordID(emailData) {
     console.log("\n🔍 [prepareCreation] ===== Starting injury record preparation =====");
     // Parse email with AI
-    console.log("🤖 [prepareCreation] Calling parseEmailAI...");
+    console.log(" [prepareCreation] Calling parseEmailAI...");
     const aiResult = await parseEmailAI(emailData);
 
     // Check if email is physio-related
@@ -161,7 +161,7 @@ async function prepareCreationInjuryRecordID(emailData) {
         console.log("🏃 [prepareCreation] Global athletes found:", athleteExists ? athleteExists.length : 0);
 
         if (!athleteExists || athleteExists.length === 0) {
-            console.log("❌ [prepareCreation] No athlete found - errorSpecID = 3");
+            console.log(" [prepareCreation] No athlete found - errorSpecID = 3");
             errorSpecID = 3; // Geral
         }
         else if (athleteExists.length > 1) {
@@ -227,7 +227,7 @@ async function prepareCreationInjuryRecordID(emailData) {
             }
             else {
                 errorSpecID = 3; // Geral
-                console.log("❌ [prepareCreation] Athlete not found globally - errorSpecID = 3");
+                console.log(" [prepareCreation] Athlete not found globally - errorSpecID = 3");
             }
         }
     }

@@ -45,7 +45,7 @@ export async function createUser(req, res) {
 			})
 		}
 
-		// 1️⃣ Create Supabase Auth user with provided password
+		//  Create Supabase Auth user with provided password
 		const { data: authData, error: authError } =
 			await supabaseAdmin.auth.admin.createUser({
 				email,
@@ -59,7 +59,7 @@ export async function createUser(req, res) {
 
 		const authUserId = authData.user.id
 
-		// 2️⃣ Create internal user record
+		// Create internal user record
 		const { data: userData, error: dbError } = await supabaseAdmin
 			.from('t_user')
 			.insert({

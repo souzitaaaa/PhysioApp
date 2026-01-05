@@ -1,7 +1,7 @@
-// src/themes/myPreset.js
 import { definePreset } from '@primeuix/themes'
 import Aura from '@primeuix/themes/aura'
 
+// Define custom theme preset based on Aura
 const MyPreset = definePreset(Aura, {
     semantic: {
         primary: {

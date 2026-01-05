@@ -65,7 +65,7 @@ app.get('/health', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('❌ [Error]', err)
+  console.error(' [Error]', err)
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
     code: err.code || 'SERVER_ERROR'

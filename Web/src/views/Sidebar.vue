@@ -21,6 +21,7 @@
             </span>
           </div>
 
+          <!-- Menu links -->
           <ul class="list-none p-0 m-0 overflow-hidden">
             <li v-for="(item, itemIndex) in menu.items" :key="itemIndex">
               <RouterLink :to="item.route" :class="[
@@ -129,6 +130,7 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
+    // Supabase subscription to email & injury tables
     subcribeEmails() {
       this.channel = supabase
         .channel('emails-realtime')
@@ -156,6 +158,8 @@ export default {
         )
         .subscribe()
     },
+
+    // Load number of email errors
     async loadEmailErrorCount() {
       const response = await safeGet(
         axios.get('http://localhost:3000/emails/error_count'),
@@ -173,6 +177,8 @@ export default {
       //   });
       // });
     },
+
+    // Load current authenticated user
     async loadCurrentUser() {
       try {
         const res = await api.get('/auth/me')
@@ -183,6 +189,8 @@ export default {
         this.currentUser = null
       }
     },
+
+    // Logout user
     async handleLogout() {
       try {
         await api.post('/auth/logout')

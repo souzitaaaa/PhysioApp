@@ -1,4 +1,7 @@
+// Configuration for division injury chart
 export const divisionInjuryChartConfig = {
+  
+  // Generate chart options
   getChartOptions(divisions) {
     return {
       chart: {
@@ -49,6 +52,7 @@ export const divisionInjuryChartConfig = {
     }
   },
 
+  // Generate series data for chart
   getSeries(divisionData) {
     return [
       {

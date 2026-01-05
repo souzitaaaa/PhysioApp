@@ -1,7 +1,8 @@
 <template>
+    <!-- Confirmation modal dialog -->
     <Dialog :visible="visible" modal @update:visible="$emit('close')">
         <template #container="{ closeCallback }">
-            <div class="p-6 max-w-md mx-auto"> <!-- Limit modal width and center -->
+            <div class="p-6 max-w-md mx-auto"> 
 
                 <!-- Header -->
                 <h2 class="text-lg font-bold mb-4 text-center">
@@ -50,6 +51,7 @@ export default {
         user: Object,
     },
     watch: {
+        // Reset modal when opened
         visible(val) {
             if (val)
                 this.resetModal()
@@ -62,10 +64,13 @@ export default {
         }
     },
     methods: {
+        // Reset modal inputs and errors
         resetModal() {
             this.password = ''
             this.passwordError = ''
         },
+
+        // Confirm delete action
         async confirmDelete() {
             this.passwordError = '';
 

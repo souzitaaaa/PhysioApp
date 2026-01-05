@@ -17,6 +17,7 @@
               </a>
             </template>
           </Menu>
+          <!-- Close button -->
           <Button v-if="mode === 'view'" icon="fa-solid fa-xmark" severity="contrast" text @click="closeCallback"
             v-tooltip.bottom="{ value: 'Fechar', showDelay: 500, hideDelay: 250 }" />
         </div>
@@ -32,8 +33,9 @@
           {{ JSON.stringify(injuryRecord, null, 2) }}
         </span> -->
 
+        <!-- Body content -->
         <div class="flex-1 overflow-y-auto px-8">
-          <!-- Secção 1 -->
+          <!-- Profile picture and name -->
           <div class="flex items-center gap-4">
             <img v-if="mode === 'view'" :src="formData.pfp" alt="Foto de Perfil" class="h-32 rounded-3xl" />
             <FileUpload v-else ref="pfpUpload" mode="basic" size="small" customUpload accept="image/*"
@@ -56,11 +58,12 @@
 
           <hr class="h-px my-4 line-hr" />
 
-          <!-- Secção 2 First Page -->
+          <!-- Personal details -->
           <div v-if="selectedPage == 0">
             <span class="text-form-value text-lg font-medium!">Detalhes Pessoais</span>
 
             <div class="space-y-1 mt-2">
+
               <!-- Email -->
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">Email:</span>
@@ -72,8 +75,9 @@
                   <small v-if="errors.email" class="text-red-600 text-xs">{{ errors.email }}</small>
                 </div>
               </div>
-              </p>
-              <!-- Telefone -->
+              </p>´
+
+              <!-- Phone -->
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">Telefone:</span>
               <div class="col-span-5">
@@ -86,7 +90,8 @@
                 </div>
               </div>
               </p>
-              <!-- Data de Nascimento -->
+
+              <!-- Birthdate -->
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">Data de Nascimento:</span>
               <div class="col-span-5">
@@ -99,7 +104,8 @@
                 </div>
               </div>
               </p>
-              <!-- País -->
+
+              <!-- Country -->
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">País:</span>
               <div class="col-span-5">
@@ -132,7 +138,8 @@
                 </div>
               </div>
               </p>
-              <!-- Divisão -->
+
+              <!-- Division -->
               <p class="grid grid-cols-12 items-center gap-2">
                 <span class="text-form-title text-sm col-span-3">Divisão:</span>
               <div class="col-span-5">
@@ -151,11 +158,12 @@
 
             <hr class="h-px my-4 line-hr" />
 
-            <!-- Secção 3 -->
+            <!-- Accountables -->
             <span class="text-form-value text-lg font-medium!">Detalhes dos Responsáveis</span>
             <div class="space-y-1 mt-2">
               <template v-for="(item, index) in viewAccountables" :key="index">
 
+                <!-- Name, relation, email, phone -->
                 <p class="grid grid-cols-12 items-center gap-2">
                   <span class="text-form-title text-sm col-span-3">Nome {{ Number(index) + 1 }}:</span>
                 <div class="col-span-5">
@@ -178,6 +186,9 @@
                     errorsAccountables?.[index]?.relation }}</small>
                 </div>
                 </p>
+
+
+                <!-- Email -->
                 <p class="grid grid-cols-12 items-center gap-2">
                   <span class="text-form-title text-sm col-span-3">Email {{ Number(index) + 1 }}:</span>
 
@@ -191,6 +202,8 @@
                   </div>
                 </div>
                 </p>
+
+                <!-- Phone -->
                 <p class="grid grid-cols-12 items-center gap-2">
                   <span class="text-form-title text-sm col-span-3">Telefone {{ Number(index) + 1 }}:</span>
                 <div class="col-span-5">
@@ -210,7 +223,7 @@
           </div>
 
 
-          <!-- Secção 2 First Page -->
+          <!-- Injury history -->
           <div v-if="selectedPage == 1">
             <span class="text-form-value text-lg font-medium!">Histórico Clínico</span>
 
@@ -232,7 +245,7 @@
                   </AccordionHeader>
                   <AccordionContent>
                     <div class="space-y-1">
-                      <!-- Email -->
+                      <!-- Responsible physio and message -->
                       <p class="grid grid-cols-12 items-center gap-2">
                         <span class="text-form-title col-span-3">Em cargo de:</span>
                       <div class="col-span-9">
@@ -247,7 +260,8 @@
                       </div>
                       </p>
                     </div>
-                    <hr class="h-px my-4 line-hr" />
+                    <hr class="h-px my-4 line-hr" />  
+                    <!-- Timeline notes -->
                     <span class="text-form-title">Acompanhamento:</span>
 
                     <Timeline :value="element.notes" class="compact-timeline">
@@ -273,19 +287,19 @@
 
         <!-- Footer -->
         <div class="flex justify-end gap-3 px-4 pb-4 sticky">
-          <!-- Cancelar -->
+          <!-- Cancel  -->
           <Button v-if="mode !== 'view'" icon="fa-solid fa-xmark" label="Cancelar" class="px-5" size="small"
             severity="secondary" @click="cancelAction" />
 
-          <!-- Guardar -->
+          <!-- Save -->
           <Button v-if="mode === 'edit' || mode === 'add'" icon="fa-solid fa-floppy-disk" label="Guardar" class="px-5"
             size="small" @click="save" />
 
-          <!-- Detalhes -->
+          <!-- Details -->
           <Button v-if="mode === 'view' && selectedPage === 1" icon="fa-solid fa-caret-left" label="Detalhes do Atleta"
             class="px-5" size="small" @click="changeContent(0)" />
 
-          <!-- Histórico Clínico -->
+          <!-- Clinical History -->
           <Button v-if="mode === 'view' && selectedPage === 0" icon="fa-solid fa-caret-right" label="Histórico Clínico"
             class="px-5" size="small" @click="changeContent(1)" />
         </div>
@@ -293,6 +307,7 @@
     </template>
   </Drawer>
 
+  <!-- Delete athlete modal -->
   <AthletesModal :visible="athleteDeleteModalVisible" :athlete="formData" @deleted="handleAthleteDeleted"
     @close="closeDeleteModal">
   </AthletesModal>
@@ -344,10 +359,14 @@ export default {
     }
   },
   watch: {
+
+    // Reset drawer when opened
     visible(val) {
       if (val)
         this.resetDrawer()
     },
+
+    // Load athlete data into form
     athlete: {
       handler(val) {
         this.formData = val ? { ...val } : getEmptyAthlete()
@@ -359,6 +378,8 @@ export default {
     },
   },
   computed: {
+
+    // For displaying accountables differently in view mode
     viewAccountables() {
       if (this.mode === 'view') {
         return this.accountableFormData.filter(item => !item._isNew && (item.name || item.relation));
@@ -372,6 +393,7 @@ export default {
     this.loadCountries()
   },
   methods: {
+    // Load auxiliary data
     async loadDivions() {
       this.divisions = await getAuxTable('divisions')
     },
@@ -381,6 +403,8 @@ export default {
     async loadCountries() {
       this.countries = await getAuxTable('country')
     },
+
+    // Load athlete history (injuries & notes)
     async loadAthleteHistory(athleteID) {
       const data = await safeGet(
         axios.get(`http://localhost:3000/athletes/${athleteID}/history`),
@@ -389,6 +413,8 @@ export default {
 
       this.injuryRecord = data;
     },
+
+    // Load athlete accountables
     async loadAccountables(athleteID) {
       const data = await safeGet(
         axios.get(`http://localhost:3000/athletes/${athleteID}/accountables`),
@@ -397,6 +423,7 @@ export default {
 
       this.accountable = data;
 
+      // Always show 2 accountable slots
       const maxAccountables = 2;
       this.accountableFormData = [];
 
@@ -415,6 +442,8 @@ export default {
         }
       }
     },
+
+    // UI Helpers
     toggle(event) {
       if (this.$refs.menu) {
         this.$refs.menu.toggle(event)
@@ -433,6 +462,8 @@ export default {
       this.athleteDeleteModalVisible = false;
       this.$emit('close');
     },
+
+    // Cancel or reset actions
     cancelAction() {
       if (this.mode === 'add') this.$emit('close')
       else if (this.mode === 'edit') {
@@ -450,14 +481,20 @@ export default {
       this.errorsAccountables = {}
       this.selectedPage = 0
     },
+
+    // File upload handler
     onFileSelect(event) {
       this.formData.pfp = event.files[0] || null
     },
+
+    // Change content page
     async changeContent(pageToGo) {
       this.selectedPage = pageToGo;
       if (pageToGo == 1)
         await this.loadAthleteHistory(this.formData.athleteID)
     },
+
+    // Accountables management
     async addAccountables(athleteID) {
       const payload = Object.values(this.accountableFormData).filter(
         item => item.name || item.email || item.phoneNumber || item.relationID
@@ -500,6 +537,8 @@ export default {
 
       await this.loadAccountables(this.formData.athleteID);
     },
+
+    // Save athlete form (add or edit)
     async save() {
       this.errors = validateAthleteForm(this.formData)
       this.errorsAccountables = validateAccountableForm(Object.values(this.accountableFormData))

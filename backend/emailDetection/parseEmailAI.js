@@ -34,8 +34,7 @@ import { SYSTEM_PROMPT, cleanAIJson } from "../utils/utils.js";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function parseEmailAI(email) {
-    console.log("\n🤖 ===== AI PARSING START =====");
-    console.log("🤖 [parseEmailAI] Email input:", {
+    console.log(" [parseEmailAI] Email input:", {
         id: email.id,
         from: email.from,
         subject: email.subject,
@@ -44,7 +43,7 @@ export async function parseEmailAI(email) {
     });
 
     try {
-        console.log("🤖 [parseEmailAI] Getting Gemini model: gemini-2.5-flash");
+        console.log(" [parseEmailAI] Getting Gemini model: gemini-2.5-flash");
         const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash" });
 
         const inputText = SYSTEM_PROMPT + "\n\n" + `
@@ -54,11 +53,11 @@ export async function parseEmailAI(email) {
       Email Body:
       ${email.body}`;
 
-        console.log("🤖 [parseEmailAI] Input text prepared:");
+        console.log(" [parseEmailAI] Input text prepared:");
         console.log("   - System prompt length:", SYSTEM_PROMPT.length);
         console.log("   - Total input length:", inputText.length);
 
-        console.log("🤖 [parseEmailAI] Calling Gemini API...");
+        console.log(" [parseEmailAI] Calling Gemini API...");
         const startTime = Date.now();
 
         const result = await model.generateContent({
@@ -68,17 +67,17 @@ export async function parseEmailAI(email) {
         });
 
         const endTime = Date.now();
-        console.log(`🤖 [parseEmailAI] Gemini API responded in ${endTime - startTime}ms`);
+        console.log(` [parseEmailAI] Gemini API responded in ${endTime - startTime}ms`);
 
         const rawOutput = result.response.text();
-        console.log("🤖 [parseEmailAI] Raw AI output:", rawOutput);
-        console.log("🤖 [parseEmailAI] Raw output length:", rawOutput.length);
+        console.log(" [parseEmailAI] Raw AI output:", rawOutput);
+        console.log(" [parseEmailAI] Raw output length:", rawOutput.length);
 
-        console.log("🤖 [parseEmailAI] Cleaning JSON...");
+        console.log(" [parseEmailAI] Cleaning JSON...");
         const cleanedOutput = cleanAIJson(rawOutput);
-        console.log("🤖 [parseEmailAI] Cleaned output:", cleanedOutput);
+        console.log(" [parseEmailAI] Cleaned output:", cleanedOutput);
 
-        console.log("🤖 [parseEmailAI] Parsing JSON...");
+        console.log(" [parseEmailAI] Parsing JSON...");
         const parsedData = JSON.parse(cleanedOutput);
 
         if (parsedData === null) {
@@ -92,26 +91,26 @@ export async function parseEmailAI(email) {
         console.log("   - title:", parsedData.title);
         console.log("   - startDate:", parsedData.startDate);
         console.log("   - resume length:", parsedData.resume?.length || 0);
-        console.log("🤖 ===== AI PARSING END (SUCCESS) =====\n");
+        console.log(" ===== AI PARSING END (SUCCESS) =====\n");
 
         return { isPhysioBit: true, data: parsedData };
 
     } catch (error) {
-        console.error("\n❌ ===== AI PARSING ERROR =====");
-        console.error("❌ [parseEmailAI] Error type:", error.name);
-        console.error("❌ [parseEmailAI] Error message:", error.message);
+        console.error("\n ===== AI PARSING ERROR =====");
+        console.error(" [parseEmailAI] Error type:", error.name);
+        console.error(" [parseEmailAI] Error message:", error.message);
 
         if (error instanceof SyntaxError) {
-            console.error("❌ [parseEmailAI] JSON parsing failed");
-            console.error("❌ [parseEmailAI] Attempted to parse:", error.message);
+            console.error(" [parseEmailAI] JSON parsing failed");
+            console.error(" [parseEmailAI] Attempted to parse:", error.message);
         } else if (error.response) {
-            console.error("❌ [parseEmailAI] API error response:", error.response);
+            console.error(" [parseEmailAI] API error response:", error.response);
         } else {
-            console.error("❌ [parseEmailAI] Full error:", error);
+            console.error(" [parseEmailAI] Full error:", error);
         }
 
-        console.error("❌ [parseEmailAI] Stack trace:", error.stack);
-        console.error("❌ ===== AI PARSING END (FAILED) =====\n");
+        console.error(" [parseEmailAI] Stack trace:", error.stack);
+        console.error(" ===== AI PARSING END (FAILED) =====\n");
 
         return { isPhysioBit: false, data: null };
     }

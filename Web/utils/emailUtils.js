@@ -1,3 +1,4 @@
+// Validate email/injury form
 export function validateEmailForm(formData, correctInformation) {
     const errors = {}
 

@@ -25,8 +25,12 @@
 
                 <!-- Buttons -->
                 <div class="flex justify-end gap-2 mt-4">
+
+                    <!-- Cancel button -->
                     <Button label="Cancelar" icon="fa-solid fa-arrow-left" severity="secondary" @click="$emit('close')"
                         size="small" />
+
+                    <!-- Delete button -->
                     <Button label="Apagar" icon="fa-solid fa-trash" severity="danger" @click="confirmDelete"
                         size="small" />
                 </div>
@@ -49,6 +53,7 @@ export default {
         email: Object,
     },
     watch: {
+        // Reset modal fields when it opens
         visible(val) {
             if (val)
                 this.resetModal()
@@ -61,18 +66,23 @@ export default {
         }
     },
     methods: {
+        // Reset password and errors
         resetModal() {
             this.password = ''
             this.passwordError = ''
         },
+
+        // Confirm deletion
         async confirmDelete() {
             this.passwordError = '';
 
+            // Check if password is entered
             if (!this.password) {
                 this.passwordError = 'Por favor insira palavra passe.'
                 return
             }
 
+            // Call API to delete email
             await axios.delete(`http://localhost:3000/emails/${this.email.emailID}`, {
                 data: { password: this.password }
             })

@@ -83,7 +83,7 @@ export async function deleteEmail(req, res) {
 	if (password !== process.env.DELETE_PASSWORD)
 		return res.status(401).json({ error: "Invalid password" });
 
-	// 1️⃣ Get the email first
+	//  Get the email first
 	const { data: emailData, error: emailError } = await supabase
 		.from("t_email")
 		.select("emailID, injuryRecordID")
@@ -96,7 +96,7 @@ export async function deleteEmail(req, res) {
 
 	const { injuryRecordID } = emailData;
 
-	// 2️⃣ Soft-delete email and set injuryRecordID to null
+	// Soft-delete email and set injuryRecordID to null
 	const { data: updatedEmail, error: updateError } = await supabase
 		.from("t_email")
 		.update({
@@ -108,7 +108,7 @@ export async function deleteEmail(req, res) {
 
 	if (updateError) return res.status(500).json({ error: updateError });
 
-	// 3️⃣ Now delete the injury record safely
+	//  Now delete the injury record safely
 	if (injuryRecordID) {
 		const { error: recordError } = await supabase
 			.from("t_injury_record")

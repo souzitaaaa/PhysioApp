@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Create axios instance
 const api = axios.create({
     baseURL: 'http://localhost:3000',
     withCredentials: true,
@@ -13,6 +14,7 @@ const api = axios.create({
 let isRefreshing = false;
 let failedQueue = [];
 
+// Process queued requests after refresh
 const processQueue = (error, token = null) => {
     failedQueue.forEach(prom => {
         if (error) {
@@ -33,7 +35,6 @@ api.interceptors.response.use(
 
         console.log('[Axios] Error:', error.response?.status, error.response?.data?.code);
 
-        // Se não é erro 401 ou já tentámos refresh, rejeita
         if (error.response?.status !== 401 || originalRequest._retry) {
             return Promise.reject(error);
         }
@@ -41,16 +42,15 @@ api.interceptors.response.use(
         const errorCode = error.response?.data?.code;
         console.log('[Axios] Error code:', errorCode);
 
-        // Se o erro é NO_TOKEN ou NO_PROFILE, não tenta refresh
+        // If no token or profile, do not refresh
         if (errorCode === 'NO_TOKEN' || errorCode === 'NO_PROFILE') {
             console.log('[Axios] No token or profile, redirecting to login');
             return Promise.reject(error);
         }
 
-        // Se o erro é TOKEN_EXPIRED ou INVALID_TOKEN, tenta refresh
+        // If no token or profile, do not refresh
         if (errorCode === 'TOKEN_EXPIRED' || errorCode === 'INVALID_TOKEN') {
             if (isRefreshing) {
-                // Se já está a fazer refresh, adiciona à fila
                 console.log('[Axios] Already refreshing, queuing request');
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });

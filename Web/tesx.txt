@@ -6,8 +6,8 @@ async function initFormSupabase() {
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppcGR0dHRqc215bGxuYXFnZ3d5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjUzOTIsImV4cCI6MjA3Njc0MTM5Mn0.twAKANHX3L6NlKIli4amXKG-_GGD04BCQSbjm_uNCwE';
 
     if (!window.supabase) {
-        showMessage("❌ Erro: Supabase SDK não carregado!", "danger");
-        console.error("❌ Supabase SDK não foi carregado. Verifica o script no index.html");
+        showMessage(" Erro: Supabase SDK não carregado!", "danger");
+        console.error(" Supabase SDK não foi carregado. Verifica o script no index.html");
         return;
     }
 
@@ -21,7 +21,7 @@ async function initFormSupabase() {
 
     itemForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        showMessage("⏳ A enviar dados para o servidor...", "info");
+        showMessage(" A enviar dados para o servidor...", "info");
 
         const formData = new FormData(itemForm);
         const marca = formData.get("marca");
@@ -67,7 +67,7 @@ async function initFormSupabase() {
             .upload(fileName, fotoFile);
 
         if (uploadError) {
-            console.error("❌ Erro no upload:", uploadError);
+            console.error(" Erro no upload:", uploadError);
             showMessage("Erro ao carregar imagem: " + uploadError.message, "danger");
             return;
         }
@@ -79,7 +79,7 @@ async function initFormSupabase() {
 
         fotoUrl = publicUrlData.publicUrl;
     } catch (err) {
-        console.error("❌ Exceção no upload:", err);
+        console.error(" Exceção no upload:", err);
         showMessage("Erro ao carregar imagem: " + (err.message || err), "danger");
         return;
     }
@@ -93,7 +93,7 @@ async function initFormSupabase() {
             .select();
 
         if (error) {
-            console.error("❌ Erro ao inserir:", error);
+            console.error(" Erro ao inserir:", error);
             showMessage("Erro ao gravar no banco de dados: " + error.message, "danger");
             return;
         }

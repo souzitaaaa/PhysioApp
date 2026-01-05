@@ -2,7 +2,7 @@
   <div class="flex flex-col h-full overflow-hidden">
     <span class="text-xs font-medium text-gray-600 px-1 pb-1">Estatísticas mensais</span>
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
-      <!-- Emails Card -->
+      <!-- Emails received card -->
       <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
         <template #content>
           <div class="flex items-center gap-2 mb-2">
@@ -32,6 +32,7 @@
           </div>
         </template>
       </Card>
+
       <!-- Cases Closed Card -->
       <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
         <template #content>
@@ -78,7 +79,7 @@
         </template>
       </Card>
 
-      <!-- Reminders Card -->
+      <!-- Reminders created card -->
       <Card class="shadow-md! border border-slate-300 lg:col-span-1 bg-gray-150! h-24">
         <template #content>
           <div class="flex items-center gap-2 mb-2">
@@ -110,6 +111,7 @@
       </Card>
     </div>
 
+    <!-- Users table -->
     <DataTable ref="dt" v-model:filters="filters" :value="users" stripedRows dataKey="userID"
       class="style-table shadow-md!" paginator :rows="8" scrollable scrollHeight="flex" :filters="filters"
       :globalFilterFields="['name', 'email']">
@@ -185,6 +187,7 @@
     </DataTable>
   </div>
 
+  <!-- Users drawer for add/edit -->
   <UsersDrawer :visible="userDrawerVisible" :user="selectedUser" :mode="drawerMode" @close="closeDrawer"
     @add-user="handleAddUser" @update-user="updateUser" @update:mode="drawerMode = $event"></UsersDrawer>
 
@@ -229,6 +232,7 @@ export default {
     }
   },
   methods: {
+    // Subscribe to user table changes
     subcribeUsers() {
       this.channel = supabase
         .channel('users-realtime')
@@ -248,11 +252,14 @@ export default {
         )
         .subscribe()
     },
+    // Initialize global filters
     initFilters() {
       this.filters = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
       }
     },
+
+    // Fetch user data
     async getUserData(userID) {
       const endpoint = userID
         ? `http://localhost:3000/users/${userID}`
@@ -264,6 +271,8 @@ export default {
 
       this.users = data
     },
+
+    // Load monthly statistics
     async loadUsersStatistics() {
       const response = await safeGet(
         axios.get('http://localhost:3000/aux/stats/users/statistics'),
@@ -274,31 +283,43 @@ export default {
     exportCSV() {
       this.$refs.dt.exportCSV()
     },
+
+    // Close drawer
     async closeDrawer() {
       this.selectedUser = null
       this.drawerMode = 'view'
       this.userDrawerVisible = false
       await this.getUserData();
     },
+
+    // Open drawer to create new user
     createUserDrawer() {
       this.selectedUser = null
       this.drawerMode = 'add'
       this.userDrawerVisible = true
     },
+
+    // Map user type to severity
     getSeverityFromUserType(usertypeID) {
       if (usertypeID === 1) return 'danger'
       if (usertypeID === 2) return 'info'
       return 'secondary'
     },
+
+    // Open drawer to edit user
     editUser(userData) {
       this.selectedUser = userData
       this.drawerMode = 'view'
       this.userDrawerVisible = true
     },
+
+    // Handle adding user
     async handleAddUser(payload, callback) {
       const userID = await this.addUser(payload);
       if (callback) callback(userID);
     },
+
+    // Add user
     async addUser(formData) {
       try {
         const pfpUrl =
@@ -336,20 +357,19 @@ export default {
         console.error(error)
       }
     },
+
+    // Update user
     async updateUser(formData, callback) {
       let pfpUrl = formData.pfp;
 
-      // 👉 Se escolheu nova imagem
       if (formData.pfp instanceof File) {
 
-        // 1️⃣ Buscar imagem antiga
         const { data: oldUser } = await supabase
           .from('t_user')
           .select('pfp')
           .eq('userID', formData.userID)
           .single();
 
-        // 2️⃣ Apagar imagem antiga do storage
         if (oldUser?.pfp) {
           const oldPath = getStoragePathFromUrl(oldUser.pfp);
 
@@ -360,11 +380,9 @@ export default {
           }
         }
 
-        // 3️⃣ Upload da nova imagem
         pfpUrl = await uploadImageToSupabase(formData.pfp, 'user-images');
       }
 
-      // 4️⃣ Update do user
       const { data, error } = await supabase
         .from('t_user')
         .update({

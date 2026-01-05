@@ -8,6 +8,7 @@ import Tests from '../views/Tests.vue'
 import Notfound from '../views/404.vue'
 import api from '../../utils/apiUtils'
 
+// Create Vue Router instance
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -48,7 +49,7 @@ const router = createRouter({
       meta: { title: 'Tests', requiresAuth: true, showSidebar: true },
     },
     {
-      path: '/:pathMatch(.*)*', // Catch-all 404 route
+      path: '/:pathMatch(.*)*', 
       name: '404',
       component: Notfound,
       meta: { title: '404 Not Found', showSidebar: false },
@@ -56,6 +57,7 @@ const router = createRouter({
   ],
 })
 
+// Global navigation guard
 router.beforeEach(async (to, from, next) => {
   const isLoginPage = to.name === 'Login';
   const requiresAuth = to.meta.requiresAuth;

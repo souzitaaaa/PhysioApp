@@ -86,7 +86,6 @@ body,
   border: none !important;
 }
 
-/* Remove o header */
 .email-table .p-dataview-thead > tr > th,
 .email-table .p-dataview-header-cell {
   display: none !important;
@@ -137,13 +136,11 @@ body,
 
 
 
-/* Remove margem/padding das células */
 .style-table .p-datatable-tbody > tr > td,
 .style-table .p-datatable-thead > tr > th {
-  padding: 0.5rem 1.2rem; /* ajusta como quiser */
+  padding: 0.5rem 1.2rem; 
 }
 
-/* Se quiser ainda mais compacto */
 .style-table .p-datatable-tbody > tr > td {
   line-height: 1.1;
 }
@@ -175,7 +172,7 @@ body,
 
 .input-container input {
   width: 100%;
-  padding: 10px 40px 10px 0; /* espaço para ícone */
+  padding: 10px 40px 10px 0; 
   font-size: 18px;
   border: none;
   border-bottom: 2px solid #9a9a9a;
@@ -216,7 +213,6 @@ body,
   transform: scaleX(1);
 }
 
-/* Ícone Font Awesome de ver/ocultar password */
 .icon-password {
   position: absolute;
   right: 0;

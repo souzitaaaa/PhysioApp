@@ -63,7 +63,7 @@ const moveDirectories = async (userInput) => {
           await fs.promises.rm(oldDirPath, { recursive: true, force: true });
         }
       } else {
-        console.log(`➡️ /${dir} does not exist, skipping.`);
+        console.log(` /${dir} does not exist, skipping.`);
       }
     }
 

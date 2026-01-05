@@ -1,7 +1,11 @@
 <template>
     <div class="w-full flex justify-center">
+
+        <!-- Render pie chart if data exists -->
         <apexchart v-if="chartData && series.length > 0" type="pie" :height="height" :options="chartOptions"
             :series="series" />
+
+        <!-- Loading state -->
         <div v-else class="flex items-center justify-center" :style="{ height: height + 'px' }">
             <i class="fa-solid fa-spinner fa-spin text-gray-400 text-2xl"></i>
         </div>
@@ -19,6 +23,8 @@ export default {
         height: { type: Number, default: 250 }
     },
     computed: {
+
+        // Prepare series data for pie chart
         series() {
             if (!this.chartData) return []
             return [
@@ -26,6 +32,8 @@ export default {
                 Number(this.chartData.injured_athletes) || 0
             ]
         },
+
+        // Chart configuration
         chartOptions() {
             return {
                 chart: {
